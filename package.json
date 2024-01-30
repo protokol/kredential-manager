@@ -5,12 +5,17 @@
   "main": "index.js",
   "scripts": {
     "prepare": "husky install",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "rds:up": "docker compose -f docker-compose-rds.yml up --remove-orphans --build",
+    "rds:down": "docker compose -f docker-compose-rds.yml down --remove-orphans"
   },
   "keywords": [],
   "author": "",
   "license": "private",
   "devDependencies": {
-    "husky": "^9.0.7"
+    "husky": "^9.0.7",
+    "@nestjs/typeorm": "^10.0.1",
+    "pg": "^8.11.3",
+    "typeorm": "^0.3.20"
   }
 }

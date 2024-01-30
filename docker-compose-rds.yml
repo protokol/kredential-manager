@@ -1,0 +1,36 @@
+version: '3.7'
+
+services:
+  service-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrations
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.pnpm-store
+    container_name: EV-rds-test
+    command:
+      [
+        "sh",
+        "-c",
+        "echo 'Test Container Up' && while true; do sleep 1000; done"
+      ]
+    environment:
+      - DB_HOST=host.docker.internal
+      - DB_USER=postgres
+      - DB_PASS=1234
+      - POSTGRES_DB=postgres
+    depends_on:
+      - db
+
+  db:
+    container_name: "EV-psql"
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234

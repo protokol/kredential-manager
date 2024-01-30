@@ -1,5 +1,8 @@
 # Use the official Node.js image as the base image
-FROM node:14
+FROM node:18 as migrations
+
+# Install pnpm
+RUN npm install -g pnpm
 
 # Set the working directory in the container
 WORKDIR /app
@@ -8,13 +11,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install project dependencies
-RUN npm install
-
-# Copy the entire project to the working directory
-COPY . .
+RUN pnpm install
 
 # Expose the port that the app will run on
 EXPOSE 3000
 
+# Set working dir for operations within the container
+WORKDIR /app/packages/enterprise-wallet
+
 # Define the command to run your app using npm start
-CMD ["npm", "run", "start:prod"]
+CMD ["pnpm", "run", "start:prod"]

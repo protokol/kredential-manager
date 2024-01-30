@@ -22,6 +22,8 @@ services:
       - DB_USER=postgres
       - DB_PASS=1234
       - POSTGRES_DB=postgres
+      - MIGRATION_PATH=/app/packages/enterprise-wallet/src/scripts/init-migration
+      - MIGRATION_DIRECTION=${MIGRATION_DIRECTION}
     depends_on:
       - db
 

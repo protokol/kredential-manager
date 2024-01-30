@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "rds:up": "docker compose -f docker-compose-rds.yml up --remove-orphans --build"
+    "rds:up": "docker compose -f docker-compose-rds.yml up --remove-orphans --build",
+    "rds:down": "docker compose -f docker-compose-rds.yml down --remove-orphans"
   },
   "keywords": [],
   "author": "",

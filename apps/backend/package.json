@@ -17,7 +17,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "ts-node node_modules/typeorm/cli.js",
+    "migration:create": "ts-node src/scripts/migration.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -25,7 +27,10 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.2.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "@nestjs/typeorm": "^10.0.1",
+    "pg": "^8.11.3",
+    "typeorm": "^0.3.20"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

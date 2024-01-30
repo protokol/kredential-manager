@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { exec } from "child_process";
 
 const command = `npm run typeorm migration:create ./src/migrations/${process.argv[process.argv.length - 1]}`;
 

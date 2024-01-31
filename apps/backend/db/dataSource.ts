@@ -1,4 +1,4 @@
-import { User } from 'src/entities/user.entity';
+import { VerifiableCredential } from 'src/entities/VerifiableCredential';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -9,7 +9,7 @@ export const dataSourceOptions: DataSourceOptions = {
     password: '1234',
     database: 'postgres',
     synchronize: false, // must be disabled in production
-    entities: [User],
+    entities: [VerifiableCredential],
     migrations: ['dist/src/migrations/*{.js,.ts}'],
     migrationsTableName: 'custom_migration_table',
 };

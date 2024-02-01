@@ -1,0 +1,41 @@
+{
+  "extends": "next/core-web-vitals",
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    // Disabled indent rule as it is handled by prettier
+    "indent": "off",
+    // Forces line ending to be consistent
+    "linebreak-style": ["error", "unix"],
+    // Forces single quotes
+    "quotes": ["error", "single", "avoid-escape"],
+    // Forces to semicolon at the end of the statement
+    "semi": "warn",
+    // Prevents console.log statements from being committed
+    "no-console": "warn",
+    // Prevent unnecessary curly braces when not needed
+    "react/jsx-curly-brace-presence": "warn",
+    // Disabled rule for using JSX without importing React
+    "react/react-in-jsx-scope": "off",
+    // Shortens return statement from arrow functions
+    "arrow-body-style": "warn",
+    // Forces to user shorthand syntax truthy prop values
+    "react/jsx-boolean-value": "warn",
+    // Tags that don't have children must be self-closing
+    "react/self-closing-comp": "warn",
+    // Proptypes are not required in ts
+    "react/prop-types": "off",
+    // Prevents any type from being used
+    "@typescript-eslint/no-explicit-any": "error",
+    // Enforces "import type" syntax
+    "@typescript-eslint/consistent-type-imports": "error",
+    // Prevents var keyword from being used
+    "@typescript-eslint/no-var-requires": "off",
+    // Prevents unused variables from being committed
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "ignoreRestSiblings": true
+      }
+    ]
+  }
+}

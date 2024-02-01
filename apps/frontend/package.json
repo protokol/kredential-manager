@@ -1,0 +1,35 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "eslint": "eslint --fix --max-warnings=0 --cache '**/*.{js,jsx,ts,tsx,json}'",
+    "prettier": "prettier --write --config .prettierrc '**/*.{js,jsx,ts,tsx}'",
+    "prettier:ci": "prettier --check --config .prettierrc '**/*.{js,jsx,ts,tsx}'",
+    "eslint:ci": "eslint --max-warnings=0 --cache '**/*.{js,jsx,ts,tsx,json}'"
+  },
+  "dependencies": {
+    "next": "14.0.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@total-typescript/ts-reset": "0.5.1",
+    "@trivago/prettier-plugin-sort-imports": "4.3.0",
+    "@types/node": "20.10.7",
+    "@types/react": "18.2.47",
+    "@types/react-dom": "18.2.18",
+    "@typescript-eslint/eslint-plugin": "6.18.1",
+    "autoprefixer": "10.4.16",
+    "eslint": "8.56.0",
+    "eslint-config-next": "14.0.4",
+    "postcss": "8.4.33",
+    "prettier": "3.1.1",
+    "prettier-plugin-tailwindcss": "0.5.11",
+    "tailwindcss": "3.4.1",
+    "typescript": "5.3.3"
+  }
+}

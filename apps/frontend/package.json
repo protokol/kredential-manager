@@ -12,14 +12,14 @@
     "eslint:ci": "eslint --max-warnings=0 --cache '**/*.{js,jsx,ts,tsx,json}'"
   },
   "dependencies": {
-    "@heroicons/react": "^2.1.1",
-    "@radix-ui/react-slot": "^1.0.2",
-    "class-variance-authority": "^0.7.0",
+    "@heroicons/react": "2.0.18",
+    "@radix-ui/react-slot": "1.0.2",
+    "class-variance-authority": "0.7.0",
     "clsx": "2.0.0",
     "next": "14.0.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "tailwind-merge": "^2.2.1"
+    "tailwind-merge": "2.1.0"
   },
   "devDependencies": {
     "@total-typescript/ts-reset": "0.5.1",
@@ -35,7 +35,7 @@
     "prettier": "3.1.1",
     "prettier-plugin-tailwindcss": "0.5.11",
     "tailwindcss": "3.4.1",
-    "tailwindcss-animate": "^1.0.7",
+    "tailwindcss-animate": "1.0.7",
     "typescript": "5.3.3"
   }
 }

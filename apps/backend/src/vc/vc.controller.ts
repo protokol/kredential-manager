@@ -1,14 +1,14 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { VerifiableCredential } from 'src/entities/VerifiableCredential';
-import { Repository } from 'typeorm';
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { VerifiableCredential } from "src/entities/VerifiableCredential";
+import { Repository } from "typeorm";
 
-@Controller('vc')
+@Controller("vc")
 export class VcController {
     constructor(
         @InjectRepository(VerifiableCredential)
         private vcRepository: Repository<VerifiableCredential>,
-    ) { }
+    ) {}
 
     @Get()
     async getAll(): Promise<any> {

@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { VerifiableCredential } from 'src/entities/VerifiableCredential';
-import { DeepPartial, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable, Logger } from "@nestjs/common";
+import { VerifiableCredential } from "src/entities/VerifiableCredential";
+import { DeepPartial, Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class VcService {
@@ -9,13 +9,13 @@ export class VcService {
     constructor(
         @InjectRepository(VerifiableCredential)
         private repository: Repository<VerifiableCredential>,
-    ) { }
+    ) {}
 
     async findAll(): Promise<any> {
         try {
             const users = await this.repository.find();
             if (users?.length === 0) {
-                throw new Error('No record found.');
+                throw new Error("No record found.");
             }
             return users;
         } catch (error) {
@@ -29,7 +29,7 @@ export class VcService {
         try {
             const user = await this.repository.findOneBy({ id });
             if (user === null) {
-                throw new Error('No record found.');
+                throw new Error("No record found.");
             }
             return user;
         } catch (error) {
@@ -44,7 +44,9 @@ export class VcService {
         try {
             return this.repository.save(entity);
         } catch (error) {
-            this.logger.log(`UsersService:save : ${JSON.stringify(error.message)}`);
+            this.logger.log(
+                `UsersService:save : ${JSON.stringify(error.message)}`,
+            );
         }
     }
 

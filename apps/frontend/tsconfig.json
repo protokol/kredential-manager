@@ -20,14 +20,20 @@
       }
     ],
     "paths": {
-      "@components/*": ["./components/*"],
-      "@ui/*": ["./components/ui/*"],
-      "@styles/*": ["./styles/*"],
-      "@utils/*": ["util/*"],
-      "@public/*": ["./public/*"],
-      "@hooks/*": ["/.hooks/*"]
+      "@components/*": ["components/*"],
+      "@ui/*": ["components/ui/*"],
+      "@styles/*": ["styles/*"],
+      "@utils/*": ["utils/*"],
+      "@public/*": ["public/*"],
+      "@hooks/*": ["hooks/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "tailwind.config.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "tailwind.config.ts"
+  ],
   "exclude": ["node_modules"]
 }

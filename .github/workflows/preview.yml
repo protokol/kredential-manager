@@ -3,7 +3,7 @@ name: Preview
 on:
   push:
     branches-ignore:
-      - production
+      - master
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

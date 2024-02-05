@@ -3,7 +3,7 @@ name: Production
 on:
   push:
     branches:
-      - production
+      - master
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -2,6 +2,8 @@ name: Production
 
 on:
   push:
+    paths:
+      - "apps/frontend/**"
     branches:
       - master
 

@@ -2,6 +2,8 @@ name: Preview
 
 on:
   push:
+    paths:
+      - "apps/frontend/**"
     branches-ignore:
       - master
 

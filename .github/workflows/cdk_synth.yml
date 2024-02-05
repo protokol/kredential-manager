@@ -2,8 +2,13 @@ name: apps/cdk Synth
 
 on:
   push:
+    paths:
+      - "apps/cdk/**"
   pull_request:
+    paths:
+      - "apps/cdk/**"
     types: [opened]
+  workflow_dispatch:
 
 jobs:
   cdk-synth:

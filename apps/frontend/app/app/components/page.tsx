@@ -1,12 +1,17 @@
+'use client';
+
 import { PlusIcon } from '@heroicons/react/24/outline';
 
 import Button from '@ui/Button';
+import Input from '@ui/Input';
+import Select from '@ui/Select';
+import Textarea from '@ui/Textarea';
 
 const ComponentsPage = () => (
   <div className='space-x-8 space-y-4'>
     <h1 className='text-4xl font-bold'>Components</h1>
 
-    <h2 className='text-2xl'>Buttons</h2>
+    <h2 className='text-2xl'>Buttons -----------------------------------</h2>
 
     <h3>
       Variant: <b>primary</b>
@@ -155,6 +160,59 @@ const ComponentsPage = () => (
             <PlusIcon className='h-3.5 w-3.5' />
           </Button>
         </div>
+      </div>
+    </div>
+
+    <h2 className='text-2xl'>Inputs -----------------------------------</h2>
+    <div className='max-w-lg space-y-2'>
+      <Input />
+      <Input placeholder='Input with placeholder' />
+      <Input placeholder='Input with success border' variant='success' />
+      <Input placeholder='Input with error border' variant='error' />
+      <Input value='Input with value' onChange={() => {}} />
+      <Input placeholder='Disabled with placeholder' disabled />
+      <Input value='Disabled with value' onChange={() => {}} disabled />
+    </div>
+
+    <h2 className='text-2xl'>Textarea -----------------------------------</h2>
+    <div className='max-w-lg space-y-2'>
+      <Textarea />
+      <Textarea placeholder='Textarea with placeholder' />
+      <Textarea placeholder='Textarea with success border' variant='success' />
+      <Textarea placeholder='Textarea with error border' variant='error' />
+      <Textarea placeholder='Textarea with placeholder' />
+      <Textarea value='Textarea with value' onChange={() => {}} />
+      <Textarea placeholder='Disabled with placeholder' disabled />
+      <Textarea value='Disabled with value' disabled onChange={() => {}} />
+    </div>
+
+    <h2 className='text-2xl'>Select -----------------------------------</h2>
+    <div className='max-w-lg space-y-2'>
+      <div className='flex max-w-lg flex-col space-y-2'>
+        <Select
+          items={[
+            { label: 'Select with value', value: 'item1' },
+            { label: 'Unselected', value: 'item2' },
+            { label: 'Disabled', value: 'item3', disabled: true }
+          ]}
+        />
+        <Select
+          placeholder='Select placeholder'
+          items={[
+            { label: 'Select with value', value: 'item1' },
+            { label: 'Unselected', value: 'item2' },
+            { label: 'Disabled', value: 'item3', disabled: true }
+          ]}
+        />
+        <Select
+          value='item1'
+          items={[
+            { label: 'Select with value', value: 'item1' },
+            { label: 'Unselected', value: 'item2' },
+            { label: 'Disabled', value: 'item3', disabled: true }
+          ]}
+        />
+        <Select placeholder='Disabled with placeholder' disabled items={[]} />
       </div>
     </div>
   </div>

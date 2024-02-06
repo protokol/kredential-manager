@@ -3,11 +3,11 @@ import { DataSource, DataSourceOptions } from "typeorm";
 
 export const dataSourceOptions: DataSourceOptions = {
     type: "postgres",
-    host: "127.0.0.1",
-    port: 5432,
-    username: "nestuser",
-    password: "password",
-    database: "backenddb",
+    host: process.env.DB_HOST || "localhost",
+    port: +(process.env.DB_PORT || 5432),
+    username: process.env.DB_USERNAME || "enterprise-wallet-user",
+    password: process.env.DB_PASSWORD || "password",
+    database: process.env.DB_NAME || "enterprise-wallet",
     synchronize: false, // must be disabled in production
     entities: [VerifiableCredential],
     migrations: ["dist/src/migrations/*{.js,.ts}"],

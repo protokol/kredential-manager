@@ -1,5 +1,6 @@
 version: "3.8"
 services:
+  # Minimal configuration for a PostgreSQL database
   postgres:
     image: "postgres:alpine"
     container_name: postgres
@@ -9,8 +10,8 @@ services:
       - "postgres:/var/lib/postgresql/data"
     environment:
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: backenddb
-      POSTGRES_USER: nestuser
+      POSTGRES_DB: enterprise-wallet
+      POSTGRES_USER: enterprise-wallet-user
 
 volumes:
   postgres:

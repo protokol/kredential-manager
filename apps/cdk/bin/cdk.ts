@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { CdkStack } from "../lib/cdk-stack";
+import { VpcClusterStack } from "../lib/vpc-cluster-stack";
 import * as cdk from "aws-cdk-lib";
 import "source-map-support/register";
 
@@ -16,3 +17,4 @@ new CdkStack(app, "CdkStack", {
 	// env: { account: '123456789012', region: 'us-east-1' },
 	/* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
+new VpcClusterStack(app, "VpcClusterStack", {});

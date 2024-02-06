@@ -9,6 +9,7 @@ export class VpcClusterStack extends cdk.Stack {
 
 	// SGs
 	public readonly databaseSG: SecurityGroup;
+	public readonly backendServiceSG: SecurityGroup;
 
 	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
 		super(scope, id, props);
@@ -41,5 +42,14 @@ export class VpcClusterStack extends cdk.Stack {
 		this.databaseSG.addIngressRule(Peer.ipv4(this.vpc.vpcCidrBlock), Port.tcp(5432));
 		// PUBLIC ACCESS!!!
 		this.databaseSG.addIngressRule(Peer.anyIpv4(), Port.tcp(5432));
+
+		// Backend Stack SGs
+		this.backendServiceSG = new SecurityGroup(this, "BackendServiceSG", {
+			vpc: this.vpc,
+			description: "Security group for backend service.",
+			securityGroupName: "backend-service-sg",
+			allowAllOutbound: true,
+		});
+		this.backendServiceSG.addIngressRule(Peer.anyIpv4(), Port.tcp(3000));
 	}
 }

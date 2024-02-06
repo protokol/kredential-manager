@@ -33,7 +33,7 @@ export class DatabaseStack extends cdk.Stack {
 			vpcSubnets: { subnetType: SubnetType.PUBLIC },
 			publiclyAccessible: true,
 			securityGroups: [props.databaseSG],
-
+			databaseName: "enterprisewallet",
 			instanceType,
 			engine,
 			port,

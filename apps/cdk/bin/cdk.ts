@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { BackendStack } from "../lib/backend-stack";
 import { CdkStack } from "../lib/cdk-stack";
 import { DatabaseStack } from "../lib/database-stack";
 import { VpcClusterStack } from "../lib/vpc-cluster-stack";
@@ -19,7 +20,12 @@ new CdkStack(app, "CdkStack", {
 	/* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
 const vpcClusterStack = new VpcClusterStack(app, "VpcClusterStack", {});
-new DatabaseStack(app, "DatabaseStack", {
+const databaseStack = new DatabaseStack(app, "DatabaseStack", {
 	vpc: vpcClusterStack.vpc,
 	databaseSG: vpcClusterStack.databaseSG,
+});
+new BackendStack(app, "BackendStack", {
+	cluster: vpcClusterStack.cluster,
+	dbInstance: databaseStack.dbInstance,
+	backendSG: vpcClusterStack.backendServiceSG,
 });

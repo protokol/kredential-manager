@@ -1,8 +1,11 @@
 import { DockerRepositories } from "./constructs/DockerRepositories";
 import { Logging } from "./constructs/Logging";
 import * as cdk from "aws-cdk-lib";
+import { Duration } from "aws-cdk-lib";
+import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 import { SecurityGroup } from "aws-cdk-lib/aws-ec2";
 import { Cluster, FargateService, FargateTaskDefinition, Protocol } from "aws-cdk-lib/aws-ecs";
+import { ApplicationLoadBalancer, ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { DatabaseInstance } from "aws-cdk-lib/aws-rds";
 import { Construct } from "constructs";
 
@@ -10,6 +13,8 @@ interface BackendStackProps extends cdk.StackProps {
 	cluster: Cluster;
 	dbInstance: DatabaseInstance;
 	backendSG: SecurityGroup;
+	loadBalancer: ApplicationLoadBalancer;
+	certificate: Certificate;
 }
 export class BackendStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props: BackendStackProps) {
@@ -44,6 +49,30 @@ export class BackendStack extends cdk.Stack {
 			containerPort: 3000,
 			hostPort: 3000,
 			protocol: Protocol.TCP,
+		});
+
+		const listener = props.loadBalancer.addListener("ExternalPublicListener", {
+			port: 443,
+			open: true,
+			protocol: ApplicationProtocol.HTTPS,
+			certificates: [props.certificate],
+		});
+
+		listener.addTargets("BackendTarget", {
+			port: 3000,
+			protocol: ApplicationProtocol.HTTP,
+			targets: [
+				service.loadBalancerTarget({
+					containerName: container.containerName,
+					containerPort: 3000,
+					protocol: Protocol.TCP,
+				}),
+			],
+			healthCheck: {
+				path: "/api",
+				interval: Duration.minutes(1),
+				healthyHttpCodes: "200",
+			},
 		});
 	}
 }

@@ -28,4 +28,6 @@ new BackendStack(app, "BackendStack", {
 	cluster: vpcClusterStack.cluster,
 	dbInstance: databaseStack.dbInstance,
 	backendSG: vpcClusterStack.backendServiceSG,
+	certificate: vpcClusterStack.certificate,
+	loadBalancer: vpcClusterStack.externalLoadBalancer,
 });

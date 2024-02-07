@@ -2,7 +2,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import type { FC } from 'react';
 
 import Button from '@ui/Button';
-import Select from '@ui/select/Select';
+import Select from '@ui/Select';
 
 type TablePaginationProps = {
   currentPage: number;

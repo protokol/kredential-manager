@@ -1,11 +1,16 @@
 'use client';
 
 import { PlusIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
+
+import logo from '@public/Logo.png';
 
 import Button from '@ui/Button';
 import Input from '@ui/Input';
 import Select from '@ui/Select';
+import Status from '@ui/Status';
 import Textarea from '@ui/Textarea';
+import Table from '@ui/table/Table';
 
 const ComponentsPage = () => (
   <div className='space-x-8 space-y-4'>
@@ -214,6 +219,78 @@ const ComponentsPage = () => (
         />
         <Select placeholder='Disabled with placeholder' disabled items={[]} />
       </div>
+    </div>
+
+    <h2 className='text-2xl'>Logo -----------------------------------</h2>
+    <Image alt='logo' src={logo} />
+
+    <h2 className='text-2xl'>Status -----------------------------------</h2>
+    <div className='flex gap-4'>
+      <Status variant='approved' />
+      <Status variant='pending' />
+      <Status variant='rejected' />
+    </div>
+
+    <h2 className='text-2xl'>Table -----------------------------------</h2>
+    <div className='space-y-2'>
+      <Table
+        columns={[
+          {
+            header: 'Name',
+            accessorKey: 'name'
+          },
+          {
+            header: 'Email',
+            accessorKey: 'email'
+          },
+          {
+            header: 'Number',
+            accessorKey: 'no'
+          }
+        ]}
+        data={[
+          {
+            no: 12,
+            name: 'Gratian',
+            email: 'gmuntean@protokol.com'
+          },
+          {
+            no: 12,
+            name: 'Gratian',
+            email: 'gmuntean@protokol.com'
+          },
+          {
+            no: 12,
+            name: 'Gratian',
+            email: 'gmuntean@protokol.com'
+          }
+        ]}
+      />
+
+      <Table
+        isLoading
+        columns={[
+          {
+            header: 'Name'
+          },
+          {
+            header: 'Email'
+          }
+        ]}
+        data={[]}
+      />
+
+      <Table
+        columns={[
+          {
+            header: 'Name'
+          },
+          {
+            header: 'Email'
+          }
+        ]}
+        data={[]}
+      />
     </div>
   </div>
 );

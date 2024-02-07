@@ -6,6 +6,7 @@ on:
       - "apps/frontend/**"
     branches-ignore:
       - master
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

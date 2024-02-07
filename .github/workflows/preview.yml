@@ -6,6 +6,7 @@ on:
       - "apps/frontend/**"
     branches-ignore:
       - master
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,5 +23,6 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }} # Required
           github-token: ${{ secrets.GITHUB_TOKEN }} # Optional
+          vercel-args: "--force" # Optional
           vercel-org-id: "team_Men14SflVoRjJ10FRChV3qZ0" # Required
           vercel-project-id: "prj_PiKWNnWByfmfMkjb52VwcLzeJgt5" # Required

@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { cn } from '@utils/cn';
 
 import Input from '@ui/Input';
-import type { SelectMenuItem } from '@ui/select/Select';
+import type { SelectMenuItem } from '@ui/Select';
 import type { FilterWrapperProps } from '@ui/table/filters/FilterWrapper';
 import FilterWrapper from '@ui/table/filters/FilterWrapper';
 

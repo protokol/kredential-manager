@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 
-import Select from '@ui/select/Select';
+import Select from '@ui/Select';
 
 type TableResultsPerPageProps = {
   pageSize: number;

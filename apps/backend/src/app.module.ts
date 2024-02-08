@@ -20,10 +20,10 @@ import { APP_GUARD } from "@nestjs/core";
 @Module({
     imports: [
         KeycloakConnectModule.register({
-            authServerUrl: "http://localhost:8080",
+            authServerUrl: process.env.REALM_SERVER || "",
             bearerOnly: true,
-            realm: "Demo-Realm",
-            clientId: "nest-app",
+            realm: process.env.REALM_NAME || "",
+            clientId: process.env.CLIENT_ID || "",
             secret: "",
             cookieKey: "KEYCLOAK_JWT",
             logLevels: ["verbose"],

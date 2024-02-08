@@ -27,5 +27,5 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
-
-CMD ["npm", "run", "start:prod"]
+# TODO: Find better way to run migrations
+CMD npm run typeorm:sync && npm run start:prod

@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { VerifiableCredential } from "src/entities/VerifiableCredential";
 import { Repository } from "typeorm";
+import { Public } from "nest-keycloak-connect";
 
 @Controller("vc")
 export class VcController {
@@ -16,6 +17,7 @@ export class VcController {
     }
 
     @Post()
+    @Public(true)
     async create(@Body() vc: VerifiableCredential): Promise<any> {
         // TODO: Add logic to verify the verifiable credential
         return this.vcRepository.save(vc);

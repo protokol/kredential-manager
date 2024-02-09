@@ -19,6 +19,8 @@ import { APP_GUARD } from "@nestjs/core";
 
 @Module({
     imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
+        TypeOrmModule.forRoot(dataSourceOptions),
         KeycloakConnectModule.register({
             authServerUrl: process.env.REALM_SERVER || "",
             bearerOnly: true,
@@ -32,8 +34,7 @@ import { APP_GUARD } from "@nestjs/core";
             tokenValidation: TokenValidation.OFFLINE,
             realmPublicKey: process.env.REALM_PUBLIC_KEY || "",
         }),
-        ConfigModule.forRoot({ isGlobal: true }),
-        TypeOrmModule.forRoot(dataSourceOptions),
+
         VcModule,
     ],
     controllers: [AppController, VcController],

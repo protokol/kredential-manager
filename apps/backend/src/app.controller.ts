@@ -1,17 +1,18 @@
 import { Controller, Get } from "@nestjs/common";
 import { AppService } from "./app.service";
 import {
-    AuthenticatedUser,
+    // AuthenticatedUser,
     Public,
     Roles,
-    RoleMatchingMode,
+    // RoleMatchingMode,
 } from "nest-keycloak-connect";
 
 @Controller()
 export class AppController {
     constructor(private readonly appService: AppService) { }
 
-    @Get()
+    @Get("public")
+    @Public(true)
     getHello(): string {
         return this.appService.getHello();
     }
@@ -22,21 +23,8 @@ export class AppController {
     }
 
     @Get("roles")
-    @Roles({ roles: ["realm:admin"] })
+    @Roles({ roles: ["realm:admin", "admin"] })
     getRoles() {
         return "Admin role only!";
-    }
-
-    @Get("partial")
-    @Public(false)
-    getPartial(
-        @AuthenticatedUser()
-        user: any,
-    ): string {
-        if (user) {
-            return `Hello ${user.preferred_username}`;
-        } else {
-            return "Hello world!";
-        }
     }
 }

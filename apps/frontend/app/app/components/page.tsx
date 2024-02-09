@@ -12,7 +12,7 @@ import logo from '@public/Logo.png';
 import { toastError, toastInfo, toastSuccess } from '@utils/toast';
 
 import Button from '@ui/Button';
-import Card from '@ui/Card';
+import InfoCard from '@ui/InfoCard';
 import Input from '@ui/Input';
 import Select from '@ui/Select';
 import Status from '@ui/Status';
@@ -176,7 +176,7 @@ const ComponentsPage = () => (
     </div>
 
     <h2>Cards -----------------------------------</h2>
-    <Card
+    <InfoCard
       title='70'
       label='Pending requests'
       icon={BellIcon}
@@ -184,12 +184,13 @@ const ComponentsPage = () => (
       anchorText='View pending requests'
     />
 
-    <Card
+    <InfoCard
       title='Resources'
       label='Need help?'
       icon={QuestionMarkCircleIcon}
       link='/'
       anchorText='Visit our resource center'
+      className='bg-radial-gradient'
     />
 
     <div>

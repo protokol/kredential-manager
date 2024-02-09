@@ -10,8 +10,8 @@ services:
     restart: unless-stopped
     ports:
       - 5432:5432
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+    # healthcheck:
+    #   test: [ "CMD", "pg_isready", "-U", "postgres" ]
     environment:
       POSTGRES_DB: "enterprise-wallet"
       POSTGRES_USER: "enterprise-wallet-user"

@@ -1,11 +1,18 @@
 'use client';
 
-import { PlusIcon } from '@heroicons/react/24/outline';
+import {
+  BellIcon,
+  PlusIcon,
+  QuestionMarkCircleIcon
+} from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
 import logo from '@public/Logo.png';
 
+import { toastError, toastInfo, toastSuccess } from '@utils/toast';
+
 import Button from '@ui/Button';
+import InfoCard from '@ui/InfoCard';
 import Input from '@ui/Input';
 import Select from '@ui/Select';
 import Status from '@ui/Status';
@@ -165,6 +172,60 @@ const ComponentsPage = () => (
             <PlusIcon className='h-3.5 w-3.5' />
           </Button>
         </div>
+      </div>
+    </div>
+
+    <h2>Cards -----------------------------------</h2>
+    <InfoCard
+      title='70'
+      label='Pending requests'
+      icon={BellIcon}
+      link='/'
+      anchorText='View pending requests'
+    />
+
+    <InfoCard
+      title='Resources'
+      label='Need help?'
+      icon={QuestionMarkCircleIcon}
+      link='/'
+      anchorText='Visit our resource center'
+      className='bg-radial-gradient'
+    />
+
+    <div>
+      <h2>Toasts -----------------------------------</h2>
+      <div className='flex max-w-lg flex-col gap-4'>
+        <Button
+          onClick={() => {
+            toastInfo({
+              text: 'We added a couple of new features.',
+              detailsLink: '/'
+            });
+          }}
+        >
+          Show toast info
+        </Button>
+        <Button
+          onClick={() => {
+            toastSuccess({
+              text: 'You have successfully issued a new credential!',
+              detailsLink: '/'
+            });
+          }}
+        >
+          Show toast success
+        </Button>
+        <Button
+          onClick={() => {
+            toastError({
+              text: 'Seems like something went wrong...',
+              detailsLink: '/'
+            });
+          }}
+        >
+          Show toast error
+        </Button>
       </div>
     </div>
 

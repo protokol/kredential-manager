@@ -2,6 +2,7 @@
 import { BackendStack } from "../lib/backend-stack";
 import { CdkStack } from "../lib/cdk-stack";
 import { DatabaseStack } from "../lib/database-stack";
+import { KeycloakStack } from "../lib/keycloak-stack";
 import { VpcClusterStack } from "../lib/vpc-cluster-stack";
 import * as cdk from "aws-cdk-lib";
 import "source-map-support/register";
@@ -26,6 +27,13 @@ const vpcClusterStack = new VpcClusterStack(app, "VpcClusterStack", {
 const databaseStack = new DatabaseStack(app, "DatabaseStack", {
 	vpc: vpcClusterStack.vpc,
 	databaseSG: vpcClusterStack.databaseSG,
+});
+new KeycloakStack(app, "KeycloakStack", {
+	cluster: vpcClusterStack.cluster,
+	dbInstance: databaseStack.dbInstance,
+	keycloakSG: vpcClusterStack.keycloakServiceSG,
+	certificate: vpcClusterStack.keycloakCertificate,
+	loadBalancer: vpcClusterStack.keycloakLoadBalancer,
 });
 new BackendStack(app, "BackendStack", {
 	cluster: vpcClusterStack.cluster,

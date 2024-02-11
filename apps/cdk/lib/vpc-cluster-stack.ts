@@ -17,16 +17,16 @@ export class VpcClusterStack extends cdk.Stack {
 
 	// Load Balancers
 	public readonly backendLoadBalancer: ApplicationLoadBalancer;
-	public readonly keycloackLoadBalancer: ApplicationLoadBalancer;
+	public readonly keycloakLoadBalancer: ApplicationLoadBalancer;
 
 	// Certificates
 	public readonly apiCertificate: Certificate;
-	public readonly keycloackCertificate: Certificate;
+	public readonly keycloakCertificate: Certificate;
 
 	// SGs
 	public readonly databaseSG: SecurityGroup;
 	public readonly backendServiceSG: SecurityGroup;
-	public readonly keycloackServiceSG: SecurityGroup;
+	public readonly keycloakServiceSG: SecurityGroup;
 
 	constructor(scope: Construct, id: string, props: VpcClusterStackProps) {
 		super(scope, id, props);
@@ -42,9 +42,9 @@ export class VpcClusterStack extends cdk.Stack {
 			validation: CertificateValidation.fromDns(publicZone),
 		});
 
-		const keycloackDomainName = `keycloack.${props.zoneName}`;
-		this.keycloackCertificate = new Certificate(this, "KeycloackCertificate", {
-			domainName: keycloackDomainName,
+		const keycloakDomainName = `keycloak.${props.zoneName}`;
+		this.keycloakCertificate = new Certificate(this, "KeycloakCertificate", {
+			domainName: keycloakDomainName,
 			validation: CertificateValidation.fromDns(publicZone),
 		});
 
@@ -70,7 +70,7 @@ export class VpcClusterStack extends cdk.Stack {
 			vpc: this.vpc,
 			internetFacing: true,
 		});
-		this.keycloackLoadBalancer = new ApplicationLoadBalancer(this, "KeycloackLoadBalancer", {
+		this.keycloakLoadBalancer = new ApplicationLoadBalancer(this, "KeycloakLoadBalancer", {
 			vpc: this.vpc,
 			internetFacing: true,
 		});
@@ -82,11 +82,11 @@ export class VpcClusterStack extends cdk.Stack {
 			target: RecordTarget.fromAlias(new LoadBalancerTarget(this.backendLoadBalancer)),
 		});
 
-		new ARecord(this, "KeycloackALBAlias", {
-			recordName: keycloackDomainName,
+		new ARecord(this, "KeycloakALBAlias", {
+			recordName: keycloakDomainName,
 			zone: publicZone,
 			comment: "Alias for Keycloack Load Balancer",
-			target: RecordTarget.fromAlias(new LoadBalancerTarget(this.keycloackLoadBalancer)),
+			target: RecordTarget.fromAlias(new LoadBalancerTarget(this.keycloakLoadBalancer)),
 		});
 
 		// Database Stack SGs
@@ -109,13 +109,13 @@ export class VpcClusterStack extends cdk.Stack {
 		});
 		this.backendServiceSG.addIngressRule(Peer.anyIpv4(), Port.tcp(3000));
 
-		// Keycloack Stack SGs
-		this.keycloackServiceSG = new SecurityGroup(this, "KeycloackServiceSG", {
+		// Keycloak Stack SGs
+		this.keycloakServiceSG = new SecurityGroup(this, "KeycloakServiceSG", {
 			vpc: this.vpc,
-			description: "Security group for keycloack service.",
-			securityGroupName: "keycloack-service-sg",
+			description: "Security group for keycloak service.",
+			securityGroupName: "keycloak-service-sg",
 			allowAllOutbound: true,
 		});
-		this.keycloackServiceSG.addIngressRule(Peer.anyIpv4(), Port.tcp(8080));
+		this.keycloakServiceSG.addIngressRule(Peer.anyIpv4(), Port.tcp(8080));
 	}
 }

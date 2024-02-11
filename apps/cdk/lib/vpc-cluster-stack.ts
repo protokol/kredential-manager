@@ -7,34 +7,43 @@ import { ARecord, HostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
 import { LoadBalancerTarget } from "aws-cdk-lib/aws-route53-targets";
 import { Construct } from "constructs";
 
-const HOSTED_ZONE_ID = "Z08139353PYYZ63C4KDJW";
-const ZONE_NAME = "eu-dev.protokol.sh";
-const DOMAIN_NAME = "api.eu-dev.protokol.sh";
-
+interface VpcClusterStackProps extends cdk.StackProps {
+	hostedZoneId: string;
+	zoneName: string;
+}
 export class VpcClusterStack extends cdk.Stack {
 	public readonly vpc: Vpc;
 	public readonly cluster: Cluster;
 
 	// Load Balancers
-	public readonly externalLoadBalancer: ApplicationLoadBalancer;
+	public readonly backendLoadBalancer: ApplicationLoadBalancer;
+	public readonly keycloackLoadBalancer: ApplicationLoadBalancer;
 
 	// Certificates
-	public readonly certificate: Certificate;
+	public readonly apiCertificate: Certificate;
+	public readonly keycloackCertificate: Certificate;
 
 	// SGs
 	public readonly databaseSG: SecurityGroup;
 	public readonly backendServiceSG: SecurityGroup;
 
-	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+	constructor(scope: Construct, id: string, props: VpcClusterStackProps) {
 		super(scope, id, props);
 
 		const publicZone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", {
-			hostedZoneId: HOSTED_ZONE_ID,
-			zoneName: ZONE_NAME,
+			hostedZoneId: props.hostedZoneId,
+			zoneName: props.zoneName,
 		});
 
-		this.certificate = new Certificate(this, "Certificate", {
-			domainName: DOMAIN_NAME,
+		const apiDomainName = `api.${props.zoneName}`;
+		this.apiCertificate = new Certificate(this, "APICertificate", {
+			domainName: apiDomainName,
+			validation: CertificateValidation.fromDns(publicZone),
+		});
+
+		const keycloackDomainName = `keycloack.${props.zoneName}`;
+		this.keycloackCertificate = new Certificate(this, "KeycloackCertificate", {
+			domainName: keycloackDomainName,
 			validation: CertificateValidation.fromDns(publicZone),
 		});
 
@@ -56,16 +65,27 @@ export class VpcClusterStack extends cdk.Stack {
 		});
 		this.cluster = new Cluster(this, "Cluster", { vpc: this.vpc });
 
-		this.externalLoadBalancer = new ApplicationLoadBalancer(this, "ExternalLoadBalancer", {
+		this.backendLoadBalancer = new ApplicationLoadBalancer(this, "BackendLoadBalancer", {
+			vpc: this.vpc,
+			internetFacing: true,
+		});
+		this.keycloackLoadBalancer = new ApplicationLoadBalancer(this, "KeycloackLoadBalancer", {
 			vpc: this.vpc,
 			internetFacing: true,
 		});
 
-		new ARecord(this, "ALBAlias", {
-			recordName: DOMAIN_NAME,
+		new ARecord(this, "BackendALBAlias", {
+			recordName: apiDomainName,
 			zone: publicZone,
-			comment: "Alias for API ALB",
-			target: RecordTarget.fromAlias(new LoadBalancerTarget(this.externalLoadBalancer)),
+			comment: "Alias for Backend Load Balancer API",
+			target: RecordTarget.fromAlias(new LoadBalancerTarget(this.backendLoadBalancer)),
+		});
+
+		new ARecord(this, "KeycloackALBAlias", {
+			recordName: keycloackDomainName,
+			zone: publicZone,
+			comment: "Alias for Keycloack Load Balancer",
+			target: RecordTarget.fromAlias(new LoadBalancerTarget(this.keycloackLoadBalancer)),
 		});
 
 		// Database Stack SGs

@@ -19,7 +19,10 @@ new CdkStack(app, "CdkStack", {
 	// env: { account: '123456789012', region: 'us-east-1' },
 	/* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
-const vpcClusterStack = new VpcClusterStack(app, "VpcClusterStack", {});
+const vpcClusterStack = new VpcClusterStack(app, "VpcClusterStack", {
+	hostedZoneId: "Z08139353PYYZ63C4KDJW",
+	zoneName: "eu-dev.protokol.sh",
+});
 const databaseStack = new DatabaseStack(app, "DatabaseStack", {
 	vpc: vpcClusterStack.vpc,
 	databaseSG: vpcClusterStack.databaseSG,
@@ -28,6 +31,6 @@ new BackendStack(app, "BackendStack", {
 	cluster: vpcClusterStack.cluster,
 	dbInstance: databaseStack.dbInstance,
 	backendSG: vpcClusterStack.backendServiceSG,
-	certificate: vpcClusterStack.certificate,
-	loadBalancer: vpcClusterStack.externalLoadBalancer,
+	certificate: vpcClusterStack.apiCertificate,
+	loadBalancer: vpcClusterStack.backendLoadBalancer,
 });

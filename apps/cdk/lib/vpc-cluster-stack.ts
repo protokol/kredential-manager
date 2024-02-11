@@ -15,8 +15,12 @@ export class VpcClusterStack extends cdk.Stack {
 	public readonly vpc: Vpc;
 	public readonly cluster: Cluster;
 
+	// Load Balancers
 	public readonly externalLoadBalancer: ApplicationLoadBalancer;
+
+	// Certificates
 	public readonly certificate: Certificate;
+
 	// SGs
 	public readonly databaseSG: SecurityGroup;
 	public readonly backendServiceSG: SecurityGroup;

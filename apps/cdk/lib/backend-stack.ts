@@ -1,4 +1,4 @@
-import { DockerRepositories } from "./constructs/DockerRepositories";
+import { BackendDockerRepository } from "./constructs/BackendDockerRepository";
 import { Logging } from "./constructs/Logging";
 import * as cdk from "aws-cdk-lib";
 import { Duration } from "aws-cdk-lib";
@@ -20,12 +20,12 @@ export class BackendStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props: BackendStackProps) {
 		super(scope, id, props);
 
-		const dockerRepositories = new DockerRepositories(this, "DockerRepositories");
+		const dockerRepositories = new BackendDockerRepository(this, "DockerRepositories");
 		const logging = new Logging(this, "Logging");
 
 		const backendTaskDef = new FargateTaskDefinition(this, "BackendTaskDef");
 		const container = backendTaskDef.addContainer("Container", {
-			image: dockerRepositories.backendImage,
+			image: dockerRepositories.image,
 			logging: logging.enterpriseWalletLogDriver,
 			environment: {
 				DB_HOST: props.dbInstance.instanceEndpoint.hostname,

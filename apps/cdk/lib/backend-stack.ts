@@ -32,6 +32,12 @@ export class BackendStack extends cdk.Stack {
 				DB_USERNAME: props.dbInstance.secret!.secretValueFromJson("username").unsafeUnwrap(),
 				DB_PASSWORD: props.dbInstance.secret!.secretValueFromJson("password").unsafeUnwrap(),
 				DB_NAME: props.dbInstance.secret!.secretValueFromJson("dbname").unsafeUnwrap(),
+				// TODO: Adjust secrets
+				REALM_SERVER: "https://keycloak.eu-dev.protokol.sh",
+				REALM_NAME: "enterprise-wallet-realm",
+				CLIENT_ID: "enterprise-wallet-app",
+				REALM_PUBLIC_KEY:
+					"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwrsNhplvo6K5tEsDVDTgyMUibnmpXwEgWthyNaoAe0xKttXUQ2PlUL3I74FPsuVJ0emGIxNGnk0v7wbh61OdcSVidEB1LRw0c/IVeRKG7wY7ZTTInnuW+w8xXNiBEjPHlqNBVgkXB6WOXt1fQR/7Yc7lLcpq/5kdpFP84D5FydK+qymW65ahcbEomDkeLkvX6YpTcAJhlqLSTocysivPkiRtNXIqVysAWk9f6/5zqMvnngYojUbfb3oNglYCUklJ0A2S1D4Yfu43tpu2hNhNrcUK78EnSAdaiHJF4cDT0DvQDQHIut1/xcQGn2BD4OCFcsXIi9xf++aKevwIsg6ptQIDAQAB",
 			},
 		});
 

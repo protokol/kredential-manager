@@ -47,12 +47,12 @@ const Calendar: FC<CalendarProps> = ({
       head_cell: 'text-slate-800 w-8 font-normal text-xs',
       row: 'flex w-full mt-1',
       cell: 'text-center text-xs p-0 relative',
-      day: 'h-8 w-8 p-0 font-normal hover:bg-yellow-300 hover:rounded-sm hover:text-slate-800',
+      day: 'h-8 w-8 p-0 font-normal hover:bg-sky-300 hover:rounded-sm hover:text-slate-800',
       day_selected:
-        'bg-yellow-400 text-slate-800 aria-selected:font-medium rounded-sm',
+        'bg-sky-950 text-slate-800 aria-selected:font-medium rounded-sm',
       day_outside: 'text-slate-200',
       day_range_middle:
-        'aria-selected:bg-yellow-200 aria-selected:text-slate-800 aria-selected:font-normal',
+        'aria-selected:bg-sky-900 aria-selected:text-slate-800 aria-selected:font-normal',
       day_hidden: 'invisible',
       ...classNames
     }}

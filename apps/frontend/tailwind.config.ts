@@ -73,6 +73,9 @@ const config: Config = {
       backgroundImage: {
         'radial-gradient':
           'radial-gradient(221.2% 94.09% at 7.14% 18.61%, #F0F9FF 0%, #FFF 100%)',
+        'linear-gradient':
+          'linear-gradient(270deg, #F0F9FF 0%, rgba(240,249,255,1) 0%, #F0F9FF 100%, rgba(255,255,255,1) 100%, rgba(0,212,255,1) 100%)',
+        'linear-gradient-2': 'linear-gradient(to right, #F0F9FF, white)',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
       },
@@ -81,10 +84,59 @@ const config: Config = {
       },
       borderWidth: {
         1.5: '1.5px'
+      },
+      transitionProperty: {
+        width: 'width'
+      },
+      transitionDelay: {
+        2000: '2000ms'
+      },
+      width: {
+        18: '4.5rem', // 72px
+        20: '5rem',
+        50: '12.5rem', // 200px
+        64: '16rem', // 256px
+        '4/5': '80%',
+        'radix-popover-trigger': 'var(--radix-popover-trigger-width)'
+      },
+      transitionDuration: {
+        4000: '4000ms',
+        5000: '5000ms',
+        7000: '7000ms'
+      },
+      animation: {
+        'radix-collapse-slide-down': 'radix-collapse-slide-down 150ms ease-out',
+        'radix-collapse-slide-up': 'radix-collapse-slide-up 150ms ease-out'
+      },
+      keyframes: {
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' }
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' }
+        },
+        'radix-collapse-slide-down': {
+          from: {
+            height: '0'
+          },
+          to: {
+            height: 'var(--radix-collapsible-content-height)'
+          }
+        },
+        'radix-collapse-slide-up': {
+          from: {
+            height: 'var(--radix-collapsible-content-height)'
+          },
+          to: {
+            height: '0'
+          }
+        }
       }
     }
   },
-  plugins: []
+  plugins: [require('tailwindcss-animate')]
 };
 
 export default config;

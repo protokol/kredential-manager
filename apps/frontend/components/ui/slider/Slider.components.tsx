@@ -44,7 +44,7 @@ const Range = forwardRef<
 >(({ className, ...props }, ref) => (
   <SliderPrimitive.Range
     ref={ref}
-    className={cn('bg-yellow-400 absolute h-full', className)}
+    className={cn('absolute h-full bg-sky-950', className)}
     {...props}
   />
 ));

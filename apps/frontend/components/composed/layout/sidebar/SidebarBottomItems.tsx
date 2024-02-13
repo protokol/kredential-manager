@@ -3,7 +3,7 @@
 import {
   ArrowLeftOnRectangleIcon,
   ChevronDoubleLeftIcon,
-  InformationCircleIcon
+  QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 import { Slot } from '@radix-ui/react-slot';
 import Link from 'next/link';
@@ -41,7 +41,7 @@ const SidebarBottomItems: FC<SidebarBottomItemsProps> = ({
         'justify-center': sidebarCollapsed
       })}
     >
-      <InformationCircleIcon className='h-6 w-6 shrink-0' />
+      <QuestionMarkCircleIcon className='h-6 w-6 shrink-0' />
       {!sidebarCollapsed && <span className='truncate'>Help</span>}
     </BottomSidebarItem>
 

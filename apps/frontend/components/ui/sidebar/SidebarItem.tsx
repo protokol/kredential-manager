@@ -3,9 +3,9 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import * as Dialog from '@radix-ui/react-dialog';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import type { ButtonHTMLAttributes, FC, PropsWithChildren } from 'react';
+
+import { Link, usePathname } from '@navigation';
 
 import { cn } from '@utils/cn';
 

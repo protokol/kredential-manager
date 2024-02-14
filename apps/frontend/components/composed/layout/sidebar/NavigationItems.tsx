@@ -7,9 +7,10 @@ import {
   HomeIcon,
   UsersIcon
 } from '@heroicons/react/24/outline';
-import { usePathname } from 'next/navigation';
 import type { FC } from 'react';
 import { useState } from 'react';
+
+import { usePathname } from '@navigation';
 
 import { routes } from '@utils/routes';
 

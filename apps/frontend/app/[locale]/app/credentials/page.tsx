@@ -1,9 +1,8 @@
-import { redirect } from 'next/navigation';
+import { redirect } from '@navigation';
 
 import { routes } from '@utils/routes';
 
-const CredentialsPage = async () => {
+const CredentialsPage = async () =>
   redirect(routes.app.credentials.approved.home);
-};
 
 export default CredentialsPage;

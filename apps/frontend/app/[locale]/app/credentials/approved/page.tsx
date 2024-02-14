@@ -1,5 +1,3 @@
-'use client';
-
 import ContentLayout from '@components/composed/layout/ContentLayout';
 
 const ApprovedPage = () => (

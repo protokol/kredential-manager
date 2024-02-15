@@ -6,6 +6,7 @@ import {
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 import { Slot } from '@radix-ui/react-slot';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import type { FC, HTMLAttributes } from 'react';
 import { forwardRef } from 'react';
@@ -23,61 +24,69 @@ type SidebarBottomItemsProps = {
 const SidebarBottomItems: FC<SidebarBottomItemsProps> = ({
   sidebarCollapsed,
   toggleSidebar
-}) => (
-  <div className='space-y-2'>
-    <div
-      className={cn('flex cursor-pointer items-center gap-2 hover:opacity-80', {
-        'justify-center': sidebarCollapsed,
-        'pl-0.5': !sidebarCollapsed
-      })}
-    >
-      <PlaceholderAvatar className='h-9 w-9 flex-shrink-0' />
-
-      {!sidebarCollapsed && <Text className='truncate'>Gratian</Text>}
-    </div>
-
-    <BottomSidebarItem
-      className={cn({
-        'justify-center': sidebarCollapsed
-      })}
-    >
-      <QuestionMarkCircleIcon className='h-6 w-6 shrink-0' />
-      {!sidebarCollapsed && <span className='truncate'>Help</span>}
-    </BottomSidebarItem>
-
-    <BottomSidebarItem
-      asChild
-      className={cn({
-        'justify-center': sidebarCollapsed
-      })}
-    >
-      <Link href={routes.auth.signOut}>
-        <ArrowLeftOnRectangleIcon className='h-6 w-6 shrink-0' />
-        {!sidebarCollapsed && <span>Sign out</span>}
-      </Link>
-    </BottomSidebarItem>
-
-    {toggleSidebar && (
-      <button
-        onClick={() => {
-          toggleSidebar(!sidebarCollapsed);
-        }}
+}) => {
+  const t = useTranslations();
+  return (
+    <div className='space-y-2'>
+      <div
+        className={cn(
+          'flex cursor-pointer items-center gap-2 hover:opacity-80',
+          {
+            'justify-center': sidebarCollapsed,
+            'pl-0.5': !sidebarCollapsed
+          }
+        )}
       >
-        <BottomSidebarItem
-          className={cn('inline-flex text-sky-950 hover:text-white', {
-            'justify-center': sidebarCollapsed
-          })}
+        <PlaceholderAvatar className='h-9 w-9 flex-shrink-0' />
+
+        {!sidebarCollapsed && <Text className='truncate'>Gratian</Text>}
+      </div>
+
+      <BottomSidebarItem
+        className={cn({
+          'justify-center': sidebarCollapsed
+        })}
+      >
+        <QuestionMarkCircleIcon className='h-6 w-6 shrink-0' />
+        {!sidebarCollapsed && (
+          <span className='truncate'>{t('navigation.help')}</span>
+        )}
+      </BottomSidebarItem>
+
+      <BottomSidebarItem
+        asChild
+        className={cn({
+          'justify-center': sidebarCollapsed
+        })}
+      >
+        <Link href={routes.auth.signOut}>
+          <ArrowLeftOnRectangleIcon className='h-6 w-6 shrink-0' />
+          {!sidebarCollapsed && <span>{t('navigation.sign_out')}</span>}
+        </Link>
+      </BottomSidebarItem>
+
+      {toggleSidebar && (
+        <button
+          onClick={() => {
+            toggleSidebar(!sidebarCollapsed);
+          }}
         >
-          <ChevronDoubleLeftIcon
-            className={cn('h-6 w-6', {
-              '-rotate-180': sidebarCollapsed
+          <BottomSidebarItem
+            className={cn('inline-flex text-sky-950 hover:text-white', {
+              'justify-center': sidebarCollapsed
             })}
-          />
-        </BottomSidebarItem>
-      </button>
-    )}
-  </div>
-);
+          >
+            <ChevronDoubleLeftIcon
+              className={cn('h-6 w-6', {
+                '-rotate-180': sidebarCollapsed
+              })}
+            />
+          </BottomSidebarItem>
+        </button>
+      )}
+    </div>
+  );
+};
 
 export default SidebarBottomItems;
 

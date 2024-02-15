@@ -22,7 +22,7 @@ const DesktopSidebar: FC<DesktopSidebarProps> = ({
   sidebarCollapsed,
   toggleSidebar
 }) => {
-  const t = useTranslations('Index');
+  const t = useTranslations();
   return (
     <nav
       className={cn(
@@ -43,7 +43,7 @@ const DesktopSidebar: FC<DesktopSidebarProps> = ({
           )}
         >
           <Image className='h-5 w-auto' src={logo} alt='logo' />
-          {!sidebarCollapsed && <span>{t('title')}</span>}
+          {!sidebarCollapsed && <span>{t('navigation.title')}</span>}
         </div>
       </Link>
       <NavigationItems

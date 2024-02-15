@@ -1,22 +1,26 @@
-import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
-import { Toaster } from 'react-hot-toast';
+import { NextIntlClientProvider } from 'next-intl';
 
-import '@styles/font.css';
-import '@styles/globals.css';
+import { notFound } from '@navigation';
 
-export const metadata: Metadata = {
-  title: 'EBSI Vector',
-  description: ''
-};
+async function getMessages(locale: string) {
+  try {
+    return (await import(`../../messages/${locale}.json`)).default;
+  } catch (error) {
+    notFound();
+  }
+}
 
-const RootLayout = ({ children }: { children: ReactNode }) => (
-  <html lang='en'>
-    <body className='app'>
+export default async function LocaleLayout({
+  children,
+  params: { locale }
+}: {
+  children: React.ReactNode;
+  params: { locale: string };
+}) {
+  const messages = await getMessages(locale);
+  return (
+    <NextIntlClientProvider messages={messages}>
       {children}
-      <Toaster />
-    </body>
-  </html>
-);
-
-export default RootLayout;
+    </NextIntlClientProvider>
+  );
+}

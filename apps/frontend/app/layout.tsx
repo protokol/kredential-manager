@@ -1,18 +1,22 @@
-import { NextIntlClientProvider, useMessages } from 'next-intl';
+import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
+import { Toaster } from 'react-hot-toast';
 
-export default function LocaleLayout({
-  children,
-  params: { locale }
-}: {
-  children: React.ReactNode;
-  params: { locale: string };
-}) {
-  const messages = useMessages();
-  return (
-    <NextIntlClientProvider messages={messages}>
-      <html lang={locale}>
-        <body>{children}</body>
-      </html>
-    </NextIntlClientProvider>
-  );
-}
+import '@styles/font.css';
+import '@styles/globals.css';
+
+export const metadata: Metadata = {
+  title: 'EBSI Vector',
+  description: ''
+};
+
+const RootLayout = ({ children }: { children: ReactNode }) => (
+  <html lang='en'>
+    <body className='app'>
+      {children}
+      <Toaster />
+    </body>
+  </html>
+);
+
+export default RootLayout;

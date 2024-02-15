@@ -82,7 +82,7 @@ const SidebarSubItem: FC<SidebarSubItemProps> = ({
   >
     {name}
     {notifications && (
-      <span className='rounded-md bg-red-700 p-1 text-xs text-white'>
+      <span className='min-w-6 rounded-md bg-red-700 p-1 text-center text-xs text-white'>
         {notifications}
       </span>
     )}

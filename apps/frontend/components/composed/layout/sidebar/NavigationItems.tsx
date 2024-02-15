@@ -7,9 +7,11 @@ import {
   HomeIcon,
   UsersIcon
 } from '@heroicons/react/24/outline';
-import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+
+import { usePathname } from '@navigation';
 
 import { routes } from '@utils/routes';
 
@@ -34,48 +36,6 @@ export type TNavigationButtonWithSubItems = {
 
 type TNavigationItem = TNavigationLink | TNavigationButtonWithSubItems;
 
-const navigationItems: TNavigationItem[] = [
-  { name: 'Dashboard', icon: HomeIcon, href: routes.app.home },
-  {
-    name: 'Credentials',
-    icon: DocumentTextIcon,
-    match: routes.app.credentials.home,
-    subItems: [
-      { name: 'Overall', href: routes.app.credentials.overall.home },
-      { name: 'Approved', href: routes.app.credentials.approved.home },
-      {
-        name: 'Pending',
-        href: routes.app.credentials.pending.home,
-        notifications: 70
-      },
-      { name: 'Rejected', href: routes.app.credentials.rejected.home }
-    ]
-  },
-  { name: 'Students', href: routes.app.students.home, icon: UsersIcon },
-  {
-    name: 'Integrations',
-    match: routes.app.integrations.home,
-    icon: AdjustmentsVerticalIcon,
-    subItems: [
-      {
-        name: 'Sources',
-        href: routes.app.integrations.sources.home
-      }
-    ]
-  },
-  {
-    name: 'Admin',
-    href: routes.app.admin.home,
-    icon: Cog8ToothIcon,
-    subItems: [
-      {
-        name: 'Users',
-        href: routes.app.admin.users.home
-      }
-    ]
-  }
-];
-
 type NavigationItemsProps = {
   sidebarCollapsed?: boolean;
   toggleSidebar?: () => void;
@@ -89,6 +49,70 @@ const NavigationItems: FC<NavigationItemsProps> = ({
 }) => {
   const pathname = usePathname();
   const [itemOpen, setItemOpen] = useState<string | null>(null);
+
+  const t = useTranslations();
+
+  const navigationItems: TNavigationItem[] = useMemo(
+    () => [
+      {
+        name: t('navigation.dashboard'),
+        icon: HomeIcon,
+        href: routes.app.home
+      },
+      {
+        name: t('navigation.credentials'),
+        icon: DocumentTextIcon,
+        match: routes.app.credentials.home,
+        subItems: [
+          {
+            name: t('navigation.overall'),
+            href: routes.app.credentials.overall.home
+          },
+          {
+            name: t('navigation.approved'),
+            href: routes.app.credentials.approved.home
+          },
+          {
+            name: t('navigation.pending'),
+            href: routes.app.credentials.pending.home,
+            notifications: 70
+          },
+          {
+            name: t('navigation.rejected'),
+            href: routes.app.credentials.rejected.home
+          }
+        ]
+      },
+      {
+        name: t('navigation.students'),
+        href: routes.app.students.home,
+        icon: UsersIcon
+      },
+      {
+        name: t('navigation.integrations'),
+        match: routes.app.integrations.home,
+        icon: AdjustmentsVerticalIcon,
+        subItems: [
+          {
+            name: t('navigation.sources'),
+            href: routes.app.integrations.sources.home
+          }
+        ]
+      },
+      {
+        name: t('navigation.admin'),
+        href: routes.app.admin.home,
+        icon: Cog8ToothIcon,
+        subItems: [
+          {
+            name: t('navigation.users'),
+            href: routes.app.admin.users.home
+          }
+        ]
+      }
+    ],
+    [t]
+  );
 
   return (
     <div className='flex-grow space-y-1'>

@@ -15,6 +15,7 @@
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
   "importOrder": [
+    "@navigation",
     "@public",
     "@utils",
     "@hooks",

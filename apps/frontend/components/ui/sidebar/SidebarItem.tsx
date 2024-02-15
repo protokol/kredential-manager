@@ -3,9 +3,9 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import * as Dialog from '@radix-ui/react-dialog';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import type { ButtonHTMLAttributes, FC, PropsWithChildren } from 'react';
+
+import { Link, usePathname } from '@navigation';
 
 import { cn } from '@utils/cn';
 
@@ -82,7 +82,7 @@ const SidebarSubItem: FC<SidebarSubItemProps> = ({
   >
     {name}
     {notifications && (
-      <span className='rounded-md bg-red-700 p-1 text-xs text-white'>
+      <span className='min-w-6 rounded-md bg-red-700 p-1 text-center text-xs text-white'>
         {notifications}
       </span>
     )}

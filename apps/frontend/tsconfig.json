@@ -22,6 +22,7 @@
     "paths": {
       "@components/*": ["components/*"],
       "@ui/*": ["components/ui/*"],
+      "@navigation": ["components/navigation.ts"],
       "@styles/*": ["styles/*"],
       "@utils/*": ["utils/*"],
       "@public/*": ["public/*"],

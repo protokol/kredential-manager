@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Authorisation Delegation",
+  "description": "Defines how to include a proof to issue a delegated authorisation",
+  "type": "object",
+  "properties": {
+    "evidence": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/evidence"
+        },
+        {
+          "type": "array",
+          "description": "One item must match the type extension",
+          "contains": {
+            "$ref": "#/$defs/evidence"
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "description": "Contains information about the process which resulted in the issuance of the credential",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "CONDITIONAL. A unique id that identifies the evidence.MUST be used if more than one evidence is present",
+          "type": "string"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "description": "Defines the evidence type extension",
+              "const": "AuthorisationDelegation"
+            },
+            {
+              "description": "Defines the evidence type extension",
+              "type": "array",
+              "contains": {
+                "const": "AuthorisationDelegation"
+              }
+            }
+          ]
+        },
+        "delegation": {
+          "description": "Verifiable Credential based on which the delegated Verifiable Authorisation has been issued",
+          "oneOf": [
+            {
+              "description": "Compact serialised JWS",
+              "type": "string"
+            },
+            {
+              "description": "JSON serialised JWS",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "required": ["type", "delegation"]
+    }
+  }
+}

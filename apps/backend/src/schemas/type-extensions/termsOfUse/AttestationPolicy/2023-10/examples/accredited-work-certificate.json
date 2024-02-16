@@ -1,0 +1,47 @@
+{
+  "@context": ["https://www.w3.org/ns/credentials/v2"],
+  "id": "urn:uuid:003a1dd8-a5d2-42ef-8182-e921c0a9f2cd",
+  "type": ["VerifiableCredential", "VerifiableAttestation", "WorkCertificate"],
+  "issuer": {
+    "id": "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W",
+    "type": "organisation",
+    "legalName": "Company ABC",
+    "domainName": "https://company.abc"
+  },
+  "validFrom": "2023-01-01T00:00:00Z",
+  "validUntil": "2025-01-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbnTvvSLAcNJvfNeLNuB9Y3Mbhus5btx3CBNknmhSStgGbqhMkqfWNSYZ5Vd1A8xQdD948jQSEjShYE1SFe1wZSgsw5S4v6sfHVV2p6waDwh9hCjdWdjFUo3nyU1rYLbuZxg",
+    "familyName": "Wonderland",
+    "firstName": "Alice",
+    "startDate": "2023-01-01T00:00:00Z",
+    "endDate": "2024-01-01T00:00:00Z",
+    "listOfOccupations": [
+      {
+        "startDate": "2023-01-01T00:00:00Z",
+        "endDate": "2023-06-01T00:00:00Z",
+        "occupationalCategory": "15-1252.00"
+      },
+      {
+        "startDate": "2023-06-01T00:00:00Z",
+        "endDate": "2024-01-01T00:00:00Z",
+        "occupationalCategory": "15-1254.00"
+      }
+    ]
+  },
+  "termsOfUse": {
+    "type": "AttestationPolicy",
+    "rootAuthorisation": "https://api-test.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zvHWX359A3CvfJnCYaAiAde/attributes/60ae46e4fe9adffe0bc83c5e5be825aafe6b5246676398cd1ac36b8999e088a8",
+    "parentAccreditation": "https://api-test.ebsi.eu/trusted-issuers-registry/v4/issuers/did:ebsi:zdPj1GPXjfERXxXPE1YTYdJ/attributes/061e750db05d75b024a78f291ae5d4e7d71c71d270384e08d7853f4cbc3b2c75"
+  },
+  "credentialSchema": [
+    {
+      "id": "https://api-test.ebsi.eu/trusted-schemas-registry/v3/schemas/zHgbyz9ajVuSProgyMhsiwpcp8g8aVLFRNARm51yyYZp6",
+      "type": "JsonSchema"
+    },
+    {
+      "id": "https://api-test.ebsi.eu/trusted-schemas-registry/v3/schemas/zwTFt3rYS78X1rSpqdoH7KuqhftS1sEEteQsNtjcH8mD",
+      "type": "JsonSchema"
+    }
+  ]
+}

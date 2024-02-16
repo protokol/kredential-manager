@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HR.DS.3 Badge Credential",
+  "description": "Schema of a HR.DS.3 Badge Credential",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../../../ebsi-attestation/2022-11_01/schema.json"
+    },
+    {
+      "properties": {
+        "type": {
+          "description": "Defines the Verifiable Credential type.",
+          "type": "array",
+          "contains": {
+            "type": "string",
+            "const": "AccessBadge"
+          }
+        },
+        "credentialSubject": {
+          "description": "Defines additional properties on credentialSubject to describe IDs that do not have a substantial level of assurance.",
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Defines a unique identifier of the credential subject",
+              "type": "string"
+            },
+            "issuerName": {
+              "description": "Issuer name",
+              "type": "string"
+            },
+            "givenName": {
+              "description": "Name strings that are the part of a person's name that is not their surname (see RFC4519).",
+              "type": "string"
+            },
+            "familyName": {
+              "description": "Name strings that are a person's surname (see RFC4519).",
+              "type": "string"
+            },
+            "emailAddress": {
+              "description": "Email address of the user.",
+              "type": "string",
+              "format": "email"
+            },
+            "photoURI": {
+              "description": "Photo uri for this credential",
+              "type": "string",
+              "format": "uri"
+            },
+            "badgeStatus": {
+              "description": "Status for this badge",
+              "type": "string"
+            },
+            "badgeSituation": {
+              "description": "Situation for this badge",
+              "type": "string"
+            },
+            "badgeInstitution": {
+              "description": "Institution of this badge",
+              "type": "string"
+            },
+            "perID": {
+              "description": "Per ID for this credential",
+              "type": "string"
+            },
+            "badgeID": {
+              "description": "Badge ID for this credential",
+              "type": "string"
+            },
+            "badgeFunction": {
+              "description": "Per ID of this badge",
+              "type": "string"
+            },
+            "xRayRequired": {
+              "description": "Is x-ray required for this badge",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "issuerName",
+            "givenName",
+            "familyName",
+            "emailAddress",
+            "photoURI",
+            "badgeStatus",
+            "badgeSituation",
+            "badgeInstitution",
+            "badgeID",
+            "perID",
+            "xRayRequired"
+          ]
+        }
+      }
+    }
+  ]
+}

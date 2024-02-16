@@ -1,0 +1,32 @@
+{
+  "@context": ["https://www.w3.org/2018/credentials/v1"],
+  "id": "ur:did:identity#1dee355d-0432-4910-ac9c-70d89e8d674e",
+  "type": ["VerifiableCredential", "VerifiableAttestation", "PM2Credential"],
+  "issuer": {
+    "id": "did:ebsi:2757945549477fc571663bee12042873fe555b674bd294a3",
+    "name": "Name of issuer"
+  },
+  "issuanceDate": "2023-05-16T13:09:33Z",
+  "validFrom": "2023-05-16T13:09:33Z",
+  "issued": "2023-05-16T13:09:33Z",
+  "credentialSubject": {
+    "id": "did:key:2659b154a445434a39d91149ead3bd993cb99fd5e78281b7",
+    "givenName": "Jack",
+    "familyName": "Dougherty",
+    "emailAddress": "jack.dougherty@example.com",
+    "courses": [
+      {
+        "name": "Course 1"
+      },
+      {
+        "name": "Course 2"
+      }
+    ],
+    "credentialDescription": "Credential description",
+    "credentialId": "credential id"
+  },
+  "credentialSchema": {
+    "id": "https:/.europa.eu/tsr-vid/verifiableid1.json",
+    "type": "JsonSchema"
+  }
+}

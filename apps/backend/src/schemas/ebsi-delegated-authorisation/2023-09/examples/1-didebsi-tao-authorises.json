@@ -1,0 +1,43 @@
+{
+  "@context": ["https://www.w3.org/ns/credentials/v2"],
+  "id": "urn:uuid:b720ddfb-3107-4b75-a31c-9467f17b8c48",
+  "type": [
+    "VerifiableCredential",
+    "VerifiableAttestation",
+    "VerifiableMandate"
+  ],
+  "issuer": "did:ebsi:zvHWX359A3CvfJnCYaAiAde",
+  "validFrom": "2023-01-01T00:00:00Z",
+  "validUntil": "2025-01-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:ebsi:zdPj1GPXjfERXxXPE1YTYdJ",
+    "permission": {
+      "scope": "timestamp_write",
+      "claims": [
+        "timestampHashes",
+        "timestampRecordHashes",
+        "timestampVersionHashes",
+        "insertRecordOwner",
+        "revokeRecordOwner",
+        "timestampRecordVersionHashes",
+        "appendRecordVersionHashes",
+        "detachRecordVersionHash",
+        "insertRecordVersionInfo",
+        "sendSignedTransaction"
+      ]
+    },
+    "maxDelegationCount": 2
+  },
+  "termsOfUse": [
+    {
+      "id": "https://api-test.ebsi.eu/trusted-issuers-registry/../..xyz",
+      "type": "IssuanceCertificate"
+    }
+  ],
+  "credentialSchema": [
+    {
+      "id": "https://api-test.ebsi.eu/trusted-schemas-registry/v3/schemas/0x..",
+      "type": "JsonSchema"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Query, Get, Post } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { VerifiableCredential } from "src/entities/VerifiableCredential";
 import { Repository } from "typeorm";
@@ -7,7 +7,6 @@ import { CreateVcDto } from "./dto/create-vc.dto";
 import { VerifiableEducationalID } from "src/types/schema/VerifiableEducationID202311";
 import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } from "src/types/schema/VerifiableDiploma202211";
 import { VCRole, VCStatus } from "src/types/VC";
-
 @Controller("vc")
 export class VcController {
     constructor(
@@ -16,14 +15,39 @@ export class VcController {
         // eslint-disable-next-line prettier/prettier
     ) { }
 
+
     @Get()
     @Public(true)
-    async getAll(): Promise<any> {
-        return this.vcRepository.find();
+    async getAll(
+        @Query("page") page: number = 1,
+        @Query("limit") limit: number = 10,
+        @Query("status") status?: string,
+        @Query("role") role?: string,
+    ): Promise<any> {
+        const pageNumber = Number(page);
+        const whereCondition: { status?: VCStatus; role?: VCRole } = {};
+        if (status && Object.values(VCStatus).includes(status as VCStatus)) {
+            whereCondition.status = status as VCStatus;
+        }
+        if (status && Object.values(VCRole).includes(role as VCRole)) {
+            whereCondition.role = role as VCRole;
+        }
+        const [result, total] = await this.vcRepository.findAndCount({
+            where: whereCondition,
+            take: limit,
+            skip: (page - 1) * limit,
+        });
+
+        return {
+            data: result,
+            total,
+            page: pageNumber,
+            last_page: Math.ceil(total / limit),
+        };
     }
 
     @Post()
-    @Public(true)
+    @Public(true) // TODO Integrate auth
     create(@Body() createVcDto: CreateVcDto) {
         console.log({ createVcDto });
         const newCredentialData = {

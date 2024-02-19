@@ -3,14 +3,15 @@ import { writeFileSync } from "fs";
 import { resolve } from "path";
 import { compile } from "json-schema-to-typescript";
 import { JSONSchema4 } from "json-schema";
-import { VCSupportedSchemas } from "src/types/VC";
+import { VCSupportedSchemas } from "../types/VC";
 
 async function generateTypes() {
     for (const key in VCSupportedSchemas) {
         if (VCSupportedSchemas.hasOwnProperty(key)) {
             const element = VCSupportedSchemas[key];
-            const typePath = `src/types/schema/${element.typeName}.ts`;
-            console.log(`Generating types for ${element.typeName}`);
+            console.log({ element });
+            const typePath = `src/types/schema/${key}.ts`;
+            console.log(`Generating types for ${key}`);
             try {
                 const schema = await $RefParser.dereference(element.schemaPath);
                 const ts = await compile(

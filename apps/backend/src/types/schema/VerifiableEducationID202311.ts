@@ -97,14 +97,14 @@ export interface EBSIVerifiableAttestation {
    * DID of the credential issuer
    */
   issuer:
-  | string
-  | {
-    /**
-     * DID of the credential issuer
-     */
-    id: string;
-    [k: string]: unknown;
-  };
+    | string
+    | {
+        /**
+         * DID of the credential issuer
+         */
+        id: string;
+        [k: string]: unknown;
+      };
   /**
    * Defines the earliest point when the credential becomes valid.
    */
@@ -114,20 +114,20 @@ export interface EBSIVerifiableAttestation {
    */
   validUntil?: string;
   credentialSubject:
-  | {
-    /**
-     * Defines the DID of the subject that is described by the issued credential
-     */
-    id?: string;
-    [k: string]: unknown;
-  }
-  | {
-    /**
-     * Defines the DID of the subject that is described by the issued credential
-     */
-    id?: string;
-    [k: string]: unknown;
-  }[];
+    | {
+        /**
+         * Defines the DID of the subject that is described by the issued credential
+         */
+        id?: string;
+        [k: string]: unknown;
+      }
+    | {
+        /**
+         * Defines the DID of the subject that is described by the issued credential
+         */
+        id?: string;
+        [k: string]: unknown;
+      }[];
   /**
    * Defines suspension and/or revocation details for the issued credential. Further redefined by the type extension
    */
@@ -146,83 +146,83 @@ export interface EBSIVerifiableAttestation {
    * One or more schemas that validate the Verifiable Credential.
    */
   credentialSchema:
-  | {
-    /**
-     * References the credential schema stored on the Trusted Schemas Registry (TSR)
-     */
-    id: string;
-    /**
-     * Defines credential schema type
-     */
-    type: "JsonSchema" | "ShaclValidator2017";
-    [k: string]: unknown;
-  }
-  | {
-    /**
-     * References the credential schema stored on the Trusted Schemas Registry (TSR)
-     */
-    id: string;
-    /**
-     * Defines credential schema type
-     */
-    type: "JsonSchema" | "ShaclValidator2017";
-    [k: string]: unknown;
-  }[];
+    | {
+        /**
+         * References the credential schema stored on the Trusted Schemas Registry (TSR)
+         */
+        id: string;
+        /**
+         * Defines credential schema type
+         */
+        type: "JsonSchema" | "ShaclValidator2017";
+        [k: string]: unknown;
+      }
+    | {
+        /**
+         * References the credential schema stored on the Trusted Schemas Registry (TSR)
+         */
+        id: string;
+        /**
+         * Defines credential schema type
+         */
+        type: "JsonSchema" | "ShaclValidator2017";
+        [k: string]: unknown;
+      }[];
   termsOfUse?:
-  | {
-    /**
-     * Contains a URL that points to where more information about this instance of terms of use can be found.
-     */
-    id?: string;
-    /**
-     * Defines the type extension
-     */
-    type: string;
-    [k: string]: unknown;
-  }
-  | {
-    /**
-     * Contains a URL that points to where more information about this instance of terms of use can be found.
-     */
-    id?: string;
-    /**
-     * Defines the type extension
-     */
-    type: string;
-    [k: string]: unknown;
-  }[];
+    | {
+        /**
+         * Contains a URL that points to where more information about this instance of terms of use can be found.
+         */
+        id?: string;
+        /**
+         * Defines the type extension
+         */
+        type: string;
+        [k: string]: unknown;
+      }
+    | {
+        /**
+         * Contains a URL that points to where more information about this instance of terms of use can be found.
+         */
+        id?: string;
+        /**
+         * Defines the type extension
+         */
+        type: string;
+        [k: string]: unknown;
+      }[];
   evidence?:
-  | {
-    /**
-     * If present, it MUST contain a URL that points to where more information about this instance of evidence can be found.
-     */
-    id?: string;
-    type: string | string[];
-    [k: string]: unknown;
-  }
-  | {
-    /**
-     * If present, it MUST contain a URL that points to where more information about this instance of evidence can be found.
-     */
-    id?: string;
-    type: string | string[];
-    [k: string]: unknown;
-  }[];
+    | {
+        /**
+         * If present, it MUST contain a URL that points to where more information about this instance of evidence can be found.
+         */
+        id?: string;
+        type: string | string[];
+        [k: string]: unknown;
+      }
+    | {
+        /**
+         * If present, it MUST contain a URL that points to where more information about this instance of evidence can be found.
+         */
+        id?: string;
+        type: string | string[];
+        [k: string]: unknown;
+      }[];
   relatedResource?: (
     | {
-      /**
-       * Digest value of Subresource Integrity
-       */
-      digestSRI: string;
-      [k: string]: unknown;
-    }
+        /**
+         * Digest value of Subresource Integrity
+         */
+        digestSRI: string;
+        [k: string]: unknown;
+      }
     | {
-      /**
-       * Digest value of multihash encoded in multibase.
-       */
-      digestMultibase: string;
-      [k: string]: unknown;
-    }
+        /**
+         * Digest value of multihash encoded in multibase.
+         */
+        digestMultibase: string;
+        [k: string]: unknown;
+      }
   )[];
   [k: string]: unknown;
 }

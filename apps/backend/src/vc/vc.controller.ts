@@ -5,6 +5,7 @@ import { Repository } from "typeorm";
 import { Public } from "nest-keycloak-connect";
 import { CreateVcDto } from "./dto/create-vc.dto";
 import { VerifiableEducationalID } from "src/types/schema/VerifiableEducationID202311";
+import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } from "src/types/schema/VerifiableDiploma202211";
 import { VCRole, VCStatus } from "src/types/VC";
 
 @Controller("vc")
@@ -52,6 +53,15 @@ export class VcController {
                     : undefined;
                 newCredentialData.vc_data = vc_data;
 
+                break;
+            }
+            case "VerifiableDiploma202211": {
+                const vc_data =
+                    createVcDto.data as unknown as EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema;
+
+                newCredentialData.did = vc_data.credentialSubject.id;
+                newCredentialData.vc_data = vc_data;
+                // Birthday, display name and mail are not present in this schema
                 break;
             }
             default: {

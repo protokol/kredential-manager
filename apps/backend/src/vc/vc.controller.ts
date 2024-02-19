@@ -1,4 +1,12 @@
-import { Body, Controller, Query, Get, Post } from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Query,
+    Get,
+    Post,
+    Param,
+    NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { VerifiableCredential } from "src/entities/VerifiableCredential";
 import { Repository } from "typeorm";
@@ -7,7 +15,7 @@ import { CreateVcDto } from "./dto/create-vc.dto";
 import { VerifiableEducationalID } from "src/types/schema/VerifiableEducationID202311";
 import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } from "src/types/schema/VerifiableDiploma202211";
 import { VCRole, VCStatus } from "src/types/VC";
-@Controller("vc")
+@Controller("verifiable-credentials")
 export class VcController {
     constructor(
         @InjectRepository(VerifiableCredential)
@@ -15,6 +23,15 @@ export class VcController {
         // eslint-disable-next-line prettier/prettier
     ) { }
 
+    @Get(":id")
+    @Public(true)
+    async getOne(@Param("id") id: number): Promise<any> {
+        const item = await this.vcRepository.findOne({ where: { id } });
+        if (!item) {
+            throw new NotFoundException(`Item with ID ${id} not found.`);
+        }
+        return item;
+    }
 
     @Get()
     @Public(true)

@@ -1,11 +1,11 @@
 export enum VCStatus {
-    PENDING = "Pending",
-    APPROVED = "Approved",
-    REJECTED = "Rejected",
+    PENDING = "pending",
+    APPROVED = "approved",
+    REJECTED = "rejected",
 }
 
 export enum VCRole {
-    STUDENT = "Student",
+    STUDENT = "student",
 }
 
 export const VCSupportedSchemas = {

@@ -23,6 +23,23 @@ export class VcController {
         // eslint-disable-next-line prettier/prettier
     ) { }
 
+    // Note: Count needs to be defined before :id route
+    @Get("/count")
+    @Public(true)
+    async getCountByStatus(
+        @Query("status") status?: VCStatus,
+    ): Promise<{ count: number }> {
+        const whereCondition: { status?: VCStatus } = {};
+        if (status && Object.values(VCStatus).includes(status as VCStatus)) {
+            whereCondition.status = status as VCStatus;
+        }
+        const count = await this.vcRepository.count({
+            where: whereCondition,
+        });
+
+        return { count };
+    }
+
     @Get(":id")
     @Public(true)
     async getOne(@Param("id") id: number): Promise<any> {

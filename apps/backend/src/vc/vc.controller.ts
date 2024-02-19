@@ -5,6 +5,7 @@ import {
     Get,
     Post,
     Param,
+    Patch,
     NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -15,6 +16,7 @@ import { CreateVcDto } from "./dto/create-vc.dto";
 import { VerifiableEducationalID } from "src/types/schema/VerifiableEducationID202311";
 import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } from "src/types/schema/VerifiableDiploma202211";
 import { VCRole, VCStatus } from "src/types/VC";
+import { UpdateStatusDto } from "./dto/update-status.dto";
 @Controller("verifiable-credentials")
 export class VcController {
     constructor(
@@ -38,6 +40,24 @@ export class VcController {
         });
 
         return { count };
+    }
+
+    @Patch(":id/status")
+    @Public(true) // TODO Integrate auth
+    async updateStatus(
+        @Param("id") id: string,
+        @Body() updateStatusDto: UpdateStatusDto,
+    ): Promise<any> {
+        // TODO: Implement the SIGN process
+        // TODO: Save signed data to vc_data_signed
+
+        const result = await this.vcRepository.update(id, {
+            status: updateStatusDto.status,
+        });
+        if (result.affected === 0) {
+            throw new NotFoundException(`Item with ID ${id} not found.`);
+        }
+        return { message: "Status updated successfully." };
     }
 
     @Get(":id")

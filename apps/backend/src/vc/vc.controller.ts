@@ -79,6 +79,7 @@ export class VcController {
         @Query("role") role?: string,
     ): Promise<any> {
         const pageNumber = Number(page);
+        const pageLimit = Number(limit);
         const whereCondition: { status?: VCStatus; role?: VCRole } = {};
         if (status && Object.values(VCStatus).includes(status as VCStatus)) {
             whereCondition.status = status as VCStatus;
@@ -96,6 +97,7 @@ export class VcController {
             data: result,
             total,
             page: pageNumber,
+            limit: pageLimit,
             last_page: Math.ceil(total / limit),
         };
     }

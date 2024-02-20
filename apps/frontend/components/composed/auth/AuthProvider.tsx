@@ -58,7 +58,8 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     const jwt = getAccessTokenFromStorage();
     updateUser(jwt);
-  }, [updateUser]);
+    // eslint-disable-next-line
+  }, []);
 
   const handleLogin = (accessToken: string, refreshToken: string) => {
     saveTokensToStorage(accessToken, refreshToken);

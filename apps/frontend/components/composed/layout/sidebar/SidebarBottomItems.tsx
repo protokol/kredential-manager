@@ -7,15 +7,15 @@ import {
 } from '@heroicons/react/24/outline';
 import { Slot } from '@radix-ui/react-slot';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
 import type { FC, HTMLAttributes } from 'react';
 import { forwardRef } from 'react';
 
 import { cn } from '@utils/cn';
-import { routes } from '@utils/routes';
 
 import PlaceholderAvatar from '@ui/PlaceholderAvatar';
 import Text from '@ui/typography/Text';
+
+import { useAuth } from '@components/composed/auth/AuthProvider';
 
 type SidebarBottomItemsProps = {
   sidebarCollapsed: boolean;
@@ -26,6 +26,12 @@ const SidebarBottomItems: FC<SidebarBottomItemsProps> = ({
   toggleSidebar
 }) => {
   const t = useTranslations();
+
+  const { user, logout } = useAuth();
+
+  const signOut = () => {
+    logout();
+  };
   return (
     <div className='space-y-2'>
       <div
@@ -39,7 +45,7 @@ const SidebarBottomItems: FC<SidebarBottomItemsProps> = ({
       >
         <PlaceholderAvatar className='h-9 w-9 flex-shrink-0' />
 
-        {!sidebarCollapsed && <Text className='truncate'>Gratian</Text>}
+        {!sidebarCollapsed && <Text className='truncate'>{user?.name}</Text>}
       </div>
 
       <BottomSidebarItem
@@ -59,10 +65,10 @@ const SidebarBottomItems: FC<SidebarBottomItemsProps> = ({
           'justify-center': sidebarCollapsed
         })}
       >
-        <Link href={routes.auth.signOut}>
+        <div onClick={signOut}>
           <ArrowLeftOnRectangleIcon className='h-6 w-6 shrink-0' />
           {!sidebarCollapsed && <span>{t('navigation.sign_out')}</span>}
-        </Link>
+        </div>
       </BottomSidebarItem>
 
       {toggleSidebar && (

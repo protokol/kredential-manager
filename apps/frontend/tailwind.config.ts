@@ -106,9 +106,14 @@ const config: Config = {
       },
       animation: {
         'radix-collapse-slide-down': 'radix-collapse-slide-down 150ms ease-out',
-        'radix-collapse-slide-up': 'radix-collapse-slide-up 150ms ease-out'
+        'radix-collapse-slide-up': 'radix-collapse-slide-up 150ms ease-out',
+        'spin-infinite': 'spin 2s linear infinite'
       },
       keyframes: {
+        spin: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
+        },
         'accordion-down': {
           from: { height: '0' },
           to: { height: 'var(--radix-accordion-content-height)' }

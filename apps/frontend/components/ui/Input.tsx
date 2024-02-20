@@ -25,15 +25,26 @@ const inputVariants = cva(
 
 const Input = forwardRef<
   HTMLInputElement,
-  InputProps & VariantProps<typeof inputVariants>
->(({ className, type, variant, ...props }, ref) => (
-  <input
-    type={type}
-    className={cn(inputVariants({ variant, className }))}
-    ref={ref}
-    {...props}
-  />
-));
+  { icon?: React.ElementType } & InputProps & VariantProps<typeof inputVariants>
+>(({ className, type, variant, icon, ...props }, ref) => {
+  const Icon = icon;
+
+  return (
+    <div className='relative'>
+      {Icon && (
+        <Icon className='absolute left-3 top-1/2 h-auto w-5 -translate-y-1/2 transform text-slate-500' />
+      )}
+      <input
+        type={type}
+        className={cn(inputVariants({ variant, className }), {
+          'pl-9': !!icon
+        })}
+        ref={ref}
+        {...props}
+      />
+    </div>
+  );
+});
 Input.displayName = 'Input';
 
 export default Input;

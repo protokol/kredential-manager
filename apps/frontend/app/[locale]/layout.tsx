@@ -2,6 +2,9 @@ import { NextIntlClientProvider } from 'next-intl';
 
 import { notFound } from '@navigation';
 
+import ReactQueryProvider from '@components/composed/ReactQueryProvider';
+import AuthProvider from '@components/composed/auth/AuthProvider';
+
 async function getMessages(locale: string) {
   try {
     return (await import(`../../messages/${locale}.json`)).default;
@@ -20,7 +23,9 @@ export default async function LocaleLayout({
   const messages = await getMessages(locale);
   return (
     <NextIntlClientProvider messages={messages}>
-      {children}
+      <ReactQueryProvider>
+        <AuthProvider>{children}</AuthProvider>
+      </ReactQueryProvider>
     </NextIntlClientProvider>
   );
 }

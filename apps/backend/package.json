@@ -24,21 +24,29 @@
     "typeorm:revert": "npx typeorm migration:revert -d dist/db/dataSource.js",
     "typeorm:drop": "npx typeorm schema:drop -d dist/db/dataSource.js",
     "typeorm:sync": "npx typeorm schema:sync -d dist/db/dataSource.js",
-    "typeorm:show": "npm run typeorm -- migration:show"
+    "typeorm:show": "npm run typeorm -- migration:show",
+    "types": "npx ts-node src/scripts/generate-types.ts"
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^11.1.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.2.0",
     "@nestjs/typeorm": "^10.0.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "json-schema-ref-parser,": "link:@apidevtools/json-schema-ref-parser,",
+    "json-schema-to-typescript": "^13.1.2",
     "keycloak-connect": "^23.0.6",
     "nest-keycloak-connect": "^1.9.5",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

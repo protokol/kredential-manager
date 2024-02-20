@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PM2 Credential",
+  "description": "Schema of a PM2 Verifiable Credential",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../../../ebsi-attestation/2022-11_01/schema.json"
+    },
+    {
+      "properties": {
+        "credentialSubject": {
+          "description": "Defines additional properties on credentialSubject to describe IDs that do not have a substantial level of assurance.",
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Defines a unique identifier of the credential subject",
+              "type": "string"
+            },
+            "givenName": {
+              "description": "Name strings that are the part of a person's name that is not their surname (see RFC4519).",
+              "type": "string"
+            },
+            "familyName": {
+              "description": "Name strings that are a person's surname (see RFC4519).",
+              "type": "string"
+            },
+            "emailAddress": {
+              "description": "Email address of the user.",
+              "type": "string",
+              "format": "email"
+            },
+            "courses": {
+              "description": "Courses in this credential",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name of course",
+                    "type": "string"
+                  }
+                },
+                "required": ["name"]
+              }
+            },
+            "issuerName": {
+              "description": "LE name which issued this credential",
+              "type": "string"
+            },
+            "credentialDescription": {
+              "description": "Description for this credential",
+              "type": "string"
+            },
+            "credentialId": {
+              "description": "Id for this credential",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "givenName",
+            "familyName",
+            "emailAddress",
+            "courses",
+            "issuerName",
+            "credentialDescription",
+            "credentialId"
+          ]
+        }
+      }
+    }
+  ]
+}

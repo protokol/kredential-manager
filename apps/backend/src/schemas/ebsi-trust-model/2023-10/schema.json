@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EBSI Verifiable Trust Model",
+  "description": "Base schema to manage trust model",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../../ebsi-attestation/2023-10/schema.json"
+    },
+    {
+      "properties": {
+        "type": {
+          "description": "Defines the Verifiable Credential type. MUST contain VerifiableTrustModel",
+          "type": "array",
+          "contains": {
+            "type": "string",
+            "const": "VerifiableTrustModel"
+          }
+        },
+        "credentialSubject": {
+          "description": "Defines additional information about the subject that is described by the Verifiable Accreditation",
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Defines the DID of the subject that is described by the issued credential",
+              "type": "string",
+              "format": "uri"
+            },
+            "reservedAttributeId": {
+              "description": "Defines the Trusted Issuers Registry attributeId this Verifiable Accreditation has been reserved for",
+              "type": "string"
+            },
+            "permissionFor": {
+              "description": "Defines a list of claims that define/determine the authorisation of an subject to issue or accredit certain types of VCs",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "schemaId": {
+                    "description": "Schema, registered in Trusted Schemas Registry, which the accredited organisation is allowed to issue or accredit",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "types": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "jurisdiction": {
+                    "anyOf": [
+                      {
+                        "description": "Defines the jurisdiction for which the accreditation is valid",
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      {
+                        "type": "array",
+                        "description": "Defines the jurisdictions for which the accreditation is valid",
+                        "items": {
+                          "type": "string",
+                          "format": "uri"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": ["schemaId", "types", "jurisdiction"]
+              }
+            }
+          },
+          "required": ["id", "reservedAttributeId", "permissionFor"]
+        },
+        "credentialStatus": {
+          "description": "Defines revocation details for the issued credential. Further redefined by type extension",
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Credential status in Trusted Issuers Registry, pointing towards Subject DID and the reservedAttributeId",
+              "type": "string",
+              "format": "uri"
+            },
+            "type": {
+              "description": "Defines the revocation status type",
+              "type": "string",
+              "const": "EbsiAccreditationEntry"
+            }
+          },
+          "required": ["id", "type"]
+        },
+        "termsOfUse": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/trustFrameworkPolicy"
+            },
+            {
+              "$ref": "#/$defs/accreditationPolicy"
+            },
+            {
+              "type": "array",
+              "contains": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/trustFrameworkPolicy"
+                  },
+                  {
+                    "$ref": "#/$defs/accreditationPolicy"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "validUntil",
+        "credentialSubject",
+        "credentialStatus",
+        "termsOfUse"
+      ]
+    }
+  ],
+  "$defs": {
+    "trustFrameworkPolicy": {
+      "description": "Defines Trust Framework Policy under which the Verifiable Credential has been issued",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type of the TermsOfUse entry. It MUST be TrustFrameworkPolicy. Other types may be added in the future",
+          "const": "TrustFrameworkPolicy"
+        },
+        "trustFramework": {
+          "type": "string",
+          "description": "Name of the Trust Framework (TF)"
+        },
+        "policyId": {
+          "type": "string",
+          "description": "URI identifying the policy under which the Trust Framework operates or Verifiable Accreditation has been Issued in",
+          "format": "uri"
+        },
+        "legalBasis": {
+          "type": "string",
+          "description": "Legal basis for the tf, is a string as 'professional qualifications directive'"
+        }
+      },
+      "required": ["type", "trustFramework", "policyId"]
+    },
+    "accreditationPolicy": {
+      "description": "Defines the Accreditation Policy under which the Verifiable Credential has been issued",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type of the TermsOfUse entry. It MUST be AccreditationPolicy",
+          "const": "AccreditationPolicy"
+        },
+        "parentAccreditation": {
+          "type": "string",
+          "description": "URL to access the parent entity in the trust chain supporting the attestation",
+          "format": "uri"
+        },
+        "rootAuthorisation": {
+          "type": "string",
+          "description": "URL to access the root entity in the trust chain supporting the attestation",
+          "format": "uri"
+        }
+      },
+      "required": ["type", "parentAccreditation", "rootAuthorisation"]
+    }
+  }
+}

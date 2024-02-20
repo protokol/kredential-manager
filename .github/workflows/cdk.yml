@@ -1,0 +1,79 @@
+name: apps/cdk CDK
+
+# TODO: Deploy on changes to the backend
+concurrency:
+  group: ${{ github.workflow }}-cdk
+
+on:
+  push:
+    paths:
+      - "apps/cdk/**"
+    branches:
+      - master
+  pull_request:
+    paths:
+      - "apps/cdk/**"
+    branches:
+      - master
+    types: [ opened ]
+  workflow_dispatch:
+
+jobs:
+  cdk-deploy:
+    permissions:
+      id-token: write
+      contents: read
+
+    name: CDK Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: "latest"
+
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::654654561029:role/github-role
+          aws-region: us-east-1
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run cdk deploy
+        run: cd apps/cdk && pnpm run cdk deploy --all --require-approval never
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: "latest"
+
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run unit tests
+        run: cd apps/cdk && pnpm run test

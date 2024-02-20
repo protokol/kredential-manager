@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EBSI Verifiable Delegated Authorisation",
+  "description": "The schema defines a delegated Verifiable Authorisation",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../../ebsi-attestation/2023-09/schema.json"
+    },
+    {
+      "properties": {
+        "credentialSubject": {
+          "$ref": "#/$defs/credentialSubject"
+        },
+        "evidence": {
+          "$ref": "../../type-extensions/evidence/AuthorisationDelegation/2023-09/schema.json#/properties/evidence"
+        }
+      }
+    }
+  ],
+  "required": [
+    "@context",
+    "id",
+    "type",
+    "issuer",
+    "validFrom",
+    "validUntil",
+    "credentialSubject",
+    "credentialSchema"
+  ],
+  "$defs": {
+    "permission": {
+      "description": "Permission instance",
+      "type": "object",
+      "properties": {
+        "scope": {
+          "description": "Scope for which the claims are being defined. Authorisation server MUST understand the scope.",
+          "type": "string"
+        },
+        "claims": {
+          "description": "One or more permission claims for the given scope. If authorisation server is unable to process the claims, access MUST be rejected.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          ]
+        }
+      },
+      "required": ["scope"]
+    },
+    "credentialSubject": {
+      "description": "Defines information about the subject that is defined by the type chain",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Defines the DID of the subject that is described by the issued credential",
+          "type": "string",
+          "format": "uri"
+        },
+        "permissions": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/permission"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/permission"
+              }
+            }
+          ]
+        },
+        "maxDelegationCount": {
+          "description": "CONDITIONAL. MUST be present if isDelegate == true. Defines the possible delegation count from the top-level authorisation.",
+          "type": "integer"
+        },
+        "isDelegated": {
+          "description": "OPTIONAL. Defines whether the authorisation is delegated.",
+          "type": "boolean",
+          "default": "false"
+        },
+        "evidenceId": {
+          "description": "CONDITIONAL. If delegationPolicy is present and if there are more than one evidences in the evidence property, the evidenceId is used to identify the evidence based on which this delegated authorisation VC has been issued.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

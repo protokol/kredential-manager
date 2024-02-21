@@ -34,7 +34,9 @@ export type TNavigationButtonWithSubItems = {
   sidebarCollapsed?: boolean;
 };
 
-type TNavigationItem = TNavigationLink | TNavigationButtonWithSubItems;
+type TNavigationItem = (TNavigationLink | TNavigationButtonWithSubItems) & {
+  id: string;
+};
 
 type NavigationItemsProps = {
   sidebarCollapsed?: boolean;
@@ -55,56 +57,67 @@ const NavigationItems: FC<NavigationItemsProps> = ({
   const navigationItems: TNavigationItem[] = useMemo(
     () => [
       {
+        id: 'home',
         name: t('navigation.dashboard'),
         icon: HomeIcon,
         href: routes.app.home
       },
       {
+        id: 'credentials',
         name: t('navigation.credentials'),
         icon: DocumentTextIcon,
         match: routes.app.credentials.home,
         subItems: [
           {
+            id: 'credentials-overall',
             name: t('navigation.overall'),
             href: routes.app.credentials.overall.home
           },
           {
+            id: 'credentials-approved',
             name: t('navigation.approved'),
             href: routes.app.credentials.approved.home
           },
           {
+            id: 'credentials-pending',
             name: t('navigation.pending'),
             href: routes.app.credentials.pending.home,
             notifications: 70
           },
           {
+            id: 'credentials-rejected',
             name: t('navigation.rejected'),
             href: routes.app.credentials.rejected.home
           }
         ]
       },
       {
+        id: 'students',
         name: t('navigation.students'),
         href: routes.app.students.home,
         icon: UsersIcon
       },
       {
+        id: 'integrations',
         name: t('navigation.integrations'),
         match: routes.app.integrations.home,
         icon: AdjustmentsVerticalIcon,
         subItems: [
           {
+            id: 'integrations-sources',
             name: t('navigation.sources'),
             href: routes.app.integrations.sources.home
           }
         ]
       },
       {
+        id: 'admin',
         name: t('navigation.admin'),
         href: routes.app.admin.home,
         icon: Cog8ToothIcon,
         subItems: [
           {
+            id: 'admin-users',
             name: t('navigation.users'),
             href: routes.app.admin.users.home
           }
@@ -116,12 +129,12 @@ const NavigationItems: FC<NavigationItemsProps> = ({
 
   return (
     <div className='flex-grow space-y-1'>
-      {navigationItems.map((item, index) => {
+      {navigationItems.map((item) => {
         const itemName = sidebarCollapsed ? '' : item.name;
         if ('subItems' in item) {
           return (
             <SidebarWithSubItems
-              key={index}
+              key={item.id}
               icon={item.icon}
               match={item.match}
               name={itemName}
@@ -144,7 +157,7 @@ const NavigationItems: FC<NavigationItemsProps> = ({
 
         return (
           <SidebarItem
-            key={index}
+            key={item.id}
             icon={item.icon}
             href={item.href}
             name={itemName}

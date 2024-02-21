@@ -30,4 +30,7 @@ export class Student {
 
     @OneToMany(() => Diploma, (diploma) => diploma.student)
     diplomas: Diploma[];
+
+    @Column({ type: "bytea", nullable: true })
+    profile_picture: Buffer;
 }

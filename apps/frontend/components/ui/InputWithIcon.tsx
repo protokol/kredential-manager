@@ -4,6 +4,8 @@ import { forwardRef } from 'react';
 
 import { cn } from '@utils/cn';
 
+import Input from '@ui/Input';
+
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
 const inputVariants = cva(
@@ -23,17 +25,32 @@ const inputVariants = cva(
   }
 );
 
-const Input = forwardRef<
-  HTMLInputElement,
-  InputProps & VariantProps<typeof inputVariants>
->(({ className, type, variant, ...props }, ref) => (
-  <input
-    type={type}
-    className={cn(inputVariants({ variant, className }))}
-    ref={ref}
-    {...props}
-  />
-));
-Input.displayName = 'Input';
+type TInputWithIcon = {
+  icon?: React.ElementType;
+};
 
-export default Input;
+const InputWithIcon = forwardRef<
+  HTMLInputElement,
+  TInputWithIcon & InputProps & VariantProps<typeof inputVariants>
+>(({ className, type, variant, icon, ...props }, ref) => {
+  const Icon = icon;
+
+  return (
+    <div className='relative'>
+      {Icon && (
+        <Icon className='absolute left-3 top-1/2 h-auto w-5 -translate-y-1/2 transform text-slate-500' />
+      )}
+      <Input
+        {...props}
+        ref={ref}
+        type={type}
+        className={cn('pl-9', inputVariants({ variant, className }), {
+          'pl-9': !!icon
+        })}
+      />
+    </div>
+  );
+});
+InputWithIcon.displayName = 'Input';
+
+export default InputWithIcon;

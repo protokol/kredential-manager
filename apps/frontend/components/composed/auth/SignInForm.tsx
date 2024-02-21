@@ -15,7 +15,7 @@ import z from 'zod';
 import { useSignIn } from '@utils/api/auth/auth.hook';
 import { toastError, toastSuccess } from '@utils/toast';
 
-import Input from '@ui/Input';
+import InputWithIcon from '@ui/InputWithIcon';
 import { FormRoot } from '@ui/form/Form.components';
 import FormButton from '@ui/form/FormButton';
 
@@ -70,7 +70,7 @@ const SignInForm = () => {
     <FormRoot {...form}>
       <form onSubmit={handleSubmit(handleSignIn)}>
         <div className='mt-2.5'>
-          <Input
+          <InputWithIcon
             type='email'
             variant={isError ? 'error' : 'primary'}
             {...register('email')}
@@ -80,7 +80,7 @@ const SignInForm = () => {
           />
         </div>
         <div className='mt-2.5'>
-          <Input
+          <InputWithIcon
             type='password'
             variant={isError ? 'error' : 'primary'}
             {...register('password')}

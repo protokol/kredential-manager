@@ -6,7 +6,7 @@ import { cn } from '@utils/cn';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
-const inputVariants = cva(
+export const inputVariants = cva(
   'border-1.5 w-full rounded border-slate-200 bg-white px-4 py-2 text-sm text-sky-950 ring-slate-200 ring-offset-white focus:outline-none placeholder:text-slate-500 hover:border-slate-200 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:placeholder:text-slate-500',
   {
     variants: {

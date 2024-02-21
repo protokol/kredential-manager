@@ -4,6 +4,7 @@ import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import * as Dialog from '@radix-ui/react-dialog';
 import type { ButtonHTMLAttributes, FC, PropsWithChildren } from 'react';
+import { useCallback } from 'react';
 
 import { Link, usePathname } from '@navigation';
 
@@ -124,12 +125,16 @@ const SidebarItem: FC<SidebarItemProps> = ({
     className
   );
 
-  const WrapperComponent: FC<PropsWithChildren> = ({ children }) =>
-    asDialog ? (
-      <Dialog.Close asChild>{children}</Dialog.Close>
-    ) : (
-      <>{children}</>
-    );
+  const WrapperComponent = useCallback(
+    ({ children }: PropsWithChildren) => {
+      if (asDialog) {
+        return <Dialog.Trigger asChild>{children}</Dialog.Trigger>;
+      }
+
+      return <>{children}</>;
+    },
+    [asDialog]
+  );
 
   if (href) {
     return (

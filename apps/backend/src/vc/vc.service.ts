@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { VerifiableCredential } from "src/entities/VerifiableCredential";
+import { VerifiableCredential } from "src/entities/vc/VerifiableCredential";
 import { DeepPartial, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 
@@ -9,7 +9,7 @@ export class VcService {
     constructor(
         @InjectRepository(VerifiableCredential)
         private repository: Repository<VerifiableCredential>,
-    ) {}
+    ) { }
 
     async findAll(): Promise<any> {
         try {

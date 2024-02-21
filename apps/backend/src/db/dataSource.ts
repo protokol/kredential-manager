@@ -1,4 +1,4 @@
-import { VerifiableCredential } from "../entities/VerifiableCredential";
+import { VerifiableCredential } from "../entities/vc/VerifiableCredential";
 import { DataSource, DataSourceOptions } from "typeorm";
 
 export const dataSourceOptions: DataSourceOptions = {

@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { VcService } from "./vc.service";
 import { VcController } from "./vc.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { VerifiableCredential } from "src/entities/VerifiableCredential";
+import { VerifiableCredential } from "src/entities/vc/VerifiableCredential";
 
 @Module({
     imports: [TypeOrmModule.forFeature([VerifiableCredential])],
@@ -10,4 +10,4 @@ import { VerifiableCredential } from "src/entities/VerifiableCredential";
     providers: [VcService],
     controllers: [VcController],
 })
-export class VcModule {}
+export class VcModule { }

@@ -5,6 +5,7 @@ import type { TSignInPayload } from '@utils/api/auth/auth.type';
 import { setAccessToken } from '@utils/configs/axios';
 
 const KEYCLOAK_URL = process.env.NEXT_PUBLIC_AUTH_API_URL;
+const CLIENT_ID = process.env.NEXT_PUBLIC_AUTH_CLIENT_ID;
 const authHeaders = {
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded'
@@ -43,7 +44,7 @@ export const signIn = async (credentials: TSignInPayload) => {
       sign_in_url,
       {
         grant_type: 'password',
-        client_id: 'enterprise-wallet-app',
+        client_id: CLIENT_ID,
         username,
         password
       },

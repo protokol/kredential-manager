@@ -14,5 +14,20 @@
     "users": "Users",
     "help": "Help",
     "sign_out": "Sign out"
+  },
+  "sign_in_page": {
+    "welcome_back": "Welcome back!",
+    "enter_your_credentials": "Enter your organization's email and password to begin the sign-in process.",
+    "having_issues": "Having issues signing in?",
+    "get_in_touch": "Get in touch.",
+    "sign_in_success": "You have successfully signed in. You will be redirected automatically.",
+    "sign_in_error": "Apologies, but we don't recognize either the email or the password provided.",
+    "sign_in": "Sign in",
+    "signing_in": "Signing in...",
+    "email_placeholder": "email@university.com",
+    "password_placeholder": "Insert password"
+  },
+  "dashboard": {
+    "good_afternoon": "Good afternoon, {username}"
   }
 }

@@ -6,7 +6,7 @@ import { cn } from '@utils/cn';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
-const inputVariants = cva(
+export const inputVariants = cva(
   'border-1.5 w-full rounded border-slate-200 bg-white px-4 py-2 text-sm text-sky-950 ring-slate-200 ring-offset-white focus:outline-none placeholder:text-slate-500 hover:border-slate-200 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:placeholder:text-slate-500',
   {
     variants: {
@@ -25,26 +25,15 @@ const inputVariants = cva(
 
 const Input = forwardRef<
   HTMLInputElement,
-  { icon?: React.ElementType } & InputProps & VariantProps<typeof inputVariants>
->(({ className, type, variant, icon, ...props }, ref) => {
-  const Icon = icon;
-
-  return (
-    <div className='relative'>
-      {Icon && (
-        <Icon className='absolute left-3 top-1/2 h-auto w-5 -translate-y-1/2 transform text-slate-500' />
-      )}
-      <input
-        type={type}
-        className={cn(inputVariants({ variant, className }), {
-          'pl-9': !!icon
-        })}
-        ref={ref}
-        {...props}
-      />
-    </div>
-  );
-});
+  InputProps & VariantProps<typeof inputVariants>
+>(({ className, type, variant, ...props }, ref) => (
+  <input
+    type={type}
+    className={cn(inputVariants({ variant, className }))}
+    ref={ref}
+    {...props}
+  />
+));
 Input.displayName = 'Input';
 
 export default Input;

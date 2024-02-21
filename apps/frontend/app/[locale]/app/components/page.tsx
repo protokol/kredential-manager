@@ -6,7 +6,6 @@ import {
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { IconDropdown } from 'react-day-picker';
 
 import logo from '@public/Logo.png';
 
@@ -232,7 +231,6 @@ const ComponentsPage = () => (
 
     <h2 className='text-2xl'>Inputs -----------------------------------</h2>
     <div className='max-w-lg space-y-2'>
-      <Input icon={IconDropdown} />
       <Input placeholder='Input with placeholder' />
       <Input placeholder='Input with success border' variant='success' />
       <Input placeholder='Input with error border' variant='error' />

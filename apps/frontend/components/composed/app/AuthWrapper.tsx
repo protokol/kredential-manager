@@ -28,7 +28,7 @@ const AuthWrapper: FC<PropsWithChildren> = ({ children }) => {
     setTokenValid(true);
   }, [pathname, replace, tokenValid]);
 
-  return <>{children}</>;
+  return <>{tokenValid && children}</>;
 };
 
 export default AuthWrapper;

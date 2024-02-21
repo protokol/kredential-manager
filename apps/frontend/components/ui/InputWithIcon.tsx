@@ -51,6 +51,6 @@ const InputWithIcon = forwardRef<
     </div>
   );
 });
-InputWithIcon.displayName = 'Input';
+InputWithIcon.displayName = 'InputWithIcon';
 
 export default InputWithIcon;

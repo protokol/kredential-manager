@@ -27,14 +27,14 @@ const SignInForm = () => {
   const { mutateAsync: signIn, isPending: isSubmitting, isError } = useSignIn();
 
   const formSchema = z.object({
-    email: z.string().trim().nonempty(),
+    email: z.string().trim().email(),
     password: z.string().trim().nonempty()
   });
 
   type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({
-    mode: 'onChange',
+    mode: 'onBlur',
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
@@ -42,7 +42,11 @@ const SignInForm = () => {
     }
   });
 
-  const { register, handleSubmit } = form;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = form;
 
   const handleSignIn = useCallback(
     async (values: FormValues) => {
@@ -51,12 +55,14 @@ const SignInForm = () => {
           username: values.email,
           password: values.password
         });
-
-        login(access_token, refresh_token);
-
         toastSuccess({
-          text: t('sign_in_page.sign_in_success')
+          text: t('sign_in_page.sign_in_success'),
+          duration: 1500
         });
+
+        setTimeout(() => {
+          login(access_token, refresh_token);
+        }, 1500);
       } catch (e) {
         toastError({
           text: t('sign_in_page.sign_in_error')
@@ -72,7 +78,7 @@ const SignInForm = () => {
         <div className='mt-2.5'>
           <InputWithIcon
             type='email'
-            variant={isError ? 'error' : 'primary'}
+            variant={isError || errors.email ? 'error' : 'primary'}
             {...register('email')}
             icon={EnvelopeIcon}
             autoComplete='off'

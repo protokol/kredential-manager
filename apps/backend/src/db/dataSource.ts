@@ -5,6 +5,7 @@ import { Enrollment } from "../enrollment/entities/enrollment.entity";
 import { Diploma } from "../diploma/entities/diploma.entity";
 import { Course } from "../course/entities/course.entity";
 import { Program } from "../program/entities/program.entity";
+import { Did } from "../student/entities/did.entity";
 
 export const dataSourceOptions: DataSourceOptions = {
     type: "postgres",
@@ -21,6 +22,7 @@ export const dataSourceOptions: DataSourceOptions = {
         Diploma,
         Course,
         Program,
+        Did,
     ],
     migrations: ["dist/src/migrations/*{.js,.ts}"],
     migrationsTableName: "custom_migration_table",

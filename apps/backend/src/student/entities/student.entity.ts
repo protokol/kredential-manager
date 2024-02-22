@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { Enrollment } from "../../enrollment/entities/enrollment.entity";
 import { Diploma } from "../../diploma/entities/diploma.entity";
+import { Did } from "./did.entity";
 
 @Entity()
 export class Student {
@@ -33,4 +34,7 @@ export class Student {
 
     @Column({ nullable: true })
     profile_picture: string;
+
+    @OneToMany(() => Did, (did) => did.student)
+    dids: Did[];
 }

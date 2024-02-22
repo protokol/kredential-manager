@@ -6,6 +6,7 @@ import { Course } from "../course/entities/course.entity";
 import { Diploma } from "../diploma/entities/diploma.entity";
 import { Enrollment } from "../enrollment/entities/enrollment.entity";
 import dataSource from "../db/dataSource";
+import { Did } from "../student/entities/did.entity";
 
 dataSource
     .initialize()
@@ -15,6 +16,7 @@ dataSource
         const courseRepository = connection.getRepository(Course);
         const diplomaRepository = connection.getRepository(Diploma);
         const enrollmentRepository = connection.getRepository(Enrollment);
+        const didRepository = connection.getRepository(Did);
         // Seed Programs
         const programs = [];
         for (let i = 0; i < 5; i++) {
@@ -88,10 +90,25 @@ dataSource
             diploma.final_grade = faker.helpers.arrayElement([
                 5, 6, 7, 8, 9, 10,
             ]);
-            diploma.diploma_supplement = faker.lorem.paragraph(); // Example of setting a non-null value
+            diploma.diploma_supplement = faker.lorem.paragraph();
             diplomas.push(diploma);
         }
         await diplomaRepository.save(diplomas);
+
+        // Seed Dids
+        const dids = [];
+        students.forEach((student) => {
+            const numberOfDids = faker.number.int({ min: 1, max: 3 });
+            for (let i = 0; i < numberOfDids; i++) {
+                const did = new Did();
+                did.identifier = `did:example:${faker.string.uuid()}`;
+                did.student = student;
+                dids.push(did);
+            }
+        });
+
+        await didRepository.save(dids);
+
         console.log("Data has been seeded.");
     })
     .catch((error) => console.log("Error seeding data:", error));

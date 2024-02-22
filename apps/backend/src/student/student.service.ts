@@ -17,7 +17,7 @@ export class StudentService {
     }
 
     findAll(): Promise<Student[]> {
-        return this.studentsRepository.find();
+        return this.studentsRepository.find({ relations: ["dids"] });
     }
 
     async update(

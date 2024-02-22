@@ -1,9 +1,11 @@
+import { Did } from "src/student/entities/did.entity";
 import { VCRole, VCStatus, VCSupportedTypes } from "../../types/VC";
 import {
     Entity,
     Column,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
+    OneToOne,
 } from "typeorm";
 
 @Entity()
@@ -11,8 +13,8 @@ export class VerifiableCredential {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: "text", nullable: false })
-    did: string;
+    @OneToOne(() => Did, (did) => did.verifiableCredential)
+    did: Did;
 
     @Column({ type: "text", nullable: true })
     displayName: string;

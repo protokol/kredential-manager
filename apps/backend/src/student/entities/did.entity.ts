@@ -11,4 +11,5 @@ export class Did {
 
     @ManyToOne(() => Student, (student) => student.dids)
     student: Student;
+    verifiableCredential: any;
 }

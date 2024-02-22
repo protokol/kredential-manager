@@ -11,4 +11,4 @@ import { Did } from "src/student/entities/did.entity";
     providers: [VcService],
     controllers: [VcController],
 })
-export class VcModule { }
+export class VcModule {}

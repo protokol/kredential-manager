@@ -16,28 +16,32 @@ export class VcService {
 
     async findAll(): Promise<any> {
         try {
-            const users = await this.vcRepository.find();
-            if (users?.length === 0) {
+            console.log("VCsService:findAll");
+            const vc = await this.vcRepository.find({ relations: ["did"] });
+            if (vc?.length === 0) {
                 throw new Error("No record found.");
             }
-            return users;
+            return vc;
         } catch (error) {
             this.logger.log(
-                `UsersService:findAll : ${JSON.stringify(error.message)}`,
+                `VCsService:findAll : ${JSON.stringify(error.message)}`,
             );
         }
     }
 
     async findOne(id: number): Promise<VerifiableCredential | null> {
         try {
-            const user = await this.vcRepository.findOneBy({ id });
-            if (user === null) {
+            const vc = await this.vcRepository.findOne({
+                where: { id },
+                relations: ["did"], // Specify the relation here
+            });
+            if (vc === null) {
                 throw new Error("No record found.");
             }
-            return user;
+            return vc;
         } catch (error) {
             this.logger.log(
-                `VCService:findOne : ${JSON.stringify(error.message)}`,
+                `VCsService:findOne : ${JSON.stringify(error.message)}`,
             );
         }
         return this.vcRepository.findOneBy({ id });
@@ -48,7 +52,7 @@ export class VcService {
             return this.vcRepository.save(entity);
         } catch (error) {
             this.logger.log(
-                `UsersService:save : ${JSON.stringify(error.message)}`,
+                `VCsService:save : ${JSON.stringify(error.message)}`,
             );
         }
     }
@@ -87,6 +91,7 @@ export class VcService {
             where: whereCondition,
             take: limit,
             skip: (page - 1) * limit,
+            relations: ["did"],
         });
         return [result, total];
     }

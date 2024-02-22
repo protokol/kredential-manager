@@ -8,7 +8,6 @@ import {
     Patch,
     NotFoundException,
 } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
 import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
 import { Public } from "nest-keycloak-connect";
 import { CreateVcDto } from "./dto/create-vc.dto";
@@ -20,7 +19,6 @@ import { VcService } from "./vc.service";
 @Controller("verifiable-credentials")
 export class VcController {
     constructor(
-        @InjectRepository(VerifiableCredential)
         private readonly vcService: VcService,
         // eslint-disable-next-line prettier/prettier
     ) { }

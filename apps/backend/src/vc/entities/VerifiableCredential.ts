@@ -6,6 +6,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
     OneToOne,
+    JoinColumn,
 } from "typeorm";
 
 @Entity()
@@ -13,7 +14,8 @@ export class VerifiableCredential {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @OneToOne(() => Did, (did) => did.verifiableCredential)
+    @OneToOne(() => Did, (did) => did.verifiableCredential) // Specify the inverse side as a second parameter
+    @JoinColumn() // This decorator is required on the owning side
     did: Did;
 
     @Column({ type: "text", nullable: true })

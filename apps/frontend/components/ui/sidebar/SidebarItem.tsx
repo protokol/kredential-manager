@@ -117,7 +117,7 @@ const SidebarItem: FC<SidebarItemProps> = ({
   const classes = cn(
     'flex w-full items-center justify-between gap-3 rounded-lg py-2 pl-2 pr-3 text-sm font-medium transition-colors',
     'text-sky-950 hover:bg-sky-950 hover:text-white',
-    'outline-none focus:ring-2 focus:ring-sky-950',
+    'outline-none',
     {
       'bg-sky-950': active,
       'text-white': active

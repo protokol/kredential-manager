@@ -9,7 +9,7 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { VerifiableCredential } from "src/entities/vc/VerifiableCredential";
+import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
 import { Repository } from "typeorm";
 import { Public } from "nest-keycloak-connect";
 import { CreateVcDto } from "./dto/create-vc.dto";

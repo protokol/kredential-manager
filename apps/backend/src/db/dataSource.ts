@@ -1,5 +1,10 @@
-import { VerifiableCredential } from "../entities/vc/VerifiableCredential";
+import { Student } from "../student/entities/student.entity";
+import { VerifiableCredential } from "../vc/entities/VerifiableCredential";
 import { DataSource, DataSourceOptions } from "typeorm";
+import { Enrollment } from "../enrollment/entities/enrollment.entity";
+import { Diploma } from "../diploma/entities/diploma.entity";
+import { Course } from "../course/entities/course.entity";
+import { Program } from "../program/entities/program.entity";
 
 export const dataSourceOptions: DataSourceOptions = {
     type: "postgres",
@@ -8,8 +13,15 @@ export const dataSourceOptions: DataSourceOptions = {
     username: process.env.DB_USERNAME || "enterprise-wallet-user",
     password: process.env.DB_PASSWORD || "password",
     database: process.env.DB_NAME || "enterprise-wallet",
-    synchronize: false, // must be disabled in production
-    entities: [VerifiableCredential],
+    synchronize: true, // must be disabled in production
+    entities: [
+        VerifiableCredential,
+        Student,
+        Enrollment,
+        Diploma,
+        Course,
+        Program,
+    ],
     migrations: ["dist/src/migrations/*{.js,.ts}"],
     migrationsTableName: "custom_migration_table",
 };

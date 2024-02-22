@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { VerifiableCredential } from "src/entities/vc/VerifiableCredential";
+import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
 import { DeepPartial, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 

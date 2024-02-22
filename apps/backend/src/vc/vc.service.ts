@@ -12,7 +12,7 @@ export class VcService {
         private vcRepository: Repository<VerifiableCredential>,
         @InjectRepository(Did)
         private didRepository: Repository<Did>,
-    ) { }
+    ) {}
 
     async findAll(): Promise<any> {
         try {

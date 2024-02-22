@@ -73,4 +73,4 @@ import { CourseModule } from "./course/course.module";
     ],
     exports: [],
 })
-export class AppModule { }
+export class AppModule {}

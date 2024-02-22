@@ -21,7 +21,7 @@ export class VcController {
     constructor(
         private readonly vcService: VcService,
         // eslint-disable-next-line prettier/prettier
-    ) { }
+    ) {}
 
     // Note: Count needs to be defined before :id route
     @Get("/count")

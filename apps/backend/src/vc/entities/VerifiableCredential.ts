@@ -1,9 +1,12 @@
-import { VCRole, VCStatus, VCSupportedTypes } from "src/types/VC";
+import { Did } from "src/student/entities/did.entity";
+import { VCRole, VCStatus, VCSupportedTypes } from "../../types/VC";
 import {
     Entity,
     Column,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
+    OneToOne,
+    JoinColumn,
 } from "typeorm";
 
 @Entity()
@@ -11,8 +14,9 @@ export class VerifiableCredential {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: "text", nullable: false })
-    did: string;
+    @OneToOne(() => Did, (did) => did.verifiableCredential) // Specify the inverse side as a second parameter
+    @JoinColumn() // This decorator is required on the owning side
+    did: Did;
 
     @Column({ type: "text", nullable: true })
     displayName: string;

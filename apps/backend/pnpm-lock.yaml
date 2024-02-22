@@ -8,6 +8,9 @@ dependencies:
   '@apidevtools/json-schema-ref-parser':
     specifier: ^11.1.0
     version: 11.1.0
+  '@faker-js/faker':
+    specifier: ^8.4.1
+    version: 8.4.1
   '@nestjs/common':
     specifier: ^10.0.0
     version: 10.3.1(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.1.14)(rxjs@7.8.1)
@@ -38,6 +41,9 @@ dependencies:
   class-validator:
     specifier: ^0.14.1
     version: 0.14.1
+  faker:
+    specifier: ^6.6.6
+    version: 6.6.6
   json-schema-ref-parser,:
     specifier: link:@apidevtools/json-schema-ref-parser,
     version: link:@apidevtools/json-schema-ref-parser,
@@ -619,6 +625,11 @@ packages:
     resolution: {integrity: sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
+
+  /@faker-js/faker@8.4.1:
+    resolution: {integrity: sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==}
+    engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0, npm: '>=6.14.13'}
+    dev: false
 
   /@humanwhocodes/config-array@0.11.14:
     resolution: {integrity: sha512-3T8LkOmg45BV5FICb15QQMsyUSWrQ8AygVfC7ZG32zOalnqrilm018ZVCw0eapXux8FtA33q8PSRSstjee3jSg==}
@@ -2206,8 +2217,8 @@ packages:
     engines: {node: '>=6.0'}
     dev: true
 
-  /chromedriver@121.0.1:
-    resolution: {integrity: sha512-7y/RLV3tKNpNf/Ye74eOF7gyrCA78qq3i6JjrMJ4xovc2XZaw4a3cZA6+2PflGX/0HttYiKJV2WO611JROGNaw==}
+  /chromedriver@121.0.2:
+    resolution: {integrity: sha512-58MUSCEE3oB3G3Y/Jo3URJ2Oa1VLHcVBufyYt7vNfGrABSJm7ienQLF9IQ8LPDlPVgLUXt2OBfggK3p2/SlEBg==}
     engines: {node: '>=18'}
     hasBin: true
     requiresBuild: true
@@ -3004,6 +3015,10 @@ packages:
       - supports-color
     dev: false
     optional: true
+
+  /faker@6.6.6:
+    resolution: {integrity: sha512-9tCqYEDHI5RYFQigXFwF1hnCwcWCOJl/hmll0lr5D2Ljjb0o4wphb69wikeJDz5qCEzXCoPvG6ss5SDP6IfOdg==}
+    dev: false
 
   /fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -4230,7 +4245,7 @@ packages:
     dependencies:
       jwk-to-pem: 2.0.5
     optionalDependencies:
-      chromedriver: 121.0.1
+      chromedriver: 121.0.2
     transitivePeerDependencies:
       - debug
       - supports-color

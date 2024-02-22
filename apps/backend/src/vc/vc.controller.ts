@@ -8,20 +8,18 @@ import {
     Patch,
     NotFoundException,
 } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { VerifiableCredential } from "src/entities/VerifiableCredential";
-import { Repository } from "typeorm";
+import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
 import { Public } from "nest-keycloak-connect";
 import { CreateVcDto } from "./dto/create-vc.dto";
 import { VerifiableEducationalID } from "src/types/schema/VerifiableEducationID202311";
 import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } from "src/types/schema/VerifiableDiploma202211";
 import { VCRole, VCStatus } from "src/types/VC";
 import { UpdateStatusDto } from "./dto/update-status.dto";
+import { VcService } from "./vc.service";
 @Controller("verifiable-credentials")
 export class VcController {
     constructor(
-        @InjectRepository(VerifiableCredential)
-        private vcRepository: Repository<VerifiableCredential>,
+        private readonly vcService: VcService,
         // eslint-disable-next-line prettier/prettier
     ) { }
 
@@ -35,10 +33,7 @@ export class VcController {
         if (status && Object.values(VCStatus).includes(status as VCStatus)) {
             whereCondition.status = status as VCStatus;
         }
-        const count = await this.vcRepository.count({
-            where: whereCondition,
-        });
-
+        const count = await this.vcService.count(whereCondition);
         return { count };
     }
 
@@ -46,16 +41,16 @@ export class VcController {
     @Public(true) // TODO Integrate auth
     async updateStatus(
         @Param("id") id: string,
-        @Body() updateStatusDto: UpdateStatusDto,
+        @Body() updatePayload: UpdateStatusDto,
     ): Promise<any> {
         // TODO: Implement the SIGN process
         // TODO: Save signed data to vc_data_signed
 
-        const result = await this.vcRepository.update(id, {
-            status: updateStatusDto.status,
-        });
-        if (result.affected === 0) {
-            throw new NotFoundException(`Item with ID ${id} not found.`);
+        const updateResult = await this.vcService.update(id, updatePayload);
+        if (updateResult.affected === 0) {
+            throw new NotFoundException(
+                `Credential with ID "${id}" not found.`,
+            );
         }
         return { message: "Status updated successfully." };
     }
@@ -63,7 +58,7 @@ export class VcController {
     @Get(":id")
     @Public(true)
     async getOne(@Param("id") id: number): Promise<any> {
-        const item = await this.vcRepository.findOne({ where: { id } });
+        const item = await this.vcService.findOne(id);
         if (!item) {
             throw new NotFoundException(`Item with ID ${id} not found.`);
         }
@@ -87,11 +82,11 @@ export class VcController {
         if (status && Object.values(VCRole).includes(role as VCRole)) {
             whereCondition.role = role as VCRole;
         }
-        const [result, total] = await this.vcRepository.findAndCount({
-            where: whereCondition,
-            take: limit,
-            skip: (page - 1) * limit,
-        });
+        const [result, total] = await this.vcService.findAllWithConditions(
+            page,
+            limit,
+            whereCondition,
+        );
 
         return {
             data: result,
@@ -104,10 +99,10 @@ export class VcController {
 
     @Post()
     @Public(true) // TODO Integrate auth
-    create(@Body() createVcDto: CreateVcDto) {
+    async create(@Body() createVcDto: CreateVcDto) {
         console.log({ createVcDto });
         const newCredentialData = {
-            did: "",
+            did: -1,
             displayName: "",
             mail: "",
             dateOfBirth: undefined,
@@ -123,7 +118,11 @@ export class VcController {
                 const vc_data =
                     createVcDto.data as unknown as VerifiableEducationalID;
 
-                newCredentialData.did = vc_data.credentialSubject.id;
+                const did = await this.vcService.getOrCreateDid(
+                    vc_data.credentialSubject.id,
+                );
+                console.log({ did });
+                newCredentialData.did = did.id;
                 newCredentialData.displayName =
                     vc_data.credentialSubject.displayName ?? "";
                 newCredentialData.mail = vc_data.credentialSubject.mail ?? "";
@@ -139,7 +138,10 @@ export class VcController {
                 const vc_data =
                     createVcDto.data as unknown as EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema;
 
-                newCredentialData.did = vc_data.credentialSubject.id;
+                const did = await this.vcService.getOrCreateDid(
+                    vc_data.credentialSubject.id,
+                );
+                newCredentialData.did = did.id;
                 newCredentialData.vc_data = vc_data;
                 // Birthday, display name and mail are not present in this schema
                 break;
@@ -151,6 +153,6 @@ export class VcController {
 
         const newCredential = new VerifiableCredential();
         Object.assign(newCredential, newCredentialData);
-        this.vcRepository.save(newCredential);
+        this.vcService.save(newCredential);
     }
 }

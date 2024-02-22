@@ -16,6 +16,12 @@ import {
     TokenValidation,
 } from "nest-keycloak-connect";
 import { APP_GUARD } from "@nestjs/core";
+import { StudentModule } from "./student/student.module";
+import { StudentService } from "./student/student.service";
+import { ProgramModule } from "./program/program.module";
+import { EnrollmentModule } from "./enrollment/enrollment.module";
+import { DiplomaModule } from "./diploma/diploma.module";
+import { CourseModule } from "./course/course.module";
 
 @Module({
     imports: [
@@ -36,11 +42,22 @@ import { APP_GUARD } from "@nestjs/core";
         }),
 
         VcModule,
+
+        StudentModule,
+
+        ProgramModule,
+
+        CourseModule,
+
+        DiplomaModule,
+
+        EnrollmentModule,
     ],
     controllers: [AppController, VcController],
     providers: [
         AppService,
         VcService,
+        StudentService,
         {
             provide: APP_GUARD,
             useClass: AuthGuard,

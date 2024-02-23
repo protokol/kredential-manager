@@ -14,7 +14,7 @@ import { Public } from "nest-keycloak-connect";
 
 @Controller("students")
 export class StudentController {
-    constructor(private readonly studentService: StudentService) {}
+    constructor(private readonly studentService: StudentService) { }
 
     @Post()
     @Public(true)

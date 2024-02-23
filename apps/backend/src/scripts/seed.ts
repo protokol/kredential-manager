@@ -7,6 +7,10 @@ import { Diploma } from "../diploma/entities/diploma.entity";
 import { Enrollment } from "../enrollment/entities/enrollment.entity";
 import dataSource from "../db/dataSource";
 import { Did } from "../student/entities/did.entity";
+import { generateVerifiableDiploma } from "./verifiable-diploma";
+import { VerifiableCredential } from "../vc/entities/VerifiableCredential";
+
+// Generate and log the fake data
 
 dataSource
     .initialize()
@@ -17,6 +21,8 @@ dataSource
         const diplomaRepository = connection.getRepository(Diploma);
         const enrollmentRepository = connection.getRepository(Enrollment);
         const didRepository = connection.getRepository(Did);
+        const vcRepository = connection.getRepository(VerifiableCredential);
+
         // Seed Programs
         const programs = [];
         for (let i = 0; i < 5; i++) {
@@ -97,18 +103,34 @@ dataSource
 
         // Seed Dids
         const dids = [];
+        const verifiableCredentials = [];
         students.forEach((student) => {
-            const numberOfDids = faker.number.int({ min: 1, max: 3 });
+            const numberOfDids = faker.number.int({ min: 1, max: 2 });
             for (let i = 0; i < numberOfDids; i++) {
                 const did = new Did();
-                did.identifier = `did:example:${faker.string.uuid()}`;
+                did.identifier = `did:ebsi:${faker.string.uuid()}`;
                 did.student = student;
                 dids.push(did);
+            }
+
+            const numberOfVcs = faker.number.int({ min: 1, max: 5 });
+            for (let i = 0; i < numberOfVcs; i++) {
+                const credential = new VerifiableCredential();
+                credential.displayName = student.first_name;
+                credential.mail = student.email;
+                credential.type = "VerifiableDiploma202211";
+                credential.dateOfBirth = student.date_of_birth;
+                (credential.vc_data = generateVerifiableDiploma(
+                    dids[0].identifier,
+                )),
+                    verifiableCredentials.push(credential);
             }
         });
 
         await didRepository.save(dids);
+        await vcRepository.save(verifiableCredentials);
 
+        console.log({ verifiableCredentials });
         console.log("Data has been seeded.");
     })
     .catch((error) => console.log("Error seeding data:", error));

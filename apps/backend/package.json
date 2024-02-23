@@ -41,7 +41,6 @@
     "ajv-formats": "^2.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
-    "faker": "^6.6.6",
     "json-schema-ref-parser,": "link:@apidevtools/json-schema-ref-parser,",
     "json-schema-to-typescript": "^13.1.2",
     "keycloak-connect": "^23.0.6",

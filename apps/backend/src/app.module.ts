@@ -22,6 +22,7 @@ import { ProgramModule } from "./program/program.module";
 import { EnrollmentModule } from "./enrollment/enrollment.module";
 import { DiplomaModule } from "./diploma/diploma.module";
 import { CourseModule } from "./course/course.module";
+import { SeedModule } from "./seed/seed.module";
 
 @Module({
     imports: [
@@ -52,6 +53,8 @@ import { CourseModule } from "./course/course.module";
         DiplomaModule,
 
         EnrollmentModule,
+
+        SeedModule,
     ],
     controllers: [AppController, VcController],
     providers: [

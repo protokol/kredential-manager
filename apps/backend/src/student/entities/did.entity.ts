@@ -6,7 +6,7 @@ import {
     OneToMany,
 } from "typeorm";
 import { Student } from "./student.entity";
-import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
+import { VerifiableCredential } from "./../../vc/entities/VerifiableCredential";
 
 @Entity()
 export class Did {

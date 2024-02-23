@@ -1,4 +1,4 @@
-import { Did } from "src/student/entities/did.entity";
+import { Did } from "../../student/entities/did.entity";
 import { VCRole, VCStatus, VCSupportedTypes } from "../../types/VC";
 import {
     Entity,
@@ -14,8 +14,8 @@ export class VerifiableCredential {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @OneToOne(() => Did, (did) => did.verifiableCredential) // Specify the inverse side as a second parameter
-    @JoinColumn() // This decorator is required on the owning side
+    @OneToOne(() => Did, (did) => did.verifiableCredential)
+    @JoinColumn()
     did: Did;
 
     @Column({ type: "text", nullable: true })

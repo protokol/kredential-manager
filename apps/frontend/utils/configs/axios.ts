@@ -5,12 +5,13 @@ import { refreshAccessToken } from '@utils/api/auth/auth.api';
 import {
   getAccessTokenFromStorage,
   getRefreshTokenFromStorage,
+  removeTokensFromStorage,
   setAccessTokenToStorage
 } from '@utils/api/auth/auth.utils';
 
-// TODO change the url to our api
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 const request: AxiosInstance = axios.create({
-  baseURL: 'https://api.example.com'
+  baseURL: BASE_URL
 });
 
 export const setAccessToken = (accessToken: string | null) => {
@@ -20,6 +21,9 @@ export const setAccessToken = (accessToken: string | null) => {
     delete request.defaults.headers.common['Authorization'];
   }
 };
+
+const initialAccessToken = getAccessTokenFromStorage();
+setAccessToken(initialAccessToken);
 
 request.interceptors.request.use(
   (config) => {
@@ -44,6 +48,9 @@ request.interceptors.response.use(
         setAccessTokenToStorage(newAccessToken);
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
         return request(originalRequest);
+      } else {
+        removeTokensFromStorage();
+        window.location.href = '/auth/sign-in';
       }
     }
 

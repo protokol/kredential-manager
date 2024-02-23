@@ -1,8 +1,16 @@
-export const getAccessTokenFromStorage = () =>
-  sessionStorage.getItem('accessToken') || '';
+export const getAccessTokenFromStorage = () => {
+  if (typeof window !== 'undefined') {
+    return sessionStorage.getItem('accessToken');
+  }
+  return null;
+};
 
-export const getRefreshTokenFromStorage = () =>
-  localStorage.getItem('refreshToken');
+export const getRefreshTokenFromStorage = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('refreshToken');
+  }
+  return null;
+};
 
 export const setAccessTokenToStorage = (accessToken: string) => {
   sessionStorage.setItem('accessToken', accessToken);

@@ -29,11 +29,13 @@ type TAuthContext = {
   user?: TUser;
   logout: () => void;
   login: (accessToken: string, refreshToken: string) => void;
+  updateUser: (jwt: string) => void;
 };
 export const AuthContext = createContext<TAuthContext>({
   user: undefined,
   login: () => {},
-  logout: () => {}
+  logout: () => {},
+  updateUser: () => {}
 });
 
 const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -57,7 +59,8 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     const jwt = getAccessTokenFromStorage();
-    updateUser(jwt);
+    updateUser(jwt!);
+
     // eslint-disable-next-line
   }, []);
 
@@ -84,7 +87,8 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       value={{
         user,
         login: handleLogin,
-        logout: handleLogout
+        logout: handleLogout,
+        updateUser
       }}
     >
       {children}

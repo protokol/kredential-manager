@@ -41,9 +41,6 @@ dependencies:
   class-validator:
     specifier: ^0.14.1
     version: 0.14.1
-  json-schema-ref-parser,:
-    specifier: link:@apidevtools/json-schema-ref-parser,
-    version: link:@apidevtools/json-schema-ref-parser,
   json-schema-to-typescript:
     specifier: ^13.1.2
     version: 13.1.2

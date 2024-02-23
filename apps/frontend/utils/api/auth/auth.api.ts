@@ -23,7 +23,8 @@ export const refreshAccessToken = async (
       refresh_token_url,
       {
         grant_type: 'refresh_token',
-        refresh_token: refreshToken
+        refresh_token: refreshToken,
+        client_id: CLIENT_ID
       },
       { ...authHeaders }
     );

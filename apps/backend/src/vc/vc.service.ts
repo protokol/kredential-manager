@@ -14,26 +14,11 @@ export class VcService {
         private didRepository: Repository<Did>,
     ) {}
 
-    async findAll(): Promise<any> {
-        try {
-            console.log("VCsService:findAll");
-            const vc = await this.vcRepository.find({ relations: ["did"] });
-            if (vc?.length === 0) {
-                throw new Error("No record found.");
-            }
-            return vc;
-        } catch (error) {
-            this.logger.log(
-                `VCsService:findAll : ${JSON.stringify(error.message)}`,
-            );
-        }
-    }
-
     async findOne(id: number): Promise<VerifiableCredential | null> {
         try {
             const vc = await this.vcRepository.findOne({
                 where: { id },
-                relations: ["did"], // Specify the relation here
+                relations: ["did", "did.student"],
             });
             if (vc === null) {
                 throw new Error("No record found.");
@@ -64,11 +49,6 @@ export class VcService {
         return this.vcRepository.update(id, updatePayload);
     }
 
-    async verify(id: string): Promise<any> {
-        // Add logic to verify a verifiable credential
-        // Update db record to set isSigned to true (if we need this)
-    }
-
     async getOrCreateDid(identifier: string): Promise<Did> {
         const existingDid = await this.didRepository.findOne({
             where: { identifier: identifier },
@@ -82,7 +62,7 @@ export class VcService {
         return newDid;
     }
 
-    async findAllWithConditions(
+    async findAll(
         page: number,
         limit: number,
         whereCondition: any,
@@ -91,7 +71,19 @@ export class VcService {
             where: whereCondition,
             take: limit,
             skip: (page - 1) * limit,
-            relations: ["did"],
+            select: [
+                "id",
+                "displayName", // *: What happends if vc was not filled correctly => this will be different to the matched student inside did
+                "mail", // *
+                "dateOfBirth", // *
+                "status",
+                "role",
+                "displayName",
+                "created_at",
+                "updated_at",
+                "did",
+            ],
+            relations: ["did", "did.student"],
         });
         return [result, total];
     }

@@ -28,6 +28,12 @@ export class StudentController {
         return this.studentService.findAll();
     }
 
+    @Get(":id")
+    @Public(true)
+    async view(@Param("id") id: string): Promise<Student> {
+        return this.studentService.findOne(+id);
+    }
+
     @Put(":id")
     @Public(true)
     update(

@@ -82,7 +82,7 @@ export class VcController {
         if (status && Object.values(VCRole).includes(role as VCRole)) {
             whereCondition.role = role as VCRole;
         }
-        const [result, total] = await this.vcService.findAllWithConditions(
+        const [result, total] = await this.vcService.findAll(
             page,
             limit,
             whereCondition,
@@ -117,7 +117,6 @@ export class VcController {
             case "VerifiableEducationID202311": {
                 const vc_data =
                     createVcDto.data as unknown as VerifiableEducationalID;
-
                 const did = await this.vcService.getOrCreateDid(
                     vc_data.credentialSubject.id,
                 );

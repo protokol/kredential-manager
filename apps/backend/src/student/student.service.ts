@@ -17,6 +17,17 @@ export class StudentService {
         return this.studentsRepository.save(student);
     }
 
+    async findOne(id: number): Promise<Student> {
+        const student = await this.studentsRepository.findOne({
+            where: { student_id: id },
+            relations: ["dids"],
+        });
+        if (!student) {
+            throw new Error(`Student with ID ${id} not found`);
+        }
+        return student;
+    }
+
     findAll(): Promise<Student[]> {
         return this.studentsRepository.find({ relations: ["dids"] });
     }
@@ -45,6 +56,14 @@ export class StudentService {
         });
         if (!student) {
             throw new Error(`Student with ID ${studentId} not found`);
+        }
+        const existingDid = student.dids.find(
+            (did) => did.identifier === didIdentifier,
+        );
+        if (existingDid) {
+            throw new Error(
+                `DID ${didIdentifier} is already attached to student with ID ${studentId}`,
+            );
         }
         const did = new Did();
         did.identifier = didIdentifier;

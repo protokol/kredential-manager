@@ -41,7 +41,7 @@ const DeviceScreenWrapper: FC<PropsWithChildren> = ({ children }) => {
     );
   }
 
-  return <div>{children}</div>;
+  return children;
 };
 
 export default DeviceScreenWrapper;

@@ -7,6 +7,8 @@ import {
     Param,
     Patch,
     NotFoundException,
+    HttpCode,
+    HttpStatus,
 } from "@nestjs/common";
 import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
 import { Public } from "nest-keycloak-connect";
@@ -17,6 +19,16 @@ import { VCRole, VCStatus } from "src/types/VC";
 import { UpdateStatusDto } from "./dto/update-status.dto";
 import { VcService } from "./vc.service";
 import { Student } from "src/student/entities/student.entity";
+import {
+    Pagination,
+    PaginationParams,
+} from "src/types/pagination/PaginationParams";
+import { Sorting, SortingParams } from "src/types/pagination/SortingParams";
+import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
+import {
+    Filtering,
+    FilteringParams,
+} from "src/types/pagination/FilteringParams";
 
 @Controller("verifiable-credentials")
 export class VcController {
@@ -68,35 +80,14 @@ export class VcController {
     }
 
     @Get()
+    @HttpCode(HttpStatus.OK)
     @Public(true)
     async getAll(
-        @Query("page") page: number = 1,
-        @Query("limit") limit: number = 10,
-        @Query("status") status?: string,
-        @Query("role") role?: string,
-    ): Promise<any> {
-        const pageNumber = Number(page);
-        const pageLimit = Number(limit);
-        const whereCondition: { status?: VCStatus; role?: VCRole } = {};
-        if (status && Object.values(VCStatus).includes(status as VCStatus)) {
-            whereCondition.status = status as VCStatus;
-        }
-        if (status && Object.values(VCRole).includes(role as VCRole)) {
-            whereCondition.role = role as VCRole;
-        }
-        const [result, total] = await this.vcService.findAll(
-            page,
-            limit,
-            whereCondition,
-        );
-
-        return {
-            data: result,
-            total,
-            page: pageNumber,
-            limit: pageLimit,
-            last_page: Math.ceil(total / limit),
-        };
+        @PaginationParams() paginationParams: Pagination,
+        @SortingParams(["displayName"]) sort?: Sorting,
+        @FilteringParams([]) filter?: Filtering,
+    ): Promise<PaginatedResource<Partial<VerifiableCredential>>> {
+        return await this.vcService.findAll(paginationParams, sort, filter);
     }
 
     @Post()

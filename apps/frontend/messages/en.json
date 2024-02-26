@@ -27,6 +27,18 @@
     "email_placeholder": "email@university.com",
     "password_placeholder": "Insert password"
   },
+  "not_found_page": {
+    "error_404": "Error 404",
+    "page_not_found_info": "Page can not be found. We assume it went on a coffee break.",
+    "take_me_home": "Take me home",
+    "seeing_this_page": "Seeing this page by mistake?",
+    "report_issue_here": "Report issue here."
+  },
+  "desktop_only_page": {
+    "hey_there":"Hey there...",
+    "breakpoint_info": "It appears that you're attempting to access this through your phone. We recommend using your desktop device instead. Seeing this page by mistake?",
+    "report_issue_here":"Report issue here."
+  },
   "dashboard": {
     "good_afternoon": "Good afternoon, {username}"
   }

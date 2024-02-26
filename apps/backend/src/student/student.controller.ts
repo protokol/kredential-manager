@@ -6,12 +6,25 @@ import {
     Param,
     Put,
     Delete,
+    Query,
+    HttpStatus,
+    HttpCode,
 } from "@nestjs/common";
 import { StudentService } from "./student.service";
 import { CreateStudentDto } from "./dto/create-student.dto";
 import { Student } from "./entities/student.entity";
 import { Public } from "nest-keycloak-connect";
 import { AttachDidDto } from "./dto/attach-did.dto";
+import {
+    Pagination,
+    PaginationParams,
+} from "src/types/pagination/PaginationParams";
+import { Sorting, SortingParams } from "src/types/pagination/SortingParams";
+import {
+    Filtering,
+    FilteringParams,
+} from "src/types/pagination/FilteringParams";
+import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
 
 @Controller("students")
 export class StudentController {
@@ -24,9 +37,18 @@ export class StudentController {
     }
 
     @Get()
+    @HttpCode(HttpStatus.OK)
     @Public(true)
-    findAll(): Promise<Student[]> {
-        return this.studentService.findAll();
+    async getAll(
+        @PaginationParams() paginationParams: Pagination,
+        @SortingParams(["first_name"]) sort?: Sorting,
+        @FilteringParams(["first_name"]) filter?: Filtering,
+    ): Promise<PaginatedResource<Partial<Student>>> {
+        return await this.studentService.findAll(
+            paginationParams,
+            sort,
+            filter,
+        );
     }
 
     @Get(":id")

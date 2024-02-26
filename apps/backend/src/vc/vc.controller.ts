@@ -16,12 +16,14 @@ import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } fr
 import { VCRole, VCStatus } from "src/types/VC";
 import { UpdateStatusDto } from "./dto/update-status.dto";
 import { VcService } from "./vc.service";
+import { Student } from "src/student/entities/student.entity";
+
 @Controller("verifiable-credentials")
 export class VcController {
     constructor(
         private readonly vcService: VcService,
         // eslint-disable-next-line prettier/prettier
-    ) {}
+    ) { }
 
     // Note: Count needs to be defined before :id route
     @Get("/count")

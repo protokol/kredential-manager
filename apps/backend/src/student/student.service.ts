@@ -1,10 +1,15 @@
-import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Connection, Repository } from "typeorm";
 import { Student } from "./entities/student.entity";
 import { CreateStudentDto } from "./dto/create-student.dto";
 import { Did } from "./entities/did.entity";
 import dataSource from "src/db/dataSource";
+import { Pagination } from "src/types/pagination/PaginationParams";
+import { Sorting } from "src/types/pagination/SortingParams";
+import { Filtering } from "src/types/pagination/FilteringParams";
+import { getOrder, getWhere } from "src/helpers/Order";
+import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class StudentService {
@@ -31,27 +36,29 @@ export class StudentService {
         return student;
     }
 
-    findAll(): Promise<Student[]> {
-        return this.studentsRepository.find({ relations: ["dids"] });
+    async findAll(
+        { page, limit, size, offset }: Pagination,
+        sort?: Sorting,
+        filter?: Filtering,
+    ): Promise<PaginatedResource<Partial<Student>>> {
+        const where = getWhere(filter);
+        const order = getOrder(sort);
+
+        const [languages, total] = await this.studentsRepository.findAndCount({
+            where,
+            order,
+            take: limit,
+            skip: offset,
+            relations: ["dids"],
+        });
+
+        return {
+            totalItems: total,
+            items: languages,
+            page,
+            size,
+        };
     }
-
-    // async findAllWithPaginationAndFilters(
-    //     page: number = 1,
-    //     limit: number = 10,
-    //     filters: Partial<Student>,
-    // ): Promise<{  Student[];  number }> {
-    //     const [result, total] = await this.studentsRepository.findAndCount({
-    //         where: filters,
-    //         take: limit,
-    //         skip: (page - 1) * limit,
-    //         relations: ["dids"],
-    //     });
-
-    //     return {
-    //         data: result,
-    //         total,
-    //     };
-    // }
 
     async update(
         id: number,

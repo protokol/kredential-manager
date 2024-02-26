@@ -13,4 +13,4 @@ import { Did } from "./entities/did.entity";
     providers: [StudentService, VcService],
     controllers: [StudentController],
 })
-export class StudentModule { }
+export class StudentModule {}

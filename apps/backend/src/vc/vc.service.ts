@@ -17,7 +17,7 @@ export class VcService {
         private vcRepository: Repository<VerifiableCredential>,
         @InjectRepository(Did)
         private didRepository: Repository<Did>,
-    ) { }
+    ) {}
 
     async findOne(id: number): Promise<VerifiableCredential | null> {
         try {

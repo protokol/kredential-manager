@@ -6,14 +6,12 @@ import {
     Param,
     Put,
     Delete,
-    Query,
     HttpStatus,
     HttpCode,
 } from "@nestjs/common";
 import { StudentService } from "./student.service";
 import { CreateStudentDto } from "./dto/create-student.dto";
 import { Student } from "./entities/student.entity";
-import { Public } from "nest-keycloak-connect";
 import { AttachDidDto } from "./dto/attach-did.dto";
 import {
     Pagination,
@@ -28,17 +26,16 @@ import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
 
 @Controller("students")
 export class StudentController {
-    constructor(private readonly studentService: StudentService) { }
+    constructor(private readonly studentService: StudentService) {}
 
     @Post()
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
         return this.studentService.create(createStudentDto);
     }
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @Public(true)
     async getAll(
         @PaginationParams() paginationParams: Pagination,
         @SortingParams(["first_name"]) sort?: Sorting,
@@ -52,13 +49,13 @@ export class StudentController {
     }
 
     @Get(":id")
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     async view(@Param("id") id: string): Promise<Student> {
         return this.studentService.findOne(+id);
     }
 
     @Put(":id")
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     update(
         @Param("id") id: string,
         @Body() updateStudentDto: CreateStudentDto,
@@ -67,7 +64,7 @@ export class StudentController {
     }
 
     @Post(":id/dids")
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     async addDidToStudent(
         @Param("id") id: string,
         @Body() attachDidDto: AttachDidDto,
@@ -79,7 +76,7 @@ export class StudentController {
     }
 
     @Delete(":studentId/dids/:didId")
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     async removeDidFromStudent(
         @Param("studentId") studentId: string,
         @Param("didId") didId: string,

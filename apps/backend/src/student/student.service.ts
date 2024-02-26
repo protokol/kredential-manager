@@ -16,9 +16,7 @@ export class StudentService {
     constructor(
         @InjectRepository(Student)
         private studentsRepository: Repository<Student>,
-        @InjectRepository(Did)
-        private didsRepository: Repository<Did>,
-    ) { }
+    ) {}
 
     create(createStudentDto: CreateStudentDto): Promise<Student> {
         const student = this.studentsRepository.create(createStudentDto);

@@ -6,19 +6,17 @@ import {
     Post,
     Param,
     Patch,
-    NotFoundException,
     HttpCode,
     HttpStatus,
+    BadRequestException,
 } from "@nestjs/common";
 import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
-import { Public } from "nest-keycloak-connect";
 import { CreateVcDto } from "./dto/create-vc.dto";
 import { VerifiableEducationalID } from "src/types/schema/VerifiableEducationID202311";
 import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } from "src/types/schema/VerifiableDiploma202211";
 import { VCRole, VCStatus } from "src/types/VC";
 import { UpdateStatusDto } from "./dto/update-status.dto";
 import { VcService } from "./vc.service";
-import { Student } from "src/student/entities/student.entity";
 import {
     Pagination,
     PaginationParams,
@@ -35,11 +33,11 @@ export class VcController {
     constructor(
         private readonly vcService: VcService,
         // eslint-disable-next-line prettier/prettier
-    ) { }
+    ) {}
 
     // Note: Count needs to be defined before :id route
     @Get("/count")
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     async getCountByStatus(
         @Query("status") status?: VCStatus,
     ): Promise<{ count: number }> {
@@ -52,7 +50,7 @@ export class VcController {
     }
 
     @Patch(":id/status")
-    @Public(true) // TODO Integrate auth
+    @HttpCode(HttpStatus.OK)
     async updateStatus(
         @Param("id") id: string,
         @Body() updatePayload: UpdateStatusDto,
@@ -62,7 +60,7 @@ export class VcController {
 
         const updateResult = await this.vcService.update(id, updatePayload);
         if (updateResult.affected === 0) {
-            throw new NotFoundException(
+            throw new BadRequestException(
                 `Credential with ID "${id}" not found.`,
             );
         }
@@ -70,18 +68,17 @@ export class VcController {
     }
 
     @Get(":id")
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     async getOne(@Param("id") id: number): Promise<any> {
         const item = await this.vcService.findOne(id);
         if (!item) {
-            throw new NotFoundException(`Item with ID ${id} not found.`);
+            throw new BadRequestException(`Item with ID ${id} not found.`);
         }
         return item;
     }
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @Public(true)
     async getAll(
         @PaginationParams() paginationParams: Pagination,
         @SortingParams(["displayName"]) sort?: Sorting,
@@ -91,7 +88,7 @@ export class VcController {
     }
 
     @Post()
-    @Public(true) // TODO Integrate auth
+    @HttpCode(HttpStatus.OK)
     async create(@Body() createVcDto: CreateVcDto) {
         console.log({ createVcDto });
         const newCredentialData = {
@@ -113,7 +110,6 @@ export class VcController {
                 const did = await this.vcService.getOrCreateDid(
                     vc_data.credentialSubject.id,
                 );
-                console.log({ did });
                 newCredentialData.did = did.id;
                 newCredentialData.displayName =
                     vc_data.credentialSubject.displayName ?? "";
@@ -139,7 +135,9 @@ export class VcController {
                 break;
             }
             default: {
-                throw new Error(`Unknown type "${createVcDto.type}"`);
+                throw new BadRequestException(
+                    `Unknown type "${createVcDto.type}"`,
+                );
             }
         }
 

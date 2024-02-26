@@ -11,10 +11,11 @@ import { StudentService } from "./student.service";
 import { CreateStudentDto } from "./dto/create-student.dto";
 import { Student } from "./entities/student.entity";
 import { Public } from "nest-keycloak-connect";
+import { AttachDidDto } from "./dto/attach-did.dto";
 
 @Controller("students")
 export class StudentController {
-    constructor(private readonly studentService: StudentService) {}
+    constructor(private readonly studentService: StudentService) { }
 
     @Post()
     @Public(true)
@@ -47,9 +48,12 @@ export class StudentController {
     @Public(true)
     async addDidToStudent(
         @Param("id") id: string,
-        @Body("didIdentifier") didIdentifier: string,
+        @Body() attachDidDto: AttachDidDto,
     ): Promise<Student> {
-        return this.studentService.attachDidToStudent(+id, didIdentifier);
+        return this.studentService.attachDidToStudent(
+            +id,
+            attachDidDto.identifier,
+        );
     }
 
     @Delete(":studentId/dids/:didId")

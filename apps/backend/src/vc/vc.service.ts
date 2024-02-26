@@ -1,8 +1,13 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
 import { DeepPartial, Repository, UpdateResult } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Did } from "src/student/entities/did.entity";
+import { Pagination } from "src/types/pagination/PaginationParams";
+import { Sorting } from "src/types/pagination/SortingParams";
+import { Filtering } from "src/types/pagination/FilteringParams";
+import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
+import { getOrder, getWhere } from "src/helpers/Order";
 
 @Injectable()
 export class VcService {
@@ -21,7 +26,7 @@ export class VcService {
                 relations: ["did", "did.student"],
             });
             if (vc === null) {
-                throw new Error("No record found.");
+                throw new BadRequestException("No record found.");
             }
             return vc;
         } catch (error) {
@@ -63,14 +68,18 @@ export class VcService {
     }
 
     async findAll(
-        page: number,
-        limit: number,
-        whereCondition: any,
-    ): Promise<[VerifiableCredential[], number]> {
-        const [result, total] = await this.vcRepository.findAndCount({
-            where: whereCondition,
+        { page, limit, size, offset }: Pagination,
+        sort?: Sorting,
+        filter?: Filtering,
+    ): Promise<PaginatedResource<Partial<VerifiableCredential>>> {
+        const where = getWhere(filter);
+        const order = getOrder(sort);
+
+        const [languages, total] = await this.vcRepository.findAndCount({
+            where,
+            order,
             take: limit,
-            skip: (page - 1) * limit,
+            skip: offset,
             select: [
                 "id",
                 "displayName", // *: What happends if vc was not filled correctly => this will be different to the matched student inside did
@@ -85,7 +94,13 @@ export class VcService {
             ],
             relations: ["did", "did.student"],
         });
-        return [result, total];
+
+        return {
+            totalItems: total,
+            items: languages,
+            page,
+            size,
+        };
     }
 
     async count(whereCondition: any): Promise<number> {

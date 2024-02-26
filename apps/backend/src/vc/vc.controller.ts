@@ -6,16 +6,28 @@ import {
     Post,
     Param,
     Patch,
-    NotFoundException,
+    HttpCode,
+    HttpStatus,
+    BadRequestException,
 } from "@nestjs/common";
 import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
-import { Public } from "nest-keycloak-connect";
 import { CreateVcDto } from "./dto/create-vc.dto";
 import { VerifiableEducationalID } from "src/types/schema/VerifiableEducationID202311";
 import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } from "src/types/schema/VerifiableDiploma202211";
 import { VCRole, VCStatus } from "src/types/VC";
 import { UpdateStatusDto } from "./dto/update-status.dto";
 import { VcService } from "./vc.service";
+import {
+    Pagination,
+    PaginationParams,
+} from "src/types/pagination/PaginationParams";
+import { Sorting, SortingParams } from "src/types/pagination/SortingParams";
+import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
+import {
+    Filtering,
+    FilteringParams,
+} from "src/types/pagination/FilteringParams";
+
 @Controller("verifiable-credentials")
 export class VcController {
     constructor(
@@ -25,7 +37,7 @@ export class VcController {
 
     // Note: Count needs to be defined before :id route
     @Get("/count")
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     async getCountByStatus(
         @Query("status") status?: VCStatus,
     ): Promise<{ count: number }> {
@@ -38,7 +50,7 @@ export class VcController {
     }
 
     @Patch(":id/status")
-    @Public(true) // TODO Integrate auth
+    @HttpCode(HttpStatus.OK)
     async updateStatus(
         @Param("id") id: string,
         @Body() updatePayload: UpdateStatusDto,
@@ -48,7 +60,7 @@ export class VcController {
 
         const updateResult = await this.vcService.update(id, updatePayload);
         if (updateResult.affected === 0) {
-            throw new NotFoundException(
+            throw new BadRequestException(
                 `Credential with ID "${id}" not found.`,
             );
         }
@@ -56,49 +68,27 @@ export class VcController {
     }
 
     @Get(":id")
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     async getOne(@Param("id") id: number): Promise<any> {
         const item = await this.vcService.findOne(id);
         if (!item) {
-            throw new NotFoundException(`Item with ID ${id} not found.`);
+            throw new BadRequestException(`Item with ID ${id} not found.`);
         }
         return item;
     }
 
     @Get()
-    @Public(true)
+    @HttpCode(HttpStatus.OK)
     async getAll(
-        @Query("page") page: number = 1,
-        @Query("limit") limit: number = 10,
-        @Query("status") status?: string,
-        @Query("role") role?: string,
-    ): Promise<any> {
-        const pageNumber = Number(page);
-        const pageLimit = Number(limit);
-        const whereCondition: { status?: VCStatus; role?: VCRole } = {};
-        if (status && Object.values(VCStatus).includes(status as VCStatus)) {
-            whereCondition.status = status as VCStatus;
-        }
-        if (status && Object.values(VCRole).includes(role as VCRole)) {
-            whereCondition.role = role as VCRole;
-        }
-        const [result, total] = await this.vcService.findAll(
-            page,
-            limit,
-            whereCondition,
-        );
-
-        return {
-            data: result,
-            total,
-            page: pageNumber,
-            limit: pageLimit,
-            last_page: Math.ceil(total / limit),
-        };
+        @PaginationParams() paginationParams: Pagination,
+        @SortingParams(["displayName"]) sort?: Sorting,
+        @FilteringParams([]) filter?: Filtering,
+    ): Promise<PaginatedResource<Partial<VerifiableCredential>>> {
+        return await this.vcService.findAll(paginationParams, sort, filter);
     }
 
     @Post()
-    @Public(true) // TODO Integrate auth
+    @HttpCode(HttpStatus.OK)
     async create(@Body() createVcDto: CreateVcDto) {
         console.log({ createVcDto });
         const newCredentialData = {
@@ -120,7 +110,6 @@ export class VcController {
                 const did = await this.vcService.getOrCreateDid(
                     vc_data.credentialSubject.id,
                 );
-                console.log({ did });
                 newCredentialData.did = did.id;
                 newCredentialData.displayName =
                     vc_data.credentialSubject.displayName ?? "";
@@ -146,7 +135,9 @@ export class VcController {
                 break;
             }
             default: {
-                throw new Error(`Unknown type "${createVcDto.type}"`);
+                throw new BadRequestException(
+                    `Unknown type "${createVcDto.type}"`,
+                );
             }
         }
 

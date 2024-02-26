@@ -1,9 +1,15 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
 import { Student } from "./entities/student.entity";
 import { CreateStudentDto } from "./dto/create-student.dto";
 import { Did } from "./entities/did.entity";
+import dataSource from "src/db/dataSource";
+import { Pagination } from "src/types/pagination/PaginationParams";
+import { Sorting } from "src/types/pagination/SortingParams";
+import { Filtering } from "src/types/pagination/FilteringParams";
+import { getOrder, getWhere } from "src/helpers/Order";
+import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class StudentService {
@@ -23,13 +29,33 @@ export class StudentService {
             relations: ["dids"],
         });
         if (!student) {
-            throw new Error(`Student with ID ${id} not found`);
+            throw new BadRequestException(`Student with ID ${id} not found`);
         }
         return student;
     }
 
-    findAll(): Promise<Student[]> {
-        return this.studentsRepository.find({ relations: ["dids"] });
+    async findAll(
+        { page, limit, size, offset }: Pagination,
+        sort?: Sorting,
+        filter?: Filtering,
+    ): Promise<PaginatedResource<Partial<Student>>> {
+        const where = getWhere(filter);
+        const order = getOrder(sort);
+
+        const [languages, total] = await this.studentsRepository.findAndCount({
+            where,
+            order,
+            take: limit,
+            skip: offset,
+            relations: ["dids"],
+        });
+
+        return {
+            totalItems: total,
+            items: languages,
+            page,
+            size,
+        };
     }
 
     async update(
@@ -40,7 +66,7 @@ export class StudentService {
             where: { student_id: id },
         });
         if (!student) {
-            throw new Error(`Student with ID ${id} not found`);
+            throw new BadRequestException(`Student with ID ${id} not found`);
         }
         const updatedStudent = Object.assign(student, updateStudentDto);
         return this.studentsRepository.save(updatedStudent);
@@ -48,30 +74,39 @@ export class StudentService {
 
     async attachDidToStudent(
         studentId: number,
-        didIdentifier: string,
+        identifier: string,
     ): Promise<Student> {
         const student = await this.studentsRepository.findOne({
             where: { student_id: studentId },
             relations: ["dids"],
         });
         if (!student) {
-            throw new Error(`Student with ID ${studentId} not found`);
-        }
-        const existingDid = student.dids.find(
-            (did) => did.identifier === didIdentifier,
-        );
-        if (existingDid) {
-            throw new Error(
-                `DID ${didIdentifier} is already attached to student with ID ${studentId}`,
+            throw new BadRequestException(
+                `Student with ID ${studentId} not found`,
             );
         }
-        const did = new Did();
-        did.identifier = didIdentifier;
-        did.student = student;
-        student.dids.push(did);
+
+        const existingDid = student.dids.find(
+            (did) => did.identifier === identifier,
+        );
+        if (existingDid) {
+            throw new BadRequestException(
+                `DID ${identifier} is already attached to student with ID ${studentId}`,
+            );
+        }
 
         await this.studentsRepository.save(student);
-        return student;
+        await dataSource.transaction(async (transactionalEntityManager) => {
+            const did = new Did();
+            did.identifier = identifier;
+            did.student = student;
+            await transactionalEntityManager.save(did);
+        });
+        const updatedStudent = await this.studentsRepository.findOne({
+            where: { student_id: studentId },
+            relations: ["dids"],
+        });
+        return updatedStudent;
     }
 
     async removeDidFromStudent(
@@ -83,11 +118,13 @@ export class StudentService {
             relations: ["dids"],
         });
         if (!student) {
-            throw new Error(`Student with ID ${studentId} not found`);
+            throw new BadRequestException(
+                `Student with ID ${studentId} not found`,
+            );
         }
         const didIndex = student.dids.findIndex((did) => did.id === didId);
         if (didIndex === -1) {
-            throw new Error(
+            throw new BadRequestException(
                 `Did with ID ${didId} not found for student with ID ${studentId}`,
             );
         }

@@ -20,7 +20,7 @@ export const main = async (): Promise<void> => {
     // const ethWallet = ethers.Wallet.createRandom();
     // console.log(ethWallet.mnemonic?.phrase)
     const ethWallet = ethers.Wallet.fromPhrase(
-        "future liberty worry fade result one unfold remember trumpet dismiss damp boost",
+        "wheat sleep convince pledge crash metal beach once visit olympic pepper mixture",
     );
     const privateKeyHex = ethWallet.privateKey;
     const privateKeyJwk = getPrivateKeyJwkES256(privateKeyHex);
@@ -35,7 +35,7 @@ export const main = async (): Promise<void> => {
      * */
     const initiateCredentialOfferEndpoint =
         "https://api-conformance.ebsi.eu/conformance/v3/issuer-mock/initiate-credential-offer";
-    const credentialType = "CTWalletCrossInTime";
+    const credentialType = "CTWalletCrossAuthorisedInTime";
     const requestParams = {
         credential_type: credentialType,
         credential_offer_endpoint: "openid-credential-offer://",
@@ -76,7 +76,7 @@ export const main = async (): Promise<void> => {
     const requestedTypes = [
         "VerifiableCredential",
         "VerifiableAttestation",
-        "CTWalletCrossInTime",
+        "CTWalletCrossAuthorisedInTime",
     ];
     const inputAlg = "ES256";
     const codeVerifier = randomBytes(50).toString("base64url");

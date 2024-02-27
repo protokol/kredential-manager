@@ -27,25 +27,23 @@ import {
     Filtering,
     FilteringParams,
 } from "src/types/pagination/FilteringParams";
+import { Public, Resource } from "nest-keycloak-connect";
 
 @Controller("verifiable-credentials")
+@Resource("Verifiable-credentials")
 export class VcController {
     constructor(
         private readonly vcService: VcService,
         // eslint-disable-next-line prettier/prettier
-    ) {}
+    ) { }
 
     // Note: Count needs to be defined before :id route
     @Get("/count")
     @HttpCode(HttpStatus.OK)
     async getCountByStatus(
-        @Query("status") status?: VCStatus,
+        @FilteringParams(["status"]) filter?: Filtering,
     ): Promise<{ count: number }> {
-        const whereCondition: { status?: VCStatus } = {};
-        if (status && Object.values(VCStatus).includes(status as VCStatus)) {
-            whereCondition.status = status as VCStatus;
-        }
-        const count = await this.vcService.count(whereCondition);
+        const count = await this.vcService.count(filter);
         return { count };
     }
 
@@ -81,9 +79,11 @@ export class VcController {
     @HttpCode(HttpStatus.OK)
     async getAll(
         @PaginationParams() paginationParams: Pagination,
-        @SortingParams(["displayName"]) sort?: Sorting,
-        @FilteringParams([]) filter?: Filtering,
+        @SortingParams(["displayName", "created_at", "role", "status"])
+        sort?: Sorting,
+        @FilteringParams(["status"]) filter?: Filtering,
     ): Promise<PaginatedResource<Partial<VerifiableCredential>>> {
+        console.log({ paginationParams, sort, filter });
         return await this.vcService.findAll(paginationParams, sort, filter);
     }
 

@@ -86,6 +86,7 @@ export class VcService {
                 "dateOfBirth", // *
                 "status",
                 "role",
+                "type",
                 "displayName",
                 "created_at",
                 "updated_at",

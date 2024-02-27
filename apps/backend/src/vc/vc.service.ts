@@ -17,7 +17,7 @@ export class VcService {
         private vcRepository: Repository<VerifiableCredential>,
         @InjectRepository(Did)
         private didRepository: Repository<Did>,
-    ) {}
+    ) { }
 
     async findOne(id: number): Promise<VerifiableCredential | null> {
         try {
@@ -74,7 +74,6 @@ export class VcService {
     ): Promise<PaginatedResource<Partial<VerifiableCredential>>> {
         const where = getWhere(filter);
         const order = getOrder(sort);
-
         const [languages, total] = await this.vcRepository.findAndCount({
             where,
             order,
@@ -103,9 +102,19 @@ export class VcService {
         };
     }
 
-    async count(whereCondition: any): Promise<number> {
-        return this.vcRepository.count({
-            where: whereCondition,
-        });
+    async count(filter?: Filtering): Promise<any> {
+        const where = getWhere(filter);
+        const query = this.vcRepository
+            .createQueryBuilder("vc")
+            .select("vc.status", "status")
+            .addSelect("COUNT(*)", "count")
+            .where(where)
+            .groupBy("vc.status");
+
+        return query.getRawMany();
+        // return this.vcRepository.count({
+        //     where,
+        //     groupBy: ["status"],
+        // });
     }
 }

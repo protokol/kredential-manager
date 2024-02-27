@@ -46,7 +46,6 @@ export const FilteringParams = createParamDecorator(
         ) {
             throw new BadRequestException("Invalid filter parameter");
         }
-
         // extract the parameters and validate if the rule and the property are valid
         const [property, rule, value] = filter.split(":");
         if (!data.includes(property))

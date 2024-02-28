@@ -1,8 +1,9 @@
+import PendingContent from '@components/composed/credentials/pending/list/PendingContent';
 import ContentLayout from '@components/composed/layout/ContentLayout';
 
 const PendingPage = () => (
   <ContentLayout title='Pending'>
-    <div>Pending content</div>
+    <PendingContent />
   </ContentLayout>
 );
 

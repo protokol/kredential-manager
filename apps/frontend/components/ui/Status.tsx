@@ -3,7 +3,7 @@ import { type VariantProps, cva } from 'class-variance-authority';
 import { cn } from '@utils/cn';
 
 const statusVariants = cva(
-  'flex items-center justify-center px-2.5 py-1 rounded-lg h-22 w-fit text-white text-sm',
+  'flex items-center justify-center px-2.5 py-1 rounded-lg h-22 w-fit text-white text-sm min-w-20',
   {
     variants: {
       variant: {
@@ -18,7 +18,7 @@ const statusVariants = cva(
   }
 );
 
-type Variant = 'pending' | 'rejected' | 'approved';
+export type Variant = 'pending' | 'rejected' | 'approved';
 
 type VariantTexts = {
   [key in Variant]: string;

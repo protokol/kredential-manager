@@ -11,13 +11,13 @@ type UseServerSideTableProps = UseServerSidePaginationProps &
     apiParamList?: Record<string, unknown>;
   };
 const useServerSideTable = ({
-  absoluteCount,
+  totalItems,
   mappingFn,
   apiParamList
 }: UseServerSideTableProps) => {
   const { paginationApiConfig, paginationConfig, resetPagination } =
     useServerSidePagination({
-      absoluteCount
+      totalItems
     });
   const { sortApiConfig, sortConfig } = useServerSideSorting({
     mappingFn

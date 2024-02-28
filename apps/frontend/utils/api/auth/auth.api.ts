@@ -2,6 +2,7 @@ import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 
 import type { TSignInPayload } from '@utils/api/auth/auth.type';
+import { removeTokensFromStorage } from '@utils/api/auth/auth.utils';
 import { setAccessToken } from '@utils/configs/axios';
 
 const KEYCLOAK_URL = process.env.NEXT_PUBLIC_AUTH_API_URL;
@@ -14,7 +15,7 @@ const authHeaders = {
 
 export const refreshAccessToken = async (
   refreshToken: string | null
-): Promise<string | null> => {
+): Promise<string | undefined | null> => {
   if (!refreshToken) return null;
 
   try {
@@ -33,7 +34,8 @@ export const refreshAccessToken = async (
     setAccessToken(newAccessToken);
     return newAccessToken;
   } catch (error) {
-    return null;
+    removeTokensFromStorage();
+    window.location.href = '/auth/sign-in';
   }
 };
 

@@ -8,7 +8,7 @@ type DateCellProps = {
 const DateCell: FC<DateCellProps> = ({ value }) => {
   if (!value) return null;
 
-  const dateObj = new Date(value * 1000);
+  const dateObj = new Date(value);
 
   return formatShortDate(dateObj);
 };

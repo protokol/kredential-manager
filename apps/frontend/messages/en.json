@@ -35,11 +35,28 @@
     "report_issue_here": "Report issue here."
   },
   "desktop_only_page": {
-    "hey_there":"Hey there...",
+    "hey_there": "Hey there...",
     "breakpoint_info": "It appears that you're attempting to access this through your phone. We recommend using your desktop device instead. Seeing this page by mistake?",
-    "report_issue_here":"Report issue here."
+    "report_issue_here": "Report issue here."
   },
   "dashboard": {
     "good_afternoon": "Good afternoon, {username}"
+  },
+  "credentials": {
+    "latest_requests": "Latest requests",
+    "columns": {
+      "name": "Name",
+      "date_requested": "Date requested",
+      "role": "Role",
+      "type": "Type",
+      "email": "Email",
+      "status": "Status",
+      "actions": "Actions",
+      "view": "View",
+      "approve": "Approve",
+      "reject": "Reject",
+      "report": "Report",
+      "quick_actions": "Quick actions"
+    }
   }
 }

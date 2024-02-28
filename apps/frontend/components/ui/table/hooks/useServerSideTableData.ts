@@ -6,12 +6,12 @@ import useServerSideTable from '@ui/table/hooks/useServerSideTable';
 
 type ApiParams = {
   offset?: number;
-  limit?: number;
+  size?: number;
   sortBy?: string;
 } & Record<string, unknown>;
 
 type TBaseResponse = {
-  absoluteCount?: number;
+  totalItems?: number;
 };
 
 type UseServerSideTableDataProps<T> = UseServerSideSortingProps & {
@@ -25,13 +25,13 @@ const useServerSideTableData = <T extends TBaseResponse>({
   mappingFn
 }: UseServerSideTableDataProps<T>) => {
   /*
-   * We're saving absoluteCount in state because the value needs to be used before it is defined.
+   * We're saving totalItems in state because the value needs to be used before it is defined.
    * Since useDataHook requires tableConfig.apiParams, we can't change the order of the hooks.
    */
-  const [absoluteCount, setAbsoluteCount] = useState<number>(0);
+  const [totalItems, setTotalItems] = useState<number>(0);
   const tableConfig = useServerSideTable({
     mappingFn,
-    absoluteCount
+    totalItems
   });
 
   const { data, ...hookData } = useDataHook({
@@ -44,10 +44,10 @@ const useServerSideTableData = <T extends TBaseResponse>({
   });
 
   useEffect(() => {
-    if (typeof data?.absoluteCount == 'number') {
-      setAbsoluteCount(data?.absoluteCount);
+    if (typeof data?.totalItems == 'number') {
+      setTotalItems(data?.totalItems);
     }
-  }, [data?.absoluteCount]);
+  }, [data?.totalItems]);
 
   return {
     ...hookData,

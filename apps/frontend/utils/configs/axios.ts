@@ -11,7 +11,18 @@ import {
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 const request: AxiosInstance = axios.create({
-  baseURL: BASE_URL
+  baseURL: BASE_URL,
+  paramsSerializer: (params) =>
+    Object.entries(params)
+      .filter(([, value]) => value !== undefined)
+      .map(([key, value]) => {
+        if (Array.isArray(value)) {
+          return value.map((element) => `${key}=${element}`).join('&');
+        }
+
+        return `${key}=${value}`;
+      })
+      .join('&')
 });
 
 export const setAccessToken = (accessToken: string | null) => {

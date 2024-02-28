@@ -11,20 +11,20 @@ type PaginationState = {
 const defaultPaginationState = { currentPage: 1, resultsPerPage: 10 };
 
 export type UseServerSidePaginationProps = {
-  absoluteCount?: number;
+  totalItems?: number;
 };
 
 type UseServerSidePaginationReturn = {
   paginationApiConfig: {
-    offset: number;
-    limit: number;
+    page: number;
+    size: number;
   };
   paginationConfig: TablePaginationConfig;
   resetPagination: () => void;
 };
 
 const useServerSidePagination = ({
-  absoluteCount
+  totalItems
 }: UseServerSidePaginationProps): UseServerSidePaginationReturn => {
   const [paginationState, setPaginationState] = useState<PaginationState>(
     defaultPaginationState
@@ -41,12 +41,11 @@ const useServerSidePagination = ({
     () => ({
       resetPagination,
       paginationApiConfig: {
-        offset:
-          (paginationState.currentPage - 1) * paginationState.resultsPerPage,
-        limit: paginationState.resultsPerPage
+        page: paginationState.currentPage - 1,
+        size: paginationState.resultsPerPage
       },
       paginationConfig: {
-        totalResults: absoluteCount ?? 0,
+        totalResults: totalItems ?? 0,
         resultsPerPage: paginationState.resultsPerPage,
         currentPage: paginationState.currentPage,
         setResultsPerPage: (resultsPerPage: number) => {
@@ -61,7 +60,7 @@ const useServerSidePagination = ({
       }
     }),
     [
-      absoluteCount,
+      totalItems,
       paginationState.currentPage,
       paginationState.resultsPerPage,
       resetPagination

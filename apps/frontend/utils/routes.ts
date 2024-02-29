@@ -7,14 +7,8 @@ export const routes = {
       overall: {
         home: '/app/credentials/overall'
       },
-      approved: {
-        home: '/app/credentials/approved'
-      },
       pending: {
         home: '/app/credentials/pending'
-      },
-      rejected: {
-        home: '/app/credentials/rejected'
       }
     },
     students: {

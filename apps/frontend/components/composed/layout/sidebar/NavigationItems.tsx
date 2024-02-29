@@ -74,20 +74,10 @@ const NavigationItems: FC<NavigationItemsProps> = ({
             href: routes.app.credentials.overall.home
           },
           {
-            id: 'credentials-approved',
-            name: t('navigation.approved'),
-            href: routes.app.credentials.approved.home
-          },
-          {
             id: 'credentials-pending',
             name: t('navigation.pending'),
             href: routes.app.credentials.pending.home,
             notifications: 70
-          },
-          {
-            id: 'credentials-rejected',
-            name: t('navigation.rejected'),
-            href: routes.app.credentials.rejected.home
           }
         ]
       },

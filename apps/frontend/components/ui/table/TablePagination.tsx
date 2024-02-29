@@ -32,7 +32,7 @@ const TablePagination: FC<TablePaginationProps> = ({
       size='icon-default'
       variant='secondary'
       disabled={currentPage === 1 || disabled}
-      className='ml-6'
+      className='ml-6 rounded'
       onClick={() => onPageChange(currentPage - 1)}
     >
       <ChevronLeftIcon className='h-4 w-4 flex-shrink-0' />
@@ -40,6 +40,7 @@ const TablePagination: FC<TablePaginationProps> = ({
     <Button
       size='icon-default'
       variant='secondary'
+      className='rounded'
       disabled={currentPage >= totalPages || disabled}
       onClick={() => onPageChange(currentPage + 1)}
     >

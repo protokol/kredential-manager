@@ -30,6 +30,7 @@ const PendingContent = () => {
       <PaginatedTable
         isLoading={isLoading}
         columns={vcColumns}
+        onRowClick={() => {}}
         paginationConfig={paginationConfig}
         data={data?.items ?? []}
       />

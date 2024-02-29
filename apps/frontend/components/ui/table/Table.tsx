@@ -211,7 +211,7 @@ const TableComponent = <TData extends object>({
                     style={pinStyles}
                     className={cn({
                       'bg-slate-200': isSorted,
-                      'w-50 min-w-50 max-w-50 sticky truncate': isPinned
+                      'min-w-50 max-w-50 sticky w-50 truncate': isPinned
                     })}
                   >
                     <div className='flex items-center justify-between gap-2'>
@@ -273,11 +273,13 @@ const TableComponent = <TData extends object>({
                     <Table.TableCell
                       key={cell.id}
                       style={pinStyles}
-                      className={cn('whitespace-nowrap bg-white', {
-                        'w-50 min-w-50 max-w-50 sticky truncate': isPinned,
-                        'cursor-pointer group-hover:bg-red-500':
-                          Boolean(onRowClick)
-                      })}
+                      className={cn(
+                        'whitespace-nowrap bg-white group-hover:bg-slate-50',
+                        {
+                          'min-w-50 max-w-50 sticky w-50 truncate': isPinned,
+                          'cursor-pointer': Boolean(onRowClick)
+                        }
+                      )}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

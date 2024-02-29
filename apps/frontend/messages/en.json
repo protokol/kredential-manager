@@ -4,9 +4,7 @@
     "dashboard": "Dashboard",
     "credentials": "Credentials",
     "overall": "Overall",
-    "approved": "Approved",
     "pending": "Pending",
-    "rejected": "Rejected",
     "students": "Students",
     "integrations": "Integrations",
     "sources": "Sources",
@@ -43,7 +41,10 @@
     "good_afternoon": "Good afternoon, {username}"
   },
   "credentials": {
+    "pending": "Pending",
+    "overall": "Overall",
     "latest_requests": "Latest requests",
+    "overall_requests": "Overall requests",
     "columns": {
       "name": "Name",
       "date_requested": "Date requested",

@@ -79,7 +79,10 @@ const TableRow = forwardRef<
 >(({ className, ...props }, ref) => (
   <tr
     ref={ref}
-    className={cn('border-b border-slate-200 transition-colors', className)}
+    className={cn(
+      'group border-b border-slate-200 transition-colors',
+      className
+    )}
     {...props}
   />
 ));

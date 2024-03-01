@@ -15,6 +15,7 @@ import { usePathname } from '@navigation';
 
 import { routes } from '@utils/routes';
 
+import { useNotifications } from '@components/composed/NotificationsProvider';
 import SidebarItem, {
   SidebarWithSubItems
 } from '@components/ui/sidebar/SidebarItem';
@@ -23,7 +24,7 @@ type TNavigationLink = {
   name: string;
   href: string;
   icon?: FC;
-  notifications?: number;
+  notifications?: string;
 };
 
 export type TNavigationButtonWithSubItems = {
@@ -53,6 +54,7 @@ const NavigationItems: FC<NavigationItemsProps> = ({
   const [itemOpen, setItemOpen] = useState<string | null>(null);
 
   const t = useTranslations();
+  const { pending } = useNotifications();
 
   const navigationItems: TNavigationItem[] = useMemo(
     () => [
@@ -77,7 +79,7 @@ const NavigationItems: FC<NavigationItemsProps> = ({
             id: 'credentials-pending',
             name: t('navigation.pending'),
             href: routes.app.credentials.pending.home,
-            notifications: 70
+            notifications: pending
           }
         ]
       },
@@ -114,7 +116,7 @@ const NavigationItems: FC<NavigationItemsProps> = ({
         ]
       }
     ],
-    [t]
+    [t, pending]
   );
 
   return (

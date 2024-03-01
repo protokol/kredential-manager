@@ -36,3 +36,12 @@ export type TVCredential = {
   role: VCRole;
   status: VCStatus;
 };
+
+export type TVCCount = {
+  count: string;
+  status: VCStatus;
+};
+
+export type TVCCountList = {
+  count: TVCCount[];
+};

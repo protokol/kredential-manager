@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from '@navigation';
 
 import DeviceScreenWrapper from '@components/composed/DeviceScreenWrapper';
+import NotificationsProvider from '@components/composed/NotificationsProvider';
 import ReactQueryProvider from '@components/composed/ReactQueryProvider';
 import AuthProvider from '@components/composed/auth/AuthProvider';
 
@@ -26,7 +27,9 @@ export default async function LocaleLayout({
     <NextIntlClientProvider messages={messages}>
       <ReactQueryProvider>
         <DeviceScreenWrapper>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <NotificationsProvider>{children}</NotificationsProvider>
+          </AuthProvider>
         </DeviceScreenWrapper>
       </ReactQueryProvider>
     </NextIntlClientProvider>

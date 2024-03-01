@@ -1,6 +1,8 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 
+import { updateVCStatus } from '@utils/api/credentials/credentials.api';
+import { VCStatus } from '@utils/api/credentials/credentials.type';
 import type { TVCredential } from '@utils/api/credentials/credentials.type';
 
 import ActionMenu from '@ui/ActionMenu';
@@ -61,7 +63,7 @@ export const useVCCommonColumns = () => {
     vcCommonColumnHelper.accessor('id', {
       id: 'actions',
       header: t('credentials.columns.actions'),
-      cell: () => {
+      cell: ({ getValue }) => {
         const actions = [
           {
             label: t('credentials.columns.view'),
@@ -71,7 +73,10 @@ export const useVCCommonColumns = () => {
           {
             label: t('credentials.columns.approve'),
             // eslint-disable-next-line
-            onClick: () => console.warn('Approve')
+            onClick: async () => {
+              const id = getValue();
+              await updateVCStatus(id, VCStatus.APPROVED);
+            }
           },
           {
             label: t('credentials.columns.reject'),

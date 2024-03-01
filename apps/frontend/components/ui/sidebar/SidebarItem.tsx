@@ -66,7 +66,7 @@ type SidebarSubItemProps = {
   name: string;
   href: string;
   className?: string;
-  notifications?: number;
+  notifications?: string;
 };
 const SidebarSubItem: FC<SidebarSubItemProps> = ({
   name,

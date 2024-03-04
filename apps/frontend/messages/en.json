@@ -46,9 +46,9 @@
     "view_pending_requests": "View pending requests",
     "issued_credentials": "Issued credentials",
     "pending_requests": "Pending requests",
-    "resourced":"Resourced",
-    "need_help":"Need help?",
-    "visit_our_center":"Visit our resource center"
+    "resources": "Resourced",
+    "need_help": "Need help?",
+    "visit_our_center": "Visit our resource center"
   },
   "credentials": {
     "pending": "Pending",

@@ -59,11 +59,11 @@ const AppPage = () => {
           anchorText={t('dashboard.view_pending_requests')}
         />
         <InfoCard
-          title='Resources'
-          label='Need help?'
+          title={t('dashboard.resources')}
+          label={t('dashboard.need_help')}
           icon={QuestionMarkCircleIcon}
           link='/'
-          anchorText='Visit our resource center'
+          anchorText={t('dashboard.visit_our_center')}
           className='w-full bg-radial-gradient'
         />
       </div>

@@ -11,16 +11,19 @@ import { useAuth } from '@components/composed/auth/AuthProvider';
 
 type TNotifications = {
   pending?: string;
+  overall?: string;
 };
 
 export const NotificationsContext = createContext<TNotifications>({
-  pending: ''
+  pending: '',
+  overall: ''
 });
 
 const ONE_MINUTE_DEBOUNCE_TIMER = 60000;
 
 const NotificationsProvider: FC<PropsWithChildren> = ({ children }) => {
   const [pending, setPending] = useState('');
+  const [overall, setOverall] = useState('');
 
   const { user } = useAuth();
   const { data, refetch } = useGetVCCount();
@@ -32,6 +35,13 @@ const NotificationsProvider: FC<PropsWithChildren> = ({ children }) => {
       const pendingNotifications = count.find(
         (el: TVCCount) => el?.status === VCStatus.PENDING
       );
+
+      const totalNotifications = count?.reduce(
+        (acc, el) => (acc += Number(el?.count)),
+        0
+      );
+
+      setOverall(String(totalNotifications));
 
       if (pendingNotifications) {
         setPending(pendingNotifications.count);
@@ -52,7 +62,8 @@ const NotificationsProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
     <NotificationsContext.Provider
       value={{
-        pending
+        pending,
+        overall
       }}
     >
       {children}

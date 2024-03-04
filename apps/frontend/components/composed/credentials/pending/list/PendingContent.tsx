@@ -1,6 +1,5 @@
 'use client';
 
-import { useVCCommonColumns } from '../../vcCommonColumns';
 import { useTranslations } from 'next-intl';
 
 import { useGetVC } from '@utils/api/credentials/credentials.hook';
@@ -8,6 +7,8 @@ import { getStatusFilter } from '@utils/api/credentials/credentials.utils';
 
 import PaginatedTable from '@ui/table/PaginatedTable';
 import useServerSideTableData from '@ui/table/hooks/useServerSideTableData';
+
+import { useVCCommonColumns } from '@components/composed/credentials/vcCommonColumns';
 
 const PendingContent = () => {
   const {

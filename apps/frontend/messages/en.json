@@ -1,4 +1,7 @@
 {
+  "global": {
+    "n_a": "N/A"
+  },
   "navigation": {
     "title": "Enterprise",
     "dashboard": "Dashboard",
@@ -38,13 +41,21 @@
     "report_issue_here": "Report issue here."
   },
   "dashboard": {
-    "good_afternoon": "Good afternoon, {username}"
+    "good_afternoon": "Good afternoon, {username} 👋",
+    "view_all_credentials": "View all credentials",
+    "view_pending_requests": "View pending requests",
+    "issued_credentials": "Issued credentials",
+    "pending_requests": "Pending requests",
+    "resources": "Resourced",
+    "need_help": "Need help?",
+    "visit_our_center": "Visit our resource center"
   },
   "credentials": {
     "pending": "Pending",
     "overall": "Overall",
     "latest_requests": "Latest requests",
     "overall_requests": "Overall requests",
+    "latest_credentials": "Latest credentials",
     "columns": {
       "name": "Name",
       "date_requested": "Date requested",

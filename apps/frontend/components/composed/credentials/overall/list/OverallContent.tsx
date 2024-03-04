@@ -1,12 +1,13 @@
 'use client';
 
-import { useVCCommonColumns } from '../../vcCommonColumns';
 import { useTranslations } from 'next-intl';
 
 import { useGetVC } from '@utils/api/credentials/credentials.hook';
 
 import PaginatedTable from '@ui/table/PaginatedTable';
 import useServerSideTableData from '@ui/table/hooks/useServerSideTableData';
+
+import { useVCCommonColumns } from '@components/composed/credentials/vcCommonColumns';
 
 const OverallContent = () => {
   const {

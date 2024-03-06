@@ -1,2 +1,2 @@
 export const getStatusFilter = (statuses: string[]): string =>
-  `status:in:${statuses.join(',')}`;
+  statuses.length ? `status:in:${statuses.join(',')}` : '';

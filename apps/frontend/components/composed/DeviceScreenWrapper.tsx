@@ -6,7 +6,7 @@ import Link from 'next/link';
 import React from 'react';
 import type { FC, PropsWithChildren } from 'react';
 
-import logo from '@public/Logo.png';
+import logo from '@public/BigLogo.png';
 
 import useIsMobile from '@utils/hooks/useIsMobile';
 
@@ -22,7 +22,7 @@ const DeviceScreenWrapper: FC<PropsWithChildren> = ({ children }) => {
       <FullHeightCenterLayout>
         <div className='flex w-full max-w-md flex-col items-center space-y-10'>
           <div className='flex justify-center'>
-            <Image alt='logo' src={logo} />
+            <Image alt='logo' src={logo} className='w-60' />
           </div>
 
           <div className='flex flex-col items-center space-y-2 text-center'>

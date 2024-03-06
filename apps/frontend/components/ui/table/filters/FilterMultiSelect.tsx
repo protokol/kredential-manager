@@ -1,5 +1,6 @@
 'use client';
 
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import type { FC } from 'react';
 import { memo, useMemo, useState } from 'react';
 
@@ -57,50 +58,61 @@ const FilterMultiSelect: FC<FilterMultiSelectProps> = ({
   }, [filterByEmptyField, items, searchQuery, wrapperProps.title]);
 
   return (
-    <FilterWrapper
-      {...wrapperProps}
-      onClose={() => {
-        setSearchQuery('');
-      }}
-      clear={() => {
-        onChange(undefined);
-      }}
-    >
-      <div>
-        {items.length >= 10 && (
-          <Input
-            className='mb-1 rounded-none border-0 border-b-1.5 focus-visible:ring-0'
-            placeholder='Search...'
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        )}
-        {!filteredItems.length && (
-          <div className='p-4 text-center text-sm text-slate-500'>
-            No items found.
-          </div>
-        )}
-        {filteredItems.map((item) => (
-          <label
-            htmlFor={item.value}
-            className='flex gap-2 px-3 py-2 hover:bg-slate-50 active:bg-slate-50'
-            key={item.value}
-          >
-            <Checkbox
-              id={item.value}
-              value={item.value}
-              checked={selectedItems.includes(item.value)}
-              onCheckedChange={() => {
-                handleOnChange(item.value);
-              }}
+    <div className='flex items-center gap-2'>
+      <FilterWrapper
+        {...wrapperProps}
+        onClose={() => {
+          setSearchQuery('');
+        }}
+        clear={() => {
+          onChange(undefined);
+        }}
+      >
+        <div>
+          {items.length >= 10 && (
+            <Input
+              className='mb-1 rounded-none border-0 border-b-1.5 focus-visible:ring-0'
+              placeholder='Search...'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <div className='truncate text-sm font-medium text-slate-800'>
-              {item.label}
+          )}
+          {!filteredItems.length && (
+            <div className='p-4 text-center text-sm text-slate-500'>
+              No items found.
             </div>
-          </label>
-        ))}
-      </div>
-    </FilterWrapper>
+          )}
+          {filteredItems.map((item) => (
+            <label
+              htmlFor={item.value}
+              className='flex gap-2 px-3 py-2 hover:bg-slate-50 active:bg-slate-50'
+              key={item.value}
+            >
+              <Checkbox
+                id={item.value}
+                value={item.value}
+                checked={selectedItems.includes(item.value)}
+                onCheckedChange={() => {
+                  handleOnChange(item.value);
+                }}
+              />
+              <div className='truncate text-sm font-medium text-slate-800'>
+                {item.label}
+              </div>
+            </label>
+          ))}
+        </div>
+      </FilterWrapper>
+      {selectedItems?.length ? (
+        <button
+          type='button'
+          className='flex cursor-pointer content-center items-center gap-2 text-sm font-medium text-slate-500'
+          onClick={() => onChange([])}
+        >
+          <XMarkIcon className='h-5 w-5' /> Clear all
+        </button>
+      ) : null}
+    </div>
   );
 };
 

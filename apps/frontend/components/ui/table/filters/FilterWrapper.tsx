@@ -55,7 +55,7 @@ const FilterWrapper: FC<FilterWrapperProps> = ({
       asChild
       align='start'
       className={cn(
-        'z-select max-h-80 max-w-48 overflow-y-auto border-1.5 border-slate-200 bg-white',
+        'z-select max-h-80 min-w-32 max-w-48 overflow-y-auto border-1.5 border-slate-200 bg-white',
         contentClassName
       )}
     >
@@ -76,7 +76,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       ref={ref}
       disabled={disabled}
       className={cn(
-        'group flex w-auto items-center gap-2 rounded border-1.5 border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800',
+        'group flex w-auto min-w-32 items-center justify-between gap-2 rounded border-1.5 border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800',
         'ring-slate-200 ring-offset-white focus:outline-none focus:ring-2 focus:ring-offset-2',
         'hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500',
         {

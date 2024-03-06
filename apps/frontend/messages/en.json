@@ -1,6 +1,7 @@
 {
   "global": {
-    "n_a": "N/A"
+    "n_a": "N/A",
+    "filter_by": "Filter by"
   },
   "navigation": {
     "title": "Enterprise",

@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import logo from '@public/Logo.png';
+import logo from '@public/BigLogo.png';
 
 import SignInForm from '@components/composed/auth/SignInForm';
 import FullHeightCenterLayout from '@components/composed/layout/FullHeightCenterLayout';
@@ -19,7 +19,7 @@ const SignInPage = () => {
     <FullHeightCenterLayout>
       <div className='flex w-full max-w-md flex-col items-center space-y-10'>
         <div className='flex justify-center'>
-          <Image alt='logo' src={logo} />
+          <Image alt='logo' src={logo} className='w-60' />
         </div>
 
         <div className='flex flex-col items-center space-y-2 text-center'>

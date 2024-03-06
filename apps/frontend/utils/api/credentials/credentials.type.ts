@@ -8,6 +8,21 @@ export enum VCRole {
   STUDENT = 'student'
 }
 
+export const StatusOptions = [
+  {
+    value: VCStatus.PENDING,
+    label: 'Pending'
+  },
+  {
+    value: VCStatus.APPROVED,
+    label: 'Approved'
+  },
+  {
+    value: VCStatus.REJECTED,
+    label: 'Rejected'
+  }
+];
+
 export type TGetVCListParams = {
   page?: number;
   size?: number;

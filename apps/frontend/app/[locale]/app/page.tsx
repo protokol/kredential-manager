@@ -32,15 +32,20 @@ const AppPage = () => {
   const {
     isLoading,
     data,
+    refetch,
     tableConfig: { paginationConfig }
   } = useServerSideTableData({
     useDataHook: (apiParams) =>
       useGetVC({ ...apiParams, filter: getStatusFilter(filters) })
   });
 
+  const onRefetch = () => {
+    refetch();
+  };
+
   const { filteredList: filteredListByType, ...statusFilterConfig } =
     useClientSideMultiSelectFilter(data?.items, StatusOptions, 'status');
-  const vcColumns = useVCCommonColumns();
+  const vcColumns = useVCCommonColumns(onRefetch);
 
   const { selectedItems } = statusFilterConfig;
   const { overall, pending } = useNotifications();
@@ -81,15 +86,15 @@ const AppPage = () => {
           className='w-full bg-radial-gradient'
         />
       </div>
-      <div className='mt-6'>
+      <div className='mb-4 mt-6 text-lg font-bold text-sky-950'>
+        {t('credentials.latest_credentials')}
+      </div>
+      <div className='mb-6'>
         <FilterMultiSelect
           title={t('global.filter_by')}
           {...statusFilterConfig}
           disabled={false}
         />
-      </div>
-      <div className='my-6 text-lg font-bold text-sky-950'>
-        {t('credentials.latest_credentials')}
       </div>
       <PaginatedTable
         isLoading={isLoading}

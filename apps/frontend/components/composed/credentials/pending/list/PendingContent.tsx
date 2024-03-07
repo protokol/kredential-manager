@@ -14,14 +14,19 @@ const PendingContent = () => {
   const {
     isLoading,
     data,
+    refetch,
     tableConfig: { paginationConfig }
   } = useServerSideTableData({
     useDataHook: (apiParams) =>
       useGetVC({ ...apiParams, filter: getStatusFilter(['pending']) })
   });
 
+  const onRefetch = () => {
+    refetch();
+  };
+
   const t = useTranslations();
-  const vcColumns = useVCCommonColumns();
+  const vcColumns = useVCCommonColumns(onRefetch);
 
   return (
     <div>

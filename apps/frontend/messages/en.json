@@ -1,7 +1,8 @@
 {
   "global": {
     "n_a": "N/A",
-    "filter_by": "Filter by"
+    "filter_by": "Filter by",
+    "error_message": "Seems like something went wrong..."
   },
   "navigation": {
     "title": "Enterprise",
@@ -55,8 +56,10 @@
     "pending": "Pending",
     "overall": "Overall",
     "latest_requests": "Latest requests",
-    "overall_requests": "Overall requests",
+    "overall_requests": "All requests",
     "latest_credentials": "Latest credentials",
+    "approved_success": "You have successfully approved a new credential!",
+    "rejected_success": "You rejected a credential request.",
     "columns": {
       "name": "Name",
       "date_requested": "Date requested",

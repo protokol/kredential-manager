@@ -16,7 +16,6 @@ const Popover: FC<PopoverProps> = ({ onOpenChange, ...props }) => (
   <PopoverPrimitive.Root
     {...props}
     onOpenChange={(open) => {
-      preventPageScrollOnOpen(open);
       onOpenChange?.(open);
     }}
   />

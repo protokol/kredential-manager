@@ -1,12 +1,16 @@
-import { getVC, getVCCount } from './credentials.api';
+import { getVC, getVCCount, updateVCStatus } from './credentials.api';
 import type {
   PaginatedResource,
   TGetVCListParams,
+  TUpdateStatusParams,
   TVCCountList,
   TVCredential
 } from './credentials.type';
-import type { UseQueryOptions } from '@tanstack/react-query';
-import { useQuery } from '@tanstack/react-query';
+import type {
+  UseMutationOptions,
+  UseQueryOptions
+} from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const vcQueryKeys = {
   getVC: 'getVC',
@@ -31,5 +35,13 @@ export const useGetVCCount = (
     queryFn: () => getVCCount(),
     queryKey: [vcQueryKeys.getVCCount, { ...params }],
     enabled: false,
+    ...config
+  });
+
+export const useUpdateRequest = (
+  config?: UseMutationOptions<unknown, unknown, TUpdateStatusParams>
+) =>
+  useMutation({
+    mutationFn: updateVCStatus,
     ...config
   });

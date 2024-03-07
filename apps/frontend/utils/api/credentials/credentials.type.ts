@@ -8,6 +8,11 @@ export enum VCRole {
   STUDENT = 'student'
 }
 
+export type TUpdateStatusParams = {
+  id: number;
+  status: VCStatus;
+};
+
 export const StatusOptions = [
   {
     value: VCStatus.PENDING,

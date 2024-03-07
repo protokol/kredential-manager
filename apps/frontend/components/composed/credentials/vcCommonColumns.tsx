@@ -1,9 +1,14 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 
-import { updateVCStatus } from '@utils/api/credentials/credentials.api';
+import { useUpdateRequest } from '@utils/api/credentials/credentials.hook';
 import { VCStatus } from '@utils/api/credentials/credentials.type';
-import type { TVCredential } from '@utils/api/credentials/credentials.type';
+import type {
+  TUpdateStatusParams,
+  TVCredential
+} from '@utils/api/credentials/credentials.type';
+import { toastError, toastSuccess } from '@utils/toast';
 
 import ActionMenu from '@ui/ActionMenu';
 import DateCell from '@ui/table/cells/DateCell';
@@ -12,8 +17,39 @@ import TitleCell from '@ui/table/cells/TitleCell';
 
 const vcCommonColumnHelper = createColumnHelper<TVCredential>();
 
-export const useVCCommonColumns = () => {
+export const useVCCommonColumns = (onRefetch: () => void) => {
+  const { mutateAsync: updateRequest, isSuccess } = useUpdateRequest();
   const t = useTranslations();
+
+  useEffect(() => {
+    if (isSuccess) {
+      onRefetch();
+    }
+  }, [isSuccess, onRefetch]);
+
+  const updateStatusHandler = async ({ id, status }: TUpdateStatusParams) => {
+    try {
+      await updateRequest({
+        id,
+        status
+      });
+
+      if (status === VCStatus.APPROVED)
+        toastSuccess({
+          text: t('credentials.approved_success')
+        });
+
+      if (status === VCStatus.REJECTED)
+        toastError({
+          text: t('credentials.rejected_success')
+        });
+    } catch (e) {
+      toastError({
+        text: t('credentials.error_message')
+      });
+    }
+  };
+
   return [
     vcCommonColumnHelper.accessor('displayName', {
       id: 'displayName',
@@ -72,16 +108,21 @@ export const useVCCommonColumns = () => {
           },
           {
             label: t('credentials.columns.approve'),
-            // eslint-disable-next-line
             onClick: async () => {
-              const id = getValue();
-              await updateVCStatus(id, VCStatus.APPROVED);
+              await updateStatusHandler({
+                id: getValue(),
+                status: VCStatus.APPROVED
+              });
             }
           },
           {
             label: t('credentials.columns.reject'),
-            // eslint-disable-next-line
-            onClick: () => console.warn('reject')
+            onClick: async () => {
+              await updateStatusHandler({
+                id: getValue(),
+                status: VCStatus.REJECTED
+              });
+            }
           },
           {
             label: t('credentials.columns.report'),

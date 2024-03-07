@@ -1,5 +1,6 @@
 import { Logging } from "./constructs/Logging";
 import { PublicDockerRepositories } from "./constructs/PublicDockerRepositories";
+import { getDomainNameWithPrefix } from "./utils";
 import * as cdk from "aws-cdk-lib";
 import { Duration } from "aws-cdk-lib";
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
@@ -23,7 +24,6 @@ export class KeycloakStack extends cdk.Stack {
 		const dockerRepositories = new PublicDockerRepositories(this, "DockerRepositories");
 		const logging = new Logging(this, "Logging");
 
-		// TODO: Increase the memory and CPU
 		const keycloakTaskDef = new FargateTaskDefinition(this, "KeycloakTaskDef", {
 			memoryLimitMiB: 1024,
 			cpu: 512,
@@ -35,27 +35,24 @@ export class KeycloakStack extends cdk.Stack {
 			command: ["start-dev"],
 			environment: {
 				KC_DB: "postgres",
-				KC_DB_USERNAME: props.dbInstance.secret!.secretValueFromJson("username").unsafeUnwrap(),
-				KC_DB_PASSWORD: props.dbInstance.secret!.secretValueFromJson("password").unsafeUnwrap(),
 				KC_DB_URL: `jdbc:postgresql://${props.dbInstance.instanceEndpoint.hostname}:5432/enterprisewallet`,
 				KC_METRICS_ENABLED: "true",
 				KC_LOG_LEVEL: "INFO",
+				// TODO: Move root admin to secret manager
 				KEYCLOAK_ADMIN: "admin",
 				KEYCLOAK_ADMIN_PASSWORD: "keycloak",
 				// Investigate configs: https://www.keycloak.org/server/all-config
 				KC_HOSTNAME_STRICT: "false",
-				KC_HOSTNAME_STRICT_HTTPS: "false",
 				KC_HTTP_ENABLED: "true",
 				KC_PROXY: "edge",
-				KC_HOSTNAME: "keycloak.eu-dev.protokol.sh",
+				KC_HOSTNAME: getDomainNameWithPrefix("keycloak"),
 			},
-			// secrets: {
-			// 	KC_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "username"),
-			// 	KC_DB_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "password"),
-			// },
+			secrets: {
+				KC_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "username"),
+				KC_DB_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "password"),
+			},
 		});
 
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const service = new FargateService(this, "Service", {
 			serviceName: "KeycloakService",
 			cluster: props.cluster,
@@ -92,7 +89,7 @@ export class KeycloakStack extends cdk.Stack {
 			healthCheck: {
 				path: "/",
 				interval: Duration.minutes(3),
-				healthyHttpCodes: "200",
+				healthyHttpCodes: "200-399",
 			},
 		});
 	}

@@ -12,10 +12,7 @@ dotenv.config();
 
 const app = new cdk.App();
 
-const vpcClusterStack = new VpcClusterStack(app, getStackName("VpcClusterStack"), {
-	hostedZoneId: "Z08139353PYYZ63C4KDJW",
-	zoneName: "eu-dev.protokol.sh",
-});
+const vpcClusterStack = new VpcClusterStack(app, getStackName("VpcClusterStack"), {});
 const databaseStack = new DatabaseStack(app, getStackName("DatabaseStack"), {
 	vpc: vpcClusterStack.vpc,
 	databaseSG: vpcClusterStack.databaseSG,

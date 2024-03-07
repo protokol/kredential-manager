@@ -1,3 +1,4 @@
+import { getDomainNameWithPrefix, getPublicHostedZoneId, getPublicHostedZoneName } from "./utils";
 import * as cdk from "aws-cdk-lib";
 import { Certificate, CertificateValidation } from "aws-cdk-lib/aws-certificatemanager";
 import { Peer, Port, SecurityGroup, SubnetType, Vpc } from "aws-cdk-lib/aws-ec2";
@@ -7,10 +8,7 @@ import { ARecord, HostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
 import { LoadBalancerTarget } from "aws-cdk-lib/aws-route53-targets";
 import { Construct } from "constructs";
 
-interface VpcClusterStackProps extends cdk.StackProps {
-	hostedZoneId: string;
-	zoneName: string;
-}
+interface VpcClusterStackProps extends cdk.StackProps {}
 export class VpcClusterStack extends cdk.Stack {
 	public readonly vpc: Vpc;
 	public readonly cluster: Cluster;
@@ -32,17 +30,17 @@ export class VpcClusterStack extends cdk.Stack {
 		super(scope, id, props);
 
 		const publicZone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", {
-			hostedZoneId: props.hostedZoneId,
-			zoneName: props.zoneName,
+			hostedZoneId: getPublicHostedZoneId(),
+			zoneName: getPublicHostedZoneName(),
 		});
 
-		const apiDomainName = `api.${props.zoneName}`;
+		const apiDomainName = getDomainNameWithPrefix("api");
 		this.apiCertificate = new Certificate(this, "APICertificate", {
 			domainName: apiDomainName,
 			validation: CertificateValidation.fromDns(publicZone),
 		});
 
-		const keycloakDomainName = `keycloak.${props.zoneName}`;
+		const keycloakDomainName = getDomainNameWithPrefix("keycloak");
 		this.keycloakCertificate = new Certificate(this, "KeycloakCertificate", {
 			domainName: keycloakDomainName,
 			validation: CertificateValidation.fromDns(publicZone),

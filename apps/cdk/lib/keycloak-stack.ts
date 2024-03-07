@@ -49,6 +49,10 @@ export class KeycloakStack extends cdk.Stack {
 				KC_PROXY: "edge",
 				KC_HOSTNAME: "keycloak.eu-dev.protokol.sh",
 			},
+			// secrets: {
+			// 	KC_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "username"),
+			// 	KC_DB_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "password"),
+			// },
 		});
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars

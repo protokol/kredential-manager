@@ -20,6 +20,7 @@ const OverallContent = () => {
   const {
     isLoading,
     data,
+    refetch,
     tableConfig: { paginationConfig }
   } = useServerSideTableData({
     useDataHook: (apiParams) =>
@@ -29,9 +30,13 @@ const OverallContent = () => {
   const { filteredList: filteredListByType, ...statusFilterConfig } =
     useClientSideMultiSelectFilter(data?.items, StatusOptions, 'status');
 
+  const onRefetch = () => {
+    refetch();
+  };
+
   const { selectedItems } = statusFilterConfig;
   const t = useTranslations();
-  const vcColumns = useVCCommonColumns();
+  const vcColumns = useVCCommonColumns(onRefetch);
 
   useEffect(() => {
     setFilters(selectedItems);

@@ -2,8 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
+import { useRouter } from '@navigation';
+
 import { useGetVC } from '@utils/api/credentials/credentials.hook';
 import { getStatusFilter } from '@utils/api/credentials/credentials.utils';
+import { routes } from '@utils/routes';
 
 import PaginatedTable from '@ui/table/PaginatedTable';
 import useServerSideTableData from '@ui/table/hooks/useServerSideTableData';
@@ -20,6 +23,7 @@ const PendingContent = () => {
     useDataHook: (apiParams) =>
       useGetVC({ ...apiParams, filter: getStatusFilter(['pending']) })
   });
+  const { push } = useRouter();
 
   const onRefetch = () => {
     refetch();
@@ -36,7 +40,9 @@ const PendingContent = () => {
       <PaginatedTable
         isLoading={isLoading}
         columns={vcColumns}
-        onRowClick={() => {}}
+        onRowClick={(rowData) => {
+          push(routes.app.credentials.view(String(rowData.id)));
+        }}
         paginationConfig={paginationConfig}
         data={data?.items ?? []}
       />

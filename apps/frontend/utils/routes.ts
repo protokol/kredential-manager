@@ -4,6 +4,7 @@ export const routes = {
     home: '/app',
     credentials: {
       home: '/app/credentials',
+      view: (id: string) => `/app/credentials/${id}`,
       overall: {
         home: '/app/credentials/overall'
       },

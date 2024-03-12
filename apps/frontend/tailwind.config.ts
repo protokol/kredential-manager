@@ -99,6 +99,9 @@ const config: Config = {
         '4/5': '80%',
         'radix-popover-trigger': 'var(--radix-popover-trigger-width)'
       },
+      maxHeight: {
+        '60vh': '60vh'
+      },
       transitionDuration: {
         4000: '4000ms',
         5000: '5000ms',
@@ -107,7 +110,9 @@ const config: Config = {
       animation: {
         'radix-collapse-slide-down': 'radix-collapse-slide-down 150ms ease-out',
         'radix-collapse-slide-up': 'radix-collapse-slide-up 150ms ease-out',
-        'spin-infinite': 'spin 2s linear infinite'
+        'spin-infinite': 'spin 2s linear infinite',
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out'
       },
       keyframes: {
         spin: {

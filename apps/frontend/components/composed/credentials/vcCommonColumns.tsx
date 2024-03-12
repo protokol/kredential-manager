@@ -2,13 +2,16 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
+import { useRouter } from '@navigation';
+
 import { useUpdateRequest } from '@utils/api/credentials/credentials.hook';
 import { VCStatus } from '@utils/api/credentials/credentials.type';
 import type {
   TUpdateStatusParams,
   TVCredential
 } from '@utils/api/credentials/credentials.type';
-import { toastError, toastSuccess } from '@utils/toast';
+import { routes } from '@utils/routes';
+import { toastError, toastInfo, toastSuccess } from '@utils/toast';
 
 import ActionMenu from '@ui/ActionMenu';
 import DateCell from '@ui/table/cells/DateCell';
@@ -20,12 +23,34 @@ const vcCommonColumnHelper = createColumnHelper<TVCredential>();
 export const useVCCommonColumns = (onRefetch: () => void) => {
   const { mutateAsync: updateRequest, isSuccess } = useUpdateRequest();
   const t = useTranslations();
+  const { push } = useRouter();
 
   useEffect(() => {
     if (isSuccess) {
       onRefetch();
     }
-  }, [isSuccess, onRefetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
+
+  const undoStatus = async ({ id, status }: TUpdateStatusParams) => {
+    try {
+      const successUndo = await updateRequest({
+        id: Number(id),
+        status
+      });
+
+      if (successUndo) {
+        toastInfo({
+          text: t('credentials.detailed.action_undone'),
+          duration: 10000
+        });
+      }
+    } catch (e) {
+      toastError({
+        text: t('credentials.error_message')
+      });
+    }
+  };
 
   const updateStatusHandler = async ({ id, status }: TUpdateStatusParams) => {
     try {
@@ -36,12 +61,22 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
 
       if (status === VCStatus.APPROVED)
         toastSuccess({
-          text: t('credentials.approved_success')
+          text: t('credentials.approved_success'),
+          duration: 10000,
+          action: () => {
+            undoStatus({ id, status: VCStatus.PENDING });
+          },
+          actionText: t('credentials.detailed.undo')
         });
 
       if (status === VCStatus.REJECTED)
         toastError({
-          text: t('credentials.rejected_success')
+          text: t('credentials.rejected_success'),
+          duration: 10000,
+          action: () => {
+            undoStatus({ id, status: VCStatus.PENDING });
+          },
+          actionText: t('credentials.detailed.undo')
         });
     } catch (e) {
       toastError({
@@ -103,8 +138,10 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
         const actions = [
           {
             label: t('credentials.columns.view'),
-            // eslint-disable-next-line
-            onClick: () => console.warn('View')
+            onClick: () => {
+              const id = String(getValue());
+              push(routes.app.credentials.view(id));
+            }
           },
           {
             label: t('credentials.columns.approve'),

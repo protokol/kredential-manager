@@ -1,4 +1,9 @@
-import { getVC, getVCCount, updateVCStatus } from './credentials.api';
+import {
+  getVC,
+  getVCById,
+  getVCCount,
+  updateVCStatus
+} from './credentials.api';
 import type {
   PaginatedResource,
   TGetVCListParams,
@@ -14,7 +19,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const vcQueryKeys = {
   getVC: 'getVC',
-  getVCCount: 'getVCCount'
+  getVCCount: 'getVCCount',
+  getVCById: 'getVCById'
 };
 
 export const useGetVC = (
@@ -24,6 +30,16 @@ export const useGetVC = (
   useQuery<PaginatedResource<TVCredential>>({
     queryFn: () => getVC(params),
     queryKey: [vcQueryKeys.getVC, { ...params }],
+    ...config
+  });
+
+export const useGetVCById = (
+  params: string,
+  config?: UseQueryOptions<TVCredential>
+) =>
+  useQuery<TVCredential>({
+    queryFn: () => getVCById(params),
+    queryKey: [vcQueryKeys.getVCById, params],
     ...config
   });
 

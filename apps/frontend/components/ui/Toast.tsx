@@ -16,6 +16,8 @@ export type ToastProps = {
   duration?: number;
   detailsLink?: string;
   dismiss?: () => void;
+  actionText?: string;
+  action?: () => void;
 } & VariantProps<typeof toastVariants>;
 
 const variantIcon = {
@@ -40,7 +42,14 @@ export const toastVariants = cva(
   }
 );
 
-const Toast: FC<ToastProps> = ({ variant, text, detailsLink }) => {
+const Toast: FC<ToastProps> = ({
+  variant,
+  text,
+  detailsLink,
+  action,
+  dismiss,
+  actionText
+}) => {
   const Icon = variantIcon[variant || 'info'];
 
   return (
@@ -59,6 +68,17 @@ const Toast: FC<ToastProps> = ({ variant, text, detailsLink }) => {
           Details
           <ArrowLongRightIcon className='h-3 w-3' />
         </Link>
+      )}
+      {action && (
+        <div
+          className='flex cursor-pointer items-center gap-2 rounded-md p-1 text-sm text-white underline'
+          onClick={() => {
+            action();
+            dismiss!();
+          }}
+        >
+          {actionText}
+        </div>
       )}
     </div>
   );

@@ -48,13 +48,14 @@
     "view_pending_requests": "View pending requests",
     "issued_credentials": "Issued credentials",
     "pending_requests": "Pending requests",
-    "resources": "Resourced",
+    "resources": "Resources",
     "need_help": "Need help?",
     "visit_our_center": "Visit our resource center"
   },
   "credentials": {
     "pending": "Pending",
     "overall": "Overall",
+    "credential": "Credential",
     "latest_requests": "Latest requests",
     "overall_requests": "All requests",
     "latest_credentials": "Latest credentials",
@@ -73,6 +74,23 @@
       "reject": "Reject",
       "report": "Report",
       "quick_actions": "Quick actions"
+    },
+    "detailed": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "undo": "Undo",
+      "action_undone": "Your action was undone.",
+      "information": "Information",
+      "advanced": "Advanced",
+      "notes": "Notes",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "date_of_birth": "Date of birth",
+      "address": "Address",
+      "ebsi_id": "EBSI ID",
+      "credential_type": "Credential Type",
+      "diploma": "Diploma",
+      "schema_json_info": "Here you can access a JSON Schema that illustrates the format of the credentials."
     }
   }
 }

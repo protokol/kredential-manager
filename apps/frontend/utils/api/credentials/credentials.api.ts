@@ -13,6 +13,11 @@ export const getVC = async (params?: TGetVCListParams) =>
     .get<PaginatedResource<TVCredential>>('/verifiable-credentials', { params })
     .then((res) => res.data);
 
+export const getVCById = async (id: string) =>
+  request
+    .get<TVCredential>(`/verifiable-credentials/${id}`)
+    .then((res) => res.data);
+
 export const getVCCount = async () =>
   request
     .get<TVCCountList>('/verifiable-credentials/count')

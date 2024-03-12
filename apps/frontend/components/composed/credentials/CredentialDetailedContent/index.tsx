@@ -44,8 +44,7 @@ const CredentialDetailedContent = ({
 
       if (successUndo) {
         toastInfo({
-          text: t('credentials.detailed.action_undone'),
-          duration: 10000
+          text: t('credentials.detailed.action_undone')
         });
       }
     } catch (e) {

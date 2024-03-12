@@ -41,8 +41,7 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
 
       if (successUndo) {
         toastInfo({
-          text: t('credentials.detailed.action_undone'),
-          duration: 10000
+          text: t('credentials.detailed.action_undone')
         });
       }
     } catch (e) {

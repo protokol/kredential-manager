@@ -7,6 +7,7 @@ import {
     UpdateDateColumn,
     OneToOne,
     JoinColumn,
+    Relation,
 } from "typeorm";
 
 @Entity()
@@ -16,7 +17,7 @@ export class VerifiableCredential {
 
     @OneToOne(() => Did, (did) => did.verifiableCredential)
     @JoinColumn()
-    did: Did;
+    did: Relation<Did>;
 
     @Column({ type: "text", nullable: true })
     displayName: string;

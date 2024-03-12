@@ -124,24 +124,24 @@ export async function seedData(
     console.log("Data has been seeded.");
 }
 
-dataSource
-    .initialize()
-    .then(async (connection) => {
-        const studentRepository = connection.getRepository(Student);
-        const programRepository = connection.getRepository(Program);
-        const courseRepository = connection.getRepository(Course);
-        const diplomaRepository = connection.getRepository(Diploma);
-        const enrollmentRepository = connection.getRepository(Enrollment);
-        const didRepository = connection.getRepository(Did);
-        const vcRepository = connection.getRepository(VerifiableCredential);
-        await seedData(
-            studentRepository,
-            programRepository,
-            courseRepository,
-            diplomaRepository,
-            enrollmentRepository,
-            didRepository,
-            vcRepository,
-        );
-    })
-    .catch((error) => console.log("Error seeding data:", error));
+// dataSource // seed locally
+//     .initialize()
+//     .then(async (connection) => {
+//         const studentRepository = connection.getRepository(Student);
+//         const programRepository = connection.getRepository(Program);
+//         const courseRepository = connection.getRepository(Course);
+//         const diplomaRepository = connection.getRepository(Diploma);
+//         const enrollmentRepository = connection.getRepository(Enrollment);
+//         const didRepository = connection.getRepository(Did);
+//         const vcRepository = connection.getRepository(VerifiableCredential);
+//         await seedData(
+//             studentRepository,
+//             programRepository,
+//             courseRepository,
+//             diplomaRepository,
+//             enrollmentRepository,
+//             didRepository,
+//             vcRepository,
+//         );
+//     })
+//     .catch((error) => console.log("Error seeding data:", error));

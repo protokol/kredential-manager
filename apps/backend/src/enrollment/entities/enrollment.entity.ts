@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, Relation } from "typeorm";
 import { Student } from "../../student/entities/student.entity";
 import { Course } from "../../course/entities/course.entity";
 
@@ -8,10 +8,10 @@ export class Enrollment {
     enrollment_id: number;
 
     @ManyToOne(() => Student, (student) => student.enrollments)
-    student: Student;
+    student: Relation<Student>;
 
     @ManyToOne(() => Course, (course) => course.enrollments)
-    course: Course;
+    course: Relation<Course>;
 
     @Column()
     academic_year: string;

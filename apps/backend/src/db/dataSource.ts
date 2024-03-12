@@ -16,17 +16,19 @@ export const dataSourceOptions: DataSourceOptions = {
     database: process.env.DB_NAME || "enterprise-wallet",
     synchronize: true, // must be disabled in production
     entities: [
-        VerifiableCredential,
         Student,
+        VerifiableCredential,
         Enrollment,
         Diploma,
         Course,
         Program,
         Did,
     ],
-    migrations: ["dist/src/migrations/*{.js,.ts}"],
+    migrations: ["dist/migrations/*{.js,.ts}"],
     migrationsTableName: "custom_migration_table",
+
 };
+
 
 const dataSource = new DataSource(dataSourceOptions);
 export default dataSource;

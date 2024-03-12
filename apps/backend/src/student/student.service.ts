@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Student } from "./entities/student.entity";
-import { CreateStudentDto } from "./dto/create-student.dto";
+import { CreateStudentDto } from "./dto/create-student";
 import { Did } from "./entities/did.entity";
 import dataSource from "src/db/dataSource";
 import { Pagination } from "src/types/pagination/PaginationParams";
@@ -16,7 +16,7 @@ export class StudentService {
     constructor(
         @InjectRepository(Student)
         private studentsRepository: Repository<Student>,
-    ) {}
+    ) { }
 
     create(createStudentDto: CreateStudentDto): Promise<Student> {
         const student = this.studentsRepository.create(createStudentDto);

@@ -10,12 +10,11 @@ import {
     HttpStatus,
     BadRequestException,
 } from "@nestjs/common";
-import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
-import { CreateVcDto } from "./dto/create-vc.dto";
-import { VerifiableEducationalID } from "src/types/schema/VerifiableEducationID202311";
+import { VerifiableCredential } from "./../vc/entities/VerifiableCredential";
+import { VerifiableEducationalID } from "./../types/schema/VerifiableEducationID202311";
 import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } from "src/types/schema/VerifiableDiploma202211";
-import { VCRole, VCStatus } from "src/types/VC";
-import { UpdateStatusDto } from "./dto/update-status.dto";
+import { VCRole, VCStatus } from "./../types/VC";
+import { UpdateStatusDto } from "./dto/update-status";
 import { VcService } from "./vc.service";
 import {
     Pagination,
@@ -28,6 +27,7 @@ import {
     FilteringParams,
 } from "src/types/pagination/FilteringParams";
 import { Public, Resource } from "nest-keycloak-connect";
+import { CreateVcDto } from "./dto/create-vc";
 
 @Controller("verifiable-credentials")
 @Resource("Verifiable-credentials")
@@ -145,4 +145,5 @@ export class VcController {
         Object.assign(newCredential, newCredentialData);
         this.vcService.save(newCredential);
     }
+
 }

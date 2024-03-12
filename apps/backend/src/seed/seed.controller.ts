@@ -2,10 +2,10 @@ import { Body, Controller, HttpException } from "@nestjs/common";
 import { Post, HttpCode, HttpStatus } from "@nestjs/common";
 import { Public } from "nest-keycloak-connect";
 import { SeedService } from "./seed.service";
-import { CreateSeedDto } from "./dto/create-seed.dto";
+import { CreateSeedDto } from "./dto/create-seed";
 @Controller("seed")
 export class SeedController {
-    constructor(private readonly seedService: SeedService) {}
+    constructor(private readonly seedService: SeedService) { }
 
     @Post("/init")
     @Public(true)

@@ -4,6 +4,7 @@ import {
     Column,
     ManyToOne,
     OneToMany,
+    Relation,
 } from "typeorm";
 import { Student } from "./student.entity";
 import { VerifiableCredential } from "./../../vc/entities/VerifiableCredential";
@@ -17,7 +18,7 @@ export class Did {
     identifier: string;
 
     @ManyToOne(() => Student, (student) => student.dids)
-    student: Student;
+    student: Relation<Student>;
     verifiableCredential: any;
 
     @OneToMany(

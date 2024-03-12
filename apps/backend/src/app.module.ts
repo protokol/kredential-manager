@@ -23,6 +23,7 @@ import { EnrollmentModule } from "./enrollment/enrollment.module";
 import { DiplomaModule } from "./diploma/diploma.module";
 import { CourseModule } from "./course/course.module";
 import { SeedModule } from "./seed/seed.module";
+import { ResolverService } from "./resolver/resolver.service";
 
 @Module({
     imports: [
@@ -73,7 +74,8 @@ import { SeedModule } from "./seed/seed.module";
             provide: APP_GUARD,
             useClass: RoleGuard,
         },
+        ResolverService,
     ],
     exports: [],
 })
-export class AppModule {}
+export class AppModule { }

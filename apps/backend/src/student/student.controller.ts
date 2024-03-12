@@ -10,23 +10,23 @@ import {
     HttpCode,
 } from "@nestjs/common";
 import { StudentService } from "./student.service";
-import { CreateStudentDto } from "./dto/create-student.dto";
+import { CreateStudentDto } from "./dto/create-student";
 import { Student } from "./entities/student.entity";
-import { AttachDidDto } from "./dto/attach-did.dto";
+import { AttachDidDto } from "./dto/attach-did";
 import {
     Pagination,
     PaginationParams,
-} from "src/types/pagination/PaginationParams";
-import { Sorting, SortingParams } from "src/types/pagination/SortingParams";
+} from "./../types/pagination/PaginationParams";
+import { Sorting, SortingParams } from "./../types/pagination/SortingParams";
 import {
     Filtering,
     FilteringParams,
-} from "src/types/pagination/FilteringParams";
-import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
+} from "./../types/pagination/FilteringParams";
+import { PaginatedResource } from "./../types/pagination/dto/PaginatedResource";
 
 @Controller("students")
 export class StudentController {
-    constructor(private readonly studentService: StudentService) {}
+    constructor(private readonly studentService: StudentService) { }
 
     @Post()
     @HttpCode(HttpStatus.OK)

@@ -10,6 +10,7 @@ export class BackendDockerRepository extends Construct {
 		const backendDockerImage = new DockerImageAsset(this, "DockerImage", {
 			directory: "../backend",
 			file: "Dockerfile",
+			cacheDisabled: true,
 		});
 		this.image = ContainerImage.fromDockerImageAsset(backendDockerImage);
 	}

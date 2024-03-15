@@ -7,13 +7,15 @@ RUN pnpm install
 
 # Rebuild the source code only when needed
 FROM --platform=linux/amd64 node:20-alpine AS builder
+RUN npm install -g pnpm
 WORKDIR /app
 COPY . .
 COPY --from=deps /app/node_modules ./node_modules
-RUN npm run build
+RUN npx ts-patch install -s && pnpm run build
 
 # Production image, copy all the files and run nest
 FROM --platform=linux/amd64 node:20-alpine AS runner
+
 WORKDIR /app
 ENV DB_HOST="host.docker.internal"
 ENV DB_USERNAME="enterprise-wallet-user"

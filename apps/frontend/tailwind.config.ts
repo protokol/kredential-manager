@@ -97,6 +97,7 @@ const config: Config = {
         50: '12.5rem', // 200px
         64: '16rem', // 256px
         '4/5': '80%',
+        'content-w': 'calc(100% - 224px)',
         'radix-popover-trigger': 'var(--radix-popover-trigger-width)'
       },
       maxHeight: {

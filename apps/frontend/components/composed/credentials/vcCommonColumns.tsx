@@ -133,7 +133,8 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
     vcCommonColumnHelper.accessor('id', {
       id: 'actions',
       header: t('credentials.columns.actions'),
-      cell: ({ getValue }) => {
+      cell: ({ getValue, row }) => {
+        const status = row.original.status;
         const actions = [
           {
             label: t('credentials.columns.view'),
@@ -149,7 +150,8 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
                 id: getValue(),
                 status: VCStatus.APPROVED
               });
-            }
+            },
+            disabled: status === VCStatus.APPROVED
           },
           {
             label: t('credentials.columns.reject'),
@@ -158,12 +160,14 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
                 id: getValue(),
                 status: VCStatus.REJECTED
               });
-            }
+            },
+            disabled: status === VCStatus.REJECTED
           },
           {
             label: t('credentials.columns.report'),
             // eslint-disable-next-line
-            onClick: () => console.warn('report')
+            onClick: () => console.warn('report'),
+            disabled: true
           }
         ];
 

@@ -21,9 +21,13 @@ export const toastInfo = (props: ToastProps) =>
     variant: 'info'
   });
 
-const customToast = ({ duration = 3000, ...props }: ToastProps) => {
+const customToast = ({
+  duration = 3000,
+  position = 'top-right',
+  ...props
+}: ToastProps) => {
   toast.custom((t) => <Toast {...props} dismiss={() => toast.remove(t.id)} />, {
     duration,
-    position: 'top-center'
+    position
   });
 };

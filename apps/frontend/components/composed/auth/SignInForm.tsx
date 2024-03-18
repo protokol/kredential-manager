@@ -57,7 +57,8 @@ const SignInForm = () => {
         });
         toastSuccess({
           text: t('sign_in_page.sign_in_success'),
-          duration: 1500
+          duration: 1500,
+          position: 'top-center'
         });
 
         setTimeout(() => {
@@ -65,7 +66,8 @@ const SignInForm = () => {
         }, 1500);
       } catch (e) {
         toastError({
-          text: t('sign_in_page.sign_in_error')
+          text: t('sign_in_page.sign_in_error'),
+          position: 'top-center'
         });
       }
     },

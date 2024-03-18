@@ -16,6 +16,7 @@ export type ToastProps = {
   duration?: number;
   detailsLink?: string;
   dismiss?: () => void;
+  position?: 'top-center' | 'top-right';
   actionText?: string;
   action?: () => void;
 } & VariantProps<typeof toastVariants>;
@@ -27,7 +28,7 @@ const variantIcon = {
 };
 
 export const toastVariants = cva(
-  'group pointer-events-auto relative rounded-2xl flex w-full justify-between items-center gap-2 overflow-hidden p-4 shadow-1 transition-all max-w-screen-sm',
+  'group pointer-events-auto relative rounded-2xl flex justify-between items-center gap-2 overflow-hidden p-4 shadow-1 transition-all w-content-w',
   {
     variants: {
       variant: {

@@ -2,7 +2,7 @@
 
 import {
   BellIcon,
-  PlusIcon,
+  DocumentTextIcon,
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
@@ -61,7 +61,7 @@ const DashboardContent = () => {
           className='w-full'
           title={overall || t('global.n_a')}
           label={t('dashboard.issued_credentials')}
-          icon={BellIcon}
+          icon={DocumentTextIcon}
           link={routes.app.credentials.overall.home}
           anchorText={t('dashboard.view_all_credentials')}
         />
@@ -69,7 +69,7 @@ const DashboardContent = () => {
           className='w-full'
           title={pending || t('global.n_a')}
           label={t('dashboard.pending_requests')}
-          icon={PlusIcon}
+          icon={BellIcon}
           link={routes.app.credentials.pending.home}
           anchorText={t('dashboard.view_pending_requests')}
         />

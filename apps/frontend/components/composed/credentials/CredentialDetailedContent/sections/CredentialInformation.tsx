@@ -31,7 +31,7 @@ const CredentialInformation = (information: Information) => {
   return (
     <div>
       <Label text={t('credentials.detailed.first_name')} />
-      <Input disabled className='mb-4' value={information.student.last_name} />
+      <Input disabled className='mb-4' value={information.student.first_name} />
       <Label text={t('credentials.detailed.last_name')} />
       <Input disabled className='mb-4' value={information.student.last_name} />
       <Label text={t('credentials.detailed.date_of_birth')} />

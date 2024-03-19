@@ -93,17 +93,20 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
         if (!value) return null;
 
         return value;
-      }
+      },
+      enableSorting: false
     }),
     vcCommonColumnHelper.accessor('created_at', {
       id: 'created_at',
       header: t('credentials.columns.date_requested'),
-      cell: ({ getValue }) => <DateCell value={getValue()} />
+      cell: ({ getValue }) => <DateCell value={getValue()} />,
+      enableSorting: false
     }),
     vcCommonColumnHelper.accessor('role', {
       id: 'role',
       header: t('credentials.columns.role'),
-      cell: ({ getValue }) => <TitleCell value={getValue()} />
+      cell: ({ getValue }) => <TitleCell value={getValue()} />,
+      enableSorting: false
     }),
     vcCommonColumnHelper.accessor('type', {
       id: 'type',
@@ -113,7 +116,8 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
         if (!value) return null;
 
         return value;
-      }
+      },
+      enableSorting: false
     }),
     vcCommonColumnHelper.accessor('mail', {
       id: 'mail',
@@ -123,12 +127,14 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
         if (!value) return null;
 
         return value;
-      }
+      },
+      enableSorting: false
     }),
     vcCommonColumnHelper.accessor('status', {
       id: 'status',
       header: t('credentials.columns.status'),
-      cell: ({ getValue }) => <StatusCell value={getValue()} />
+      cell: ({ getValue }) => <StatusCell value={getValue()} />,
+      enableSorting: false
     }),
     vcCommonColumnHelper.accessor('id', {
       id: 'actions',
@@ -179,7 +185,8 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
             />
           </div>
         );
-      }
+      },
+      enableSorting: false
     })
   ];
 };

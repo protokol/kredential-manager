@@ -39,7 +39,7 @@ const ActionMenu: FC<ActionMenuProps> = ({ title, items = [], disabled }) => (
       <div>
         {items.map((item) => {
           const classes =
-            'block w-full text-start disabled:cursor-not-allowed disabled:text-slate-600 disabled:bg-slate-200 px-3 py-2 truncate text-sm font-medium text-slate-800 hover:bg-slate-50 active:bg-slate-50 focus-visible:outline-none focus-visible:bg-slate-50';
+            'block w-full text-start disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white px-3 py-2 truncate text-sm font-medium text-slate-800 hover:bg-slate-50 active:bg-slate-50 focus-visible:outline-none focus-visible:bg-slate-50';
           if ('onClick' in item) {
             return (
               <button

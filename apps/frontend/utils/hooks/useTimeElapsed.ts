@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 const ONE_SECOND = 1000;
 
 const useTimeElapsed = (startTime: Date): string => {
-  const [timeElapsed, setTimeElapsed] = useState<string>('');
-
   const t = useTranslations();
+
+  const [timeElapsed, setTimeElapsed] = useState<string>(
+    t('global.less_one_minute')
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {

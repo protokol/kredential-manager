@@ -16,7 +16,7 @@ const TooltipArrow = forwardRef<
   ElementRef<typeof TooltipPrimitive.Arrow>,
   ComponentPropsWithoutRef<typeof TooltipPrimitive.Arrow>
 >((props, ref) => (
-  <TooltipPrimitive.Arrow ref={ref} className={cn('fill-sky-500')} {...props} />
+  <TooltipPrimitive.Arrow ref={ref} className={cn('fill-sky-950')} {...props} />
 ));
 
 TooltipArrow.displayName = 'TooltipArrow';

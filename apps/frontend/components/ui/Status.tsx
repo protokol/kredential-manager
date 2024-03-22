@@ -3,11 +3,11 @@ import { type VariantProps, cva } from 'class-variance-authority';
 import { cn } from '@utils/cn';
 
 const statusVariants = cva(
-  'flex items-center justify-center px-2.5 py-1 rounded-lg h-22 w-fit text-white text-sm min-w-20',
+  'flex items-center justify-center px-2.5 py-1 rounded-lg h-22 w-fit text-white text-sm min-w-24',
   {
     variants: {
       variant: {
-        approved: 'bg-green-600',
+        approved: 'bg-green-700',
         pending: 'bg-gold-default',
         rejected: 'bg-red-700'
       },

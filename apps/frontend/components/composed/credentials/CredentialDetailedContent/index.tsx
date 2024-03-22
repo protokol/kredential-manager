@@ -110,11 +110,11 @@ const CredentialDetailedContent = ({
         </div>
         {credentialData?.status === VCStatus.PENDING && (
           <div className='flex gap-3'>
-            <Button variant='green' onClick={onApprove}>
-              {t('credentials.detailed.approve')}
-            </Button>
-            <Button variant='red' onClick={onReject}>
+            <Button variant='red' onClick={onReject} className='min-w-24'>
               {t('credentials.detailed.reject')}
+            </Button>
+            <Button variant='green' onClick={onApprove} className='min-w-24'>
+              {t('credentials.detailed.approve')}
             </Button>
           </div>
         )}

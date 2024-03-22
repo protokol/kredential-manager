@@ -8,6 +8,7 @@ import { useGetVC } from '@utils/api/credentials/credentials.hook';
 import { getStatusFilter } from '@utils/api/credentials/credentials.utils';
 import { routes } from '@utils/routes';
 
+import UpdateData from '@ui/UpdateData';
 import PaginatedTable from '@ui/table/PaginatedTable';
 import useServerSideTableData from '@ui/table/hooks/useServerSideTableData';
 
@@ -34,9 +35,13 @@ const PendingContent = () => {
 
   return (
     <div>
-      <div className='mb-6 text-lg font-bold text-sky-950'>
-        {t('credentials.latest_requests')}
+      <div className='mb-6 flex justify-between'>
+        <div className='text-lg font-bold text-sky-950'>
+          {t('credentials.latest_requests')}
+        </div>
+        <UpdateData onRefetch={onRefetch} />
       </div>
+
       <PaginatedTable
         isLoading={isLoading}
         columns={vcColumns}

@@ -16,6 +16,7 @@ import { getStatusFilter } from '@utils/api/credentials/credentials.utils';
 import { routes } from '@utils/routes';
 
 import InfoCard from '@ui/InfoCard';
+import UpdateData from '@ui/UpdateData';
 import PaginatedTable from '@ui/table/PaginatedTable';
 import FilterMultiSelect from '@ui/table/filters/FilterMultiSelect';
 import useClientSideMultiSelectFilter from '@ui/table/hooks/useClientSideMultiSelectFilter';
@@ -85,12 +86,14 @@ const DashboardContent = () => {
       <div className='mb-4 mt-6 text-lg font-bold text-sky-950'>
         {t('credentials.latest_credentials')}
       </div>
-      <div className='mb-6'>
+
+      <div className='mb-6 flex justify-between'>
         <FilterMultiSelect
           title={t('global.filter_by')}
           {...statusFilterConfig}
           disabled={false}
         />
+        <UpdateData onRefetch={onRefetch} />
       </div>
       <PaginatedTable
         isLoading={isLoading}

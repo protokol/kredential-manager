@@ -10,6 +10,7 @@ import { StatusOptions } from '@utils/api/credentials/credentials.type';
 import { getStatusFilter } from '@utils/api/credentials/credentials.utils';
 import { routes } from '@utils/routes';
 
+import UpdateData from '@ui/UpdateData';
 import PaginatedTable from '@ui/table/PaginatedTable';
 import FilterMultiSelect from '@ui/table/filters/FilterMultiSelect';
 import useClientSideMultiSelectFilter from '@ui/table/hooks/useClientSideMultiSelectFilter';
@@ -51,12 +52,13 @@ const OverallContent = () => {
       <div className='mb-6 text-lg font-bold text-sky-950'>
         {t('credentials.overall_requests')}
       </div>
-      <div className='my-6'>
+      <div className='my-6 flex justify-between'>
         <FilterMultiSelect
           title={t('global.filter_by')}
           {...statusFilterConfig}
           disabled={false}
         />
+        <UpdateData onRefetch={onRefetch} />
       </div>
       <PaginatedTable
         isLoading={isLoading}

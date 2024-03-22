@@ -113,7 +113,9 @@ const config: Config = {
         'radix-collapse-slide-up': 'radix-collapse-slide-up 150ms ease-out',
         'spin-infinite': 'spin 2s linear infinite',
         'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out'
+        'accordion-up': 'accordion-up 0.2s ease-out',
+        'fade-in': 'fade-in 150ms ease-out',
+        'fade-out': 'fade-out 150ms ease-out'
       },
       keyframes: {
         spin: {
@@ -143,6 +145,14 @@ const config: Config = {
           to: {
             height: '0'
           }
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
+        },
+        'fade-out': {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' }
         }
       }
     }

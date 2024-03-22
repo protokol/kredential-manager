@@ -186,7 +186,11 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
           </div>
         );
       },
-      enableSorting: false
+      enableSorting: false,
+      meta: {
+        pinned: 'right',
+        preventUnpinning: true
+      }
     })
   ];
 };

@@ -2,7 +2,13 @@
   "global": {
     "n_a": "N/A",
     "filter_by": "Filter by",
-    "error_message": "Seems like something went wrong..."
+    "error_message": "Seems like something went wrong...",
+    "update_data": "Update data",
+    "updated_time_ago": "Updated {time} ago",
+    "updated_tooltip": "We make sure to fetch the data at least once per day to keep everything running smoothly.",
+    "less_one_minute": "less than one minute",
+    "minutes_unit": "m",
+    "hours_unit": "h"
   },
   "navigation": {
     "title": "Enterprise",

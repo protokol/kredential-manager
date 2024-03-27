@@ -23,6 +23,7 @@
   "dependencies": {
     "@cef-ebsi/wallet-lib": "^5.0.0",
     "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
     "express": "^4.19.2"
   }
 }

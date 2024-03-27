@@ -55,6 +55,11 @@ const ebsiWalletMethods = {
   formatPublicKey: async (params: any[]) => {
     const [publicKey, format] = params;
     return EbsiWallet.formatPublicKey(publicKey, format);
+  },
+  getEthereumAddress: async (params: any[]) => {
+    const [privateKey] = params;
+    const wallet = new EbsiWallet(privateKey);
+    return wallet.getEthereumAddress();
   }
   // Add other methods here
 };

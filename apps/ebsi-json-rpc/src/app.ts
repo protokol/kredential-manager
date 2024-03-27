@@ -22,8 +22,7 @@ const ebsiWalletMethods = {
       return EbsiWallet.createDid(params[0]);
       // Legal Entity
     } else if (params.length === 2) {
-      const obj = JSON.parse(params[1]);
-      return EbsiWallet.createDid(params[0], obj);
+      return EbsiWallet.createDid(params[0], params[1]);
     }
     return EbsiWallet.createDid();
   },
@@ -47,9 +46,10 @@ const ebsiWalletMethods = {
   },
   formatPrivateKey: async (params: any[]) => {
     const [privateKey, format] = params;
-    if (!['hex', 'pem'].includes(format)) {
-      throw new Error("Invalid format. Expected 'hex' or 'pem'.");
+    if (!['hex', 'pem', 'jwk'].includes(format)) {
+      throw new Error("Invalid format. Expected 'hex','pem' or 'jwk'.");
     }
+    const formattedPrivateKey = EbsiWallet.formatPrivateKey(privateKey, format);
     return EbsiWallet.formatPrivateKey(privateKey, format);
   },
   formatPublicKey: async (params: any[]) => {
@@ -60,8 +60,12 @@ const ebsiWalletMethods = {
     const [privateKey] = params;
     const wallet = new EbsiWallet(privateKey);
     return wallet.getEthereumAddress();
+  },
+  signJwt: async (params: any[]) => {
+    const [privateKey, payload, options, header] = params;
+    const wallet = new EbsiWallet(privateKey);
+    return wallet.signJwt(payload, options, header);
   }
-  // Add other methods here
 };
 
 type EbsiWalletMethodKeys = keyof typeof ebsiWalletMethods;

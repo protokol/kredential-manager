@@ -8,6 +8,7 @@ on:
     paths:
       - "apps/cdk/**"
       - "apps/backend/**"
+      - "apps/ebsi-json-rpc/**"
     branches:
       - master
   workflow_dispatch:

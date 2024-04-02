@@ -15,18 +15,38 @@ export class Ebsi {
         return this.rpcClient.call({
             jsonrpc: '2.0',
             method: 'createDid',
-            params: publicKeyJwk ? [type, publicKeyJwk] : [],
+            params: ['NATURAL_PERSON', publicKeyJwk],
             id: 1,
         });
     }
 
     // LEGAL_ENTITY
-    createLegalEntityDid(publicKeyJwk?: JWK): Promise<any> {
-        return this.createDid('LEGAL_ENTITY', publicKeyJwk);
+    createLegalEntityDid(): Promise<any> {
+        return this.rpcClient.call({
+            jsonrpc: '2.0',
+            method: 'createDid',
+            params: ['LEGAL_ENTITY'],
+            id: 1,
+        });
     }
 
     // NATURAL_PERSON
     createNaturalPersonDid(publicKeyJwk?: JWK): Promise<any> {
-        return this.createDid('NATURAL_PERSON', publicKeyJwk);
+        return this.rpcClient.call({
+            jsonrpc: '2.0',
+            method: 'createDid',
+            params: publicKeyJwk ? ['NATURAL_PERSON', publicKeyJwk] : ['NATURAL_PERSON', ''],
+            id: 1,
+        });
+    }
+
+    // Generate Key Pair
+    async generateKeyPair(type: KeyType): Promise<any> {
+        return this.rpcClient.call({
+            jsonrpc: '2.0',
+            method: 'generateKeyPair',
+            params: [type],
+            id: 1,
+        });
     }
 }

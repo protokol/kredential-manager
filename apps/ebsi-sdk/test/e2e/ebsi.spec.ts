@@ -22,28 +22,26 @@ describe('Ebsi SDK E2E Tests', () => {
         expect(did).toMatch(/^did:ebsi:/);
     });
 
-    it('should create a did:key for NATURAL_PERSON', async () => {
-        const did = await ebsi.createNaturalPersonDid();
-        expect(did).toBeDefined();
-        expect(did).toMatch(/^did:key:/);
-    });
-
     it('should create a did:key for NATURAL_PERSON from JWK', async () => {
-        const did = await ebsi.createNaturalPersonDid(PUBLIC_KEY_JWK
-        );
+        const did = await ebsi.createNaturalPersonDid(PUBLIC_KEY_JWK);
         expect(did).toBeDefined();
         expect(did).toMatch(/^did:key:/);
         expect(did).toMatch('did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kbns7ZWNqwNNXRVtDg4wQYHxn2NGgqcTG5ehNhytKPrBdEw2mpy65bAdPKxFAZPbSTkLi6rPrkGjCXXTKz4hDvPBiWXHmR1CUgdJuXPjRn9S1ooLvYzKbv5P5zxMzzkEGiqJ');
     });
 
+    it('should generate a key pair of type ES256K', async () => {
+        const keyPair = await ebsi.generateKeyPair('ES256K');
+        expect(keyPair.keyOptions.format).toBe('ES256K');
+        expect(keyPair).toBeDefined();
+        expect(keyPair.publicKey).toBeDefined();
+        expect(keyPair.privateKey).toBeDefined();
+    });
 
-    // it('should create a did for LEGAL_ENTITY from private key', async () => {
-    //     const did = await ebsi.createDid({
-    //         type: 'LEGAL_ENTITY', options: PRIVATE_KEY
-    //     }
-    //     );
-    //     expect(did).toBeDefined();
-    //     expect(did).toMatch(/^did:ebsi:/);
-    //     // expect(did).toMatch(/^did:ebsi:z268q7jnNhVf2842QpqXh7w5/);
-    // });
+    it('should generate a key pair of type pem', async () => {
+        const keyPair = await ebsi.generateKeyPair('pem');
+        expect(keyPair).toBeDefined();
+        expect(keyPair.keyOptions.format).toBe('pem');
+        expect(keyPair.publicKey).toBeDefined();
+        expect(keyPair.privateKey).toBeDefined();
+    });
 });

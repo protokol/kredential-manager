@@ -1,7 +1,6 @@
 import { RpcClient } from './RpcClient';
-import { JWK } from "jose";
 import {
-    DidEntityType, KeyType
+    DidEntityType, FormatType, JWK, JWTHeader, KeyType
 } from './types';
 
 export class Ebsi {
@@ -46,6 +45,61 @@ export class Ebsi {
             jsonrpc: '2.0',
             method: 'generateKeyPair',
             params: [type],
+            id: 1,
+        });
+    }
+
+    // Get Public Key
+    getPublicKey(privateKey: any, format: FormatType): Promise<any> {
+        return this.rpcClient.call({
+            jsonrpc: '2.0',
+            method: 'getPublicKey',
+            params: [privateKey, format],
+            id: 1,
+        });
+    }
+
+    // Format Public Key
+    async formatPrivateKey(privateKey: any, format: FormatType): Promise<any> {
+        return this.rpcClient.call({
+            jsonrpc: '2.0',
+            method: 'formatPrivateKey',
+            params: [privateKey, format],
+            id: 1,
+        });
+    }
+
+    // Format Public Key
+    async formatPublicKey(publicKey: any, format: FormatType): Promise<any> {
+        return this.rpcClient.call({
+            jsonrpc: '2.0',
+            method: 'formatPublicKey',
+            params: [publicKey, format],
+            id: 1,
+        });
+    }
+
+    // Get Ethereum Address
+    async getEthereumAddress(privateKey: string): Promise<any> {
+        return this.rpcClient.call({
+            jsonrpc: '2.0',
+            method: 'getEthereumAddress',
+            params: [privateKey],
+            id: 1,
+        });
+    }
+
+    // Sign JWT
+    async signJwt(
+        privateKey: string,
+        payload: { [x: string]: unknown },
+        options: { issuer: string; expiresIn?: number },
+        header?: Partial<JWTHeader>,
+    ): Promise<string> {
+        return this.rpcClient.call({
+            jsonrpc: '2.0',
+            method: 'signJwt',
+            params: [privateKey, payload, options, header],
             id: 1,
         });
     }

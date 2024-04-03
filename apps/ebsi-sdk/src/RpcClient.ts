@@ -7,7 +7,16 @@ export class RpcClient {
         this.url = url;
     }
 
-    async call(request: JsonRpcRequest): Promise<any> {
+    async call(method: string, params: any[]): Promise<any> {
+        return this.rpcCall({
+            jsonrpc: '2.0',
+            method: method,
+            params: params,
+            id: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
+        });
+    }
+
+    private async rpcCall(request: JsonRpcRequest): Promise<any> {
         try {
             const response = await fetch(this.url, {
                 method: 'POST',

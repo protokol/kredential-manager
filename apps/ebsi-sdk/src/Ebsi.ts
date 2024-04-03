@@ -10,83 +10,55 @@ export class Ebsi {
         this.rpcClient = new RpcClient(url);
     }
 
-    private async createDid(type: DidEntityType, publicKeyJwk?: JWK): Promise<any> {
-        return this.rpcClient.call({
-            jsonrpc: '2.0',
-            method: 'createDid',
-            params: ['NATURAL_PERSON', publicKeyJwk],
-            id: 1,
-        });
-    }
-
     // LEGAL_ENTITY
     createLegalEntityDid(): Promise<any> {
-        return this.rpcClient.call({
-            jsonrpc: '2.0',
-            method: 'createDid',
-            params: ['LEGAL_ENTITY'],
-            id: 1,
-        });
+        return this.rpcClient.call(
+            'createDid', ['LEGAL_ENTITY'],
+        );
     }
 
     // NATURAL_PERSON
     createNaturalPersonDid(publicKeyJwk?: JWK): Promise<any> {
-        return this.rpcClient.call({
-            jsonrpc: '2.0',
-            method: 'createDid',
-            params: publicKeyJwk ? ['NATURAL_PERSON', publicKeyJwk] : ['NATURAL_PERSON', ''],
-            id: 1,
-        });
+        return this.rpcClient.call(
+            'createDid', publicKeyJwk ? ['NATURAL_PERSON', publicKeyJwk] : ['NATURAL_PERSON', ''],
+        );
     }
 
     // Generate Key Pair
     async generateKeyPair(type: KeyType): Promise<any> {
-        return this.rpcClient.call({
-            jsonrpc: '2.0',
-            method: 'generateKeyPair',
-            params: [type],
-            id: 1,
-        });
+        return this.rpcClient.call(
+            'generateKeyPair', [type],
+        );
     }
 
     // Get Public Key
-    getPublicKey(privateKey: any, format: FormatType): Promise<any> {
-        return this.rpcClient.call({
-            jsonrpc: '2.0',
-            method: 'getPublicKey',
-            params: [privateKey, format],
-            id: 1,
-        });
+    async getPublicKey(privateKey: any, format: FormatType): Promise<any> {
+        return this.rpcClient.call(
+            'getPublicKey', [privateKey, format],
+        );
     }
 
     // Format Public Key
     async formatPrivateKey(privateKey: any, format: FormatType): Promise<any> {
-        return this.rpcClient.call({
-            jsonrpc: '2.0',
-            method: 'formatPrivateKey',
-            params: [privateKey, format],
-            id: 1,
-        });
+        return this.rpcClient.call(
+            'formatPrivateKey',
+            [privateKey, format]);
     }
 
     // Format Public Key
     async formatPublicKey(publicKey: any, format: FormatType): Promise<any> {
-        return this.rpcClient.call({
-            jsonrpc: '2.0',
-            method: 'formatPublicKey',
-            params: [publicKey, format],
-            id: 1,
-        });
+        return this.rpcClient.call(
+            'formatPublicKey',
+            [publicKey, format]
+        );
     }
 
     // Get Ethereum Address
     async getEthereumAddress(privateKey: string): Promise<any> {
-        return this.rpcClient.call({
-            jsonrpc: '2.0',
-            method: 'getEthereumAddress',
-            params: [privateKey],
-            id: 1,
-        });
+        return this.rpcClient.call(
+            'getEthereumAddress',
+            [privateKey]
+        );
     }
 
     // Sign JWT
@@ -96,11 +68,8 @@ export class Ebsi {
         options: { issuer: string; expiresIn?: number },
         header?: Partial<JWTHeader>,
     ): Promise<string> {
-        return this.rpcClient.call({
-            jsonrpc: '2.0',
-            method: 'signJwt',
-            params: [privateKey, payload, options, header],
-            id: 1,
-        });
+        return this.rpcClient.call('signJwt',
+            [privateKey, payload, options, header]
+        );
     }
 }

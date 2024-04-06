@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "build": "rm -rf ./dist && tsc --project .",
     "test:e2e": "jest test/e2e",
     "prettier": "prettier --write ."
   },

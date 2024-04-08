@@ -1,4 +1,17 @@
 {
     "name": "@protokol/ebsi-core",
-    "private": true
+    "private": true,
+    "devDependencies": {
+        "onchange": "^7.1.0",
+        "typescript": "^5.4.4"
+    },
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "/dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "watch": "onchange 'src/**/*' -- sh -c 'pnpm run build && echo \"export const timestamp = \\\"$(date)\\\";\" > ./../backend/src/reload.ts' && echo 'File updated with timestamp'"
+    }
 }

@@ -1,10 +1,9 @@
 import { OpenIdProviderMetadata } from "./interfaces/OpenIdProviderMetadata";
 
-export class Issuer {
+export class OpenIdProvider {
     private metadata: OpenIdProviderMetadata;
 
     constructor(metadata: OpenIdProviderMetadata) {
-        console.log('Issuer constructor')
         this.metadata = metadata;
     }
 

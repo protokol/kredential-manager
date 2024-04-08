@@ -7,7 +7,7 @@ import { VcModule } from "./vc/vc.module";
 import { VcController } from "./vc/vc.controller";
 import { VcService } from "./vc/vc.service";
 import { ConfigModule } from "@nestjs/config";
-import { IssuerService } from "./issuer/issuer.service";
+import { OpenIDProviderService } from "./openId/issuer.service";
 import {
     KeycloakConnectModule,
     ResourceGuard,
@@ -77,7 +77,7 @@ import { AuthController } from "./auth/auth.controller";
             useClass: RoleGuard,
         },
         ResolverService,
-        IssuerService,
+        OpenIDProviderService,
     ],
     exports: [],
 })

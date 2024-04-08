@@ -1,1 +1,1 @@
-export * from './Issuer';
+export * from './OpenIdProvider';

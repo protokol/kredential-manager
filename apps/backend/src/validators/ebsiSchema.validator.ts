@@ -3,7 +3,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import Ajv2019 from "ajv/dist/2019.js";
 import AjvDraft07 from "ajv";
 const ajv = new Ajv2020({ allErrors: true });
-import $RefParser from "@apidevtools/json-schema-ref-parser";
+import $RefParser, { JSONSchema } from "@apidevtools/json-schema-ref-parser";
 
 import {
     ValidationArguments,
@@ -30,7 +30,7 @@ export function EbsiSchemaTypeValidator(validationOptions?: ValidationOptions) {
                         return false;
                     }
 
-                    const bundledSchema = await $RefParser.bundle(
+                    const bundledSchema: JSONSchema = await $RefParser.bundle(
                         VCSupportedSchemas[type].schemaPath,
                     );
 

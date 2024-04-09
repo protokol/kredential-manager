@@ -2224,8 +2224,8 @@ packages:
     engines: {node: '>=6.0'}
     dev: true
 
-  /chromedriver@123.0.1:
-    resolution: {integrity: sha512-YQUIP/zdlzDIRCZNCv6rEVDSY4RAxo/tDL0OiGPPuai+z8unRNqJr/9V6XTBypVFyDheXNalKt9QxEqdMPuLAQ==}
+  /chromedriver@123.0.2:
+    resolution: {integrity: sha512-Kx0r/IGULm7eciaUtX/OKaFbdBdHRDSguiV1Q4zuQncz11gvymDdMtELa7ppk+kTL5113NLPud92nuIMNTRhww==}
     engines: {node: '>=18'}
     hasBin: true
     requiresBuild: true
@@ -4411,7 +4411,7 @@ packages:
     dependencies:
       jwk-to-pem: 2.0.5
     optionalDependencies:
-      chromedriver: 123.0.1
+      chromedriver: 123.0.2
     transitivePeerDependencies:
       - debug
       - supports-color

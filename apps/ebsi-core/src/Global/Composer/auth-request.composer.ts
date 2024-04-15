@@ -4,6 +4,7 @@ import { ResponseType } from "./../../OpenIdProvider/types/response-type.type";
 import { ClientMetadata } from "./../../OpenIdProvider/interfaces/client-metadata.interface";
 
 export class AuthRequestComposer {
+    private issuerUrl?: string;
     private request: AuthorizeRequest;
 
     constructor(responseType: ResponseType, clientId: string, redirectUri: string, scope: ScopeType = "openid") {
@@ -52,6 +53,19 @@ export class AuthRequestComposer {
         }
         this.request.authorization_details.push(...authDetails);
         return this;
+    }
+
+    setIssuerUrl(issuerUrl: string): AuthRequestComposer {
+        this.issuerUrl = issuerUrl;
+        return this;
+    }
+
+    createGetRequestUrl(): string {
+        if (!this.issuerUrl) {
+            throw new Error('Issuer URL is missing.');
+        }
+        const queryParams = new URLSearchParams(this.request as any).toString();
+        return `${this.issuerUrl}?${queryParams}`;
     }
 
     static holder(

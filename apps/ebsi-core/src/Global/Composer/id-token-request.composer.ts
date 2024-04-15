@@ -50,7 +50,14 @@ export class IdTokenRequestComposer {
         const encodedJwt = encodeURIComponent(signedJwt);
 
         // Construct the redirect URI with the signed and encoded JWT
-        const uriParams = new URLSearchParams(this.payload as any).toString();
-        return `openid://client_id=${uriParams}&request=${encodedJwt}`;
+        const uriParams = new URLSearchParams({
+            client_id: this.payload.client_id,
+            response_type: this.payload.response_type,
+            scope: this.payload.scope,
+            redirect_uri: this.payload.redirect_uri,
+            request: encodedJwt
+        }).toString();
+
+        return `openid:${uriParams}`;
     }
 }

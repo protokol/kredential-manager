@@ -1,4 +1,4 @@
-import { OpenIdProviderMetadata } from "../interfaces/OpenIdProviderMetadata";
+import { OpenIdProviderMetadata } from "../interfaces/openid-provider-metadata";
 
 export function getOpenIdProviderMetadata(host: string): OpenIdProviderMetadata {
 

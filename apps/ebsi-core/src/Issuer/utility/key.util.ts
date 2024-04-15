@@ -78,6 +78,7 @@ export function getPublicKeyJwk(jwk: JWK, alg: string): JWK {
 export function generateDidFromPrivateKey(privateKeyHex: string, kid: string): { did: string; privateKeyJwk: any; publicKeyJwk: any; } {
     // Convert private key to JWK format
     const privateKeyJwk = getPrivateKeyJwkES256(privateKeyHex);
+    privateKeyJwk.kid = kid;
     // Generate public key JWK
     let pKJwk = getPublicKeyJwk(privateKeyJwk, "ES256");
     // Create a DID from the public key  

@@ -20,6 +20,9 @@ export class AuthorisationResponseComposer {
     }
 
     async compose(): Promise<string> {
+        if (!this.uri) {
+            throw new Error('Redirect URI is not set');
+        }
         const redirectUri = `${this.uri}code=${encodeURIComponent(this.code)}&response_type=${encodeURIComponent(this.state)}`;
         return redirectUri;
     }

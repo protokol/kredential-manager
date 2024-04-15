@@ -6,3 +6,8 @@ export const MOCK_DID_KEY_PRIVATE_KEY_JWK = {
     "y": "IsX_xLJJItu52D-pzCBMB-C-DXexlXKj-YY-KEJ6oyk",
     "kid": "123456789",
 }
+export const MOCK_REQUESTED_TYPES = [
+    "VerifiableCredential",
+    "VerifiableAttestation",
+    "CTWalletCrossAuthorisedInTime",
+]

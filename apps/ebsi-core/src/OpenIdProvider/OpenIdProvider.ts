@@ -1,27 +1,34 @@
-import { OpenIdProviderMetadata } from "./interfaces/openid-provider-metadata";
+import { OpenIdConfiguration } from "./interfaces/openid-provider-configuration";
+import { OpenIdIssuer } from "./interfaces/openid-provider-issuer";
 import { AuthorizeRequestSigned } from "./interfaces/authorize-request.interface";
 import { JWK } from 'jose';
 import { IdTokenRequestComposer } from "./../Global/Composer/id-token-request.composer";
+import { AuthorizationResponseComposer } from "./../Global/Composer/auth-response.composer";
+import { TokenResponseComposer } from "./../Global/Composer/token-response.composer";
 import { parseDuration } from "../Global/utility";
 import { JwtHeader } from "./interfaces/id-token-request.interface";
+import { IdTokenResponse } from "./types/id-token-response.type";
+import { randomUUID } from "node:crypto";
 
 export class OpenIdProvider {
-    private metadata: OpenIdProviderMetadata;
+    private issuer: OpenIdIssuer;
+    private metadata: OpenIdConfiguration;
     private privateKey: JWK;
 
-    constructor(metadata: OpenIdProviderMetadata, privateKey: JWK) {
+    constructor(issuer: OpenIdIssuer, metadata: OpenIdConfiguration, privateKey: JWK) {
         if (!privateKey.kid) {
             throw new Error('The private key must have a "kid" field.');
         }
+        this.issuer = issuer;
         this.metadata = metadata;
         this.privateKey = privateKey;
     }
 
-    getIssuer(): string {
-        return this.metadata.issuer;
+    getIssuerMetadata() {
+        return this.issuer;
     }
 
-    getMetadata() {
+    getConfigMetadata() {
         return this.metadata;
     }
 
@@ -84,19 +91,23 @@ export class OpenIdProvider {
             client_id: verifiedRequest.client_id,
             redirect_uri: verifiedRequest.redirect_uri,
             scope: 'openid',
+            state: crypto.randomUUID(),
             nonce: 'n-0S6_WzA2Mj'
         }
 
+        // TODO State!
         // Composer
-        const idTokenResponseComposer = new IdTokenRequestComposer(this.privateKey);
-        idTokenResponseComposer.setHeader(header).setPayload(payload);
+        const idTokenRequestComposer = new IdTokenRequestComposer(this.privateKey);
+        idTokenRequestComposer.setHeader(header).setPayload(payload);
 
         // Compose the redirect URL
-        const redirectUrl = await idTokenResponseComposer.compose();
+        const redirectUrl = await idTokenRequestComposer.compose();
 
         // Return header and url
         return { header, redirectUrl };
     }
+
+
 
     // Utility function to validate the request object signing algorithm
     private validateRequestObjectSigningAlg(alg: string): void {

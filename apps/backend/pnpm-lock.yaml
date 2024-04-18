@@ -33,7 +33,7 @@ dependencies:
     specifier: ^10.0.1
     version: 10.0.2(@nestjs/common@10.3.7)(@nestjs/core@10.3.7)(reflect-metadata@0.1.14)(rxjs@7.8.1)(typeorm@0.3.20)
   '@protokol/ebsi-core':
-    specifier: '*'
+    specifier: workspace:*
     version: link:../ebsi-core
   ajv:
     specifier: ^8.12.0
@@ -2224,8 +2224,8 @@ packages:
     engines: {node: '>=6.0'}
     dev: true
 
-  /chromedriver@123.0.2:
-    resolution: {integrity: sha512-Kx0r/IGULm7eciaUtX/OKaFbdBdHRDSguiV1Q4zuQncz11gvymDdMtELa7ppk+kTL5113NLPud92nuIMNTRhww==}
+  /chromedriver@123.0.3:
+    resolution: {integrity: sha512-35IeTqDLcVR0htF9nD/Lh+g24EG088WHVKXBXiFyWq+2lelnoM0B3tKTBiUEjLng0GnELI4QyQPFK7i97Fz1fQ==}
     engines: {node: '>=18'}
     hasBin: true
     requiresBuild: true
@@ -4411,7 +4411,7 @@ packages:
     dependencies:
       jwk-to-pem: 2.0.5
     optionalDependencies:
-      chromedriver: 123.0.2
+      chromedriver: 123.0.3
     transitivePeerDependencies:
       - debug
       - supports-color

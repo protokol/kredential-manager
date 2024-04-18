@@ -28,9 +28,11 @@ import {
 } from "src/types/pagination/FilteringParams";
 import { Public, Resource } from "nest-keycloak-connect";
 import { CreateVcDto } from "./dto/create-vc";
+import { ApiTags } from "@nestjs/swagger";
 
 @Controller("verifiable-credentials")
 @Resource("Verifiable-credentials")
+@ApiTags('Verifiable Credentials')
 export class VcController {
     constructor(
         private readonly vcService: VcService,

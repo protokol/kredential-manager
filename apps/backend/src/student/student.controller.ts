@@ -23,8 +23,10 @@ import {
     FilteringParams,
 } from "./../types/pagination/FilteringParams";
 import { PaginatedResource } from "./../types/pagination/dto/PaginatedResource";
+import { ApiTags } from "@nestjs/swagger";
 
 @Controller("students")
+@ApiTags('Students')
 export class StudentController {
     constructor(private readonly studentService: StudentService) { }
 

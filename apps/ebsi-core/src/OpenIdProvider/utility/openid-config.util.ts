@@ -1,11 +1,12 @@
-import { OpenIdProviderMetadata } from "../interfaces/openid-provider-metadata";
+import { OpenIdConfiguration } from "../interfaces/openid-provider-configuration";
 
-export function getOpenIdProviderMetadata(host: string): OpenIdProviderMetadata {
+export function getOpenIdConfigMetadata(host: string): OpenIdConfiguration {
 
     const protocol = host.includes('localhost') ? 'http://' : 'https://';
     const baseUrl = `${protocol}${host}`;
 
     return {
+        redirect_uris: [`${baseUrl}/direct_post`],
         issuer: `${baseUrl}`,
         authorization_endpoint: `${baseUrl}/authorize`,
         token_endpoint: `${baseUrl}/token`,

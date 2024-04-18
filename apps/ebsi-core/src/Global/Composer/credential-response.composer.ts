@@ -9,14 +9,16 @@ export interface CredentialResponse {
 }
 
 export class CredentialResponseComposer {
-    private privateKeyJWK: JWK;
+    private privateKey: JWK;
+    private issuer: string;
     private format: string;
     private cNonce: string;
     private cNonceExpiresIn: number;
     private unsignedCredential: object;
 
-    constructor(privateKeyJWK: JWK, format: string, cNonce: string, cNonceExpiresIn: number, unsignedRequestedCredential: object) {
-        this.privateKeyJWK = privateKeyJWK;
+    constructor(privateKey: JWK, issuer: string, format: string, cNonce: string, cNonceExpiresIn: number, unsignedRequestedCredential: object) {
+        this.privateKey = privateKey;
+        this.issuer = issuer;
         this.format = format;
         this.cNonce = cNonce;
         this.cNonceExpiresIn = cNonceExpiresIn;
@@ -25,9 +27,16 @@ export class CredentialResponseComposer {
 
     async compose(): Promise<CredentialResponse> {
 
+        // Extend the credential
+        const extendedUnsignedCredential = {
+            ...this.unsignedCredential,
+            issuer: this.issuer,
+            issuanceDate: new Date().toISOString(),
+        };
+
         // Sign the credential
-        const signer = new JwtSigner(this.privateKeyJWK);
-        const signedCredential = await signer.sign(this.unsignedCredential);
+        const signer = new JwtSigner(this.privateKey);
+        const signedCredential = await signer.sign(extendedUnsignedCredential);
 
         return {
             format: this.format,

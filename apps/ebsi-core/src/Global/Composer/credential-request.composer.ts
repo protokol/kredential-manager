@@ -7,40 +7,44 @@ interface JwtProof {
 }
 
 export class CredentialRequestComposer {
-    private jwtProof?: JwtProof;
-    private privateKeyJWK: JWK;
+    // private jwtProof?: JwtProof;
+    private privateKey: JWK;
+    private cNonce?: string;
+    private types?: string[];
 
-    constructor(privateKeyJWK: JWK) {
-        this.privateKeyJWK = privateKeyJWK;
+    constructor(privateKey: JWK) {
+        this.privateKey = privateKey;
     }
 
-    setJwtProof(jwtProof: JwtProof): this {
-        this.jwtProof = jwtProof;
+    setTypes(types: string[]): CredentialRequestComposer {
+        this.types = types;
+        return this;
+    }
+    setCNonce(cNonce: string): CredentialRequestComposer {
+        this.cNonce = cNonce;
         return this;
     }
 
     async compose(): Promise<string> {
-        if (!this.jwtProof) {
-            throw new Error('JWT Proof must be set before composing the request.');
+        if (!this.types) {
+            throw new Error('Types must be set before composing the request.');
         }
-
+        if (!this.cNonce) {
+            throw new Error('CNonce must be set before composing the request.');
+        }
         // Sign the JWT Proof
-        const signer = new JwtSigner(this.privateKeyJWK);
-        const signedJwtProof = signer.sign(this.jwtProof, {
+        const signer = new JwtSigner(this.privateKey);
+        const signedJwtProof = signer.sign({ nonce: this.cNonce }, {
             typ: 'openid4vci-proof+jwt',
         });
 
         // Construct the request body
         const requestBody = JSON.stringify({
-            types: [
-                'VerifiableCredential',
-                'VerifiableAttestation',
-                'CTWalletSameAuthorisedInTime'
-            ],
+            types: this.types,
             format: 'jwt_vc',
             proof: {
                 proof_type: 'jwt',
-                jwt: signedJwtProof
+                jwt: signedJwtProof,
             }
         });
 

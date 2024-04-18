@@ -7,6 +7,7 @@ import { VcModule } from "./vc/vc.module";
 import { VcController } from "./vc/vc.controller";
 import { VcService } from "./vc/vc.service";
 import { ConfigModule } from "@nestjs/config";
+import { OpenIDProviderService } from "./openId/openId.service";
 import {
     KeycloakConnectModule,
     ResourceGuard,
@@ -24,6 +25,8 @@ import { DiplomaModule } from "./diploma/diploma.module";
 import { CourseModule } from "./course/course.module";
 import { SeedModule } from "./seed/seed.module";
 import { ResolverService } from "./resolver/resolver.service";
+import { AuthController } from "./auth/auth.controller";
+import { IssuerService } from "./issuer/issuer.service";
 
 @Module({
     imports: [
@@ -57,7 +60,7 @@ import { ResolverService } from "./resolver/resolver.service";
 
         SeedModule,
     ],
-    controllers: [AppController, VcController],
+    controllers: [AppController, VcController, AuthController],
     providers: [
         AppService,
         VcService,
@@ -75,6 +78,8 @@ import { ResolverService } from "./resolver/resolver.service";
             useClass: RoleGuard,
         },
         ResolverService,
+        OpenIDProviderService,
+        IssuerService,
     ],
     exports: [],
 })

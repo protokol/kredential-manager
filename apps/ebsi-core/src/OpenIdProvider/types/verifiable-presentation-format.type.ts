@@ -1,0 +1,1 @@
+export type VerifiablePresentationFormat = "jwt_vp_json" | "ldp_vp" | "jwt_vp";

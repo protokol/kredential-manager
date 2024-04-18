@@ -1,29 +1,17 @@
 import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
 import { JwtSigner, jwtSign } from "./../../OpenIdProvider/utility/jwt.util";
+import { JwtHeader } from './../../OpenIdProvider/types/jwt-header.type';
+import { IdTokenResponse } from './../../OpenIdProvider/types/id-token-response.type';
 
-interface IdTokenResponse {
-    iss: string;
-    sub: string;
-    aud: string;
-    exp: number;
-    iat: number;
-    nonce: string;
-}
-
-interface JwtHeader {
-    typ: string;
-    alg: string;
-    kid: string;
-}
 
 export class IdTokenResponseComposer {
     private header?: JwtHeader;
     private payload?: IdTokenResponse;
-    private privateKeyJWK: JWK;
+    private privateKey: JWK;
     private state: string;
 
-    constructor(privateKeyJWK: JWK, state: string) {
-        this.privateKeyJWK = privateKeyJWK;
+    constructor(privateKey: JWK, state: string) {
+        this.privateKey = privateKey;
         this.state = state;
     }
 
@@ -37,20 +25,20 @@ export class IdTokenResponseComposer {
         return this;
     }
 
-    async compose(): Promise<string> {
+    async compose(): Promise<any> {
         if (!this.payload || !this.header) {
             throw new Error('Payload and header must be set before composing the request.');
         }
-
+        console.log({ payload: this.payload, header: this.header })
         // Sign the JWT
-        const signer = new JwtSigner(this.privateKeyJWK);
+        const signer = new JwtSigner(this.privateKey);
         const idToken = await signer.sign(this.payload);
 
         // Construct the request body
-        const requestBody = new URLSearchParams({
+        const requestBody = {
             id_token: idToken,
             state: this.state,
-        }).toString();
+        };
 
         return requestBody;
     }

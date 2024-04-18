@@ -1,5 +1,6 @@
 import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
 import { JwtSigner, jwtSign } from "./../../OpenIdProvider/utility/jwt.util";
+import { JwtHeader } from './../../OpenIdProvider/types/jwt-header.type';
 
 export interface IdTokenRequest {
     iss: string;
@@ -9,14 +10,9 @@ export interface IdTokenRequest {
     response_mode: string;
     client_id: string;
     redirect_uri: string;
+    state: string;
     scope: string;
     nonce: string;
-}
-
-export interface JwtHeader {
-    typ: string;
-    alg: string;
-    kid: string;
 }
 
 export class IdTokenRequestComposer {
@@ -53,6 +49,7 @@ export class IdTokenRequestComposer {
         const uriParams = new URLSearchParams({
             client_id: this.payload.client_id,
             response_type: this.payload.response_type,
+            state: this.payload.state,
             scope: this.payload.scope,
             redirect_uri: this.payload.redirect_uri,
             request: encodedJwt

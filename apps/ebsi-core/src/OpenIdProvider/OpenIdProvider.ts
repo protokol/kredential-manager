@@ -9,6 +9,7 @@ import { parseDuration } from "../Global/utility";
 import { JwtHeader } from "./interfaces/id-token-request.interface";
 import { IdTokenResponse } from "./types/id-token-response.type";
 import { randomUUID } from "node:crypto";
+import { CredentialResponseComposer } from "./../Global/Composer/credential-response.composer";
 
 export class OpenIdProvider {
     private issuer: OpenIdIssuer;
@@ -67,12 +68,16 @@ export class OpenIdProvider {
             throw new Error('The code challenge must be between 43 and 128 characters in length.');
         }
 
+        // TODO Validate Authorization details
+
         return request;
     }
 
-    async verifyAuthorizatioAndReturnIdTokenRequest(request: AuthorizeRequestSigned): Promise<({ header: JwtHeader, redirectUrl: string })> {
+    async verifyAuthorizatioAndReturnIdTokenRequest(request: AuthorizeRequestSigned): Promise<({ header: JwtHeader, redirectUrl: string, requestedCredentials: string[] })> {
         // Verify the authorization request
         const verifiedRequest = await this.verifyAuthorizeRequest(request);
+        const authDetails = JSON.parse(typeof verifiedRequest.authorization_details === 'string' ? verifiedRequest.authorization_details : '[]'); //TODO enhance this
+        const requestedCredentials = authDetails[0].types;
 
         // Jwt Header
         const header: JwtHeader = {
@@ -104,10 +109,32 @@ export class OpenIdProvider {
         const redirectUrl = await idTokenRequestComposer.compose();
 
         // Return header and url
-        return { header, redirectUrl };
+        return { header, redirectUrl, requestedCredentials };
     }
 
+    async verifyIdTokenResponse(request: IdTokenResponse, kid: string, alg: string, typ: string): Promise<boolean> {
+        //TODO Verify
+        console.log({ request, kid, alg, typ });
+        return true;
+    }
 
+    async composeAuthorizationResponse(code: string, state: string): Promise<any> {
+        const authResponseComposer = new AuthorizationResponseComposer(code, state);
+        authResponseComposer.setRedirectUri('openid');
+        return await authResponseComposer.compose();
+    }
+
+    async composeTokenResponse(): Promise<any> {
+        const idToken = randomUUID();
+        const cNonce = randomUUID();
+        const tokenResponse = new TokenResponseComposer(this.privateKey, 'bearer', idToken, cNonce, 86400)
+        return await tokenResponse.compose()
+    }
+
+    async composeCredentialResponse(format: string, cNonce: string, unsignedCredential: any): Promise<any> {
+        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, 86400, unsignedCredential)
+        return await response.compose()
+    }
 
     // Utility function to validate the request object signing algorithm
     private validateRequestObjectSigningAlg(alg: string): void {

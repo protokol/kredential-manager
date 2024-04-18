@@ -14,6 +14,8 @@ export interface OpenIdIssuer {
         display: {
             name: string;
             locale: string;
-        }[];
+        }[],
+        issuance_criteria: string;
+        supported_evidence_types: string[];
     }[];
 }

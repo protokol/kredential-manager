@@ -1,4 +1,4 @@
-import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
+import { JWK } from 'jose';
 import { JwtSigner, jwtSign } from "../../OpenIdProvider/utility/jwt.util";
 
 interface TokenResponse {
@@ -16,7 +16,6 @@ export class TokenResponseComposer {
     private idToken?: string;
     private cNonce?: string;
     private cNonceExpiresIn?: number;
-
 
     constructor(privateKeyJWK: JWK, tokenType: string, idToken: string, cNonce: string, cNonceExpiresIn: number) {
         this.privateKeyJWK = privateKeyJWK;

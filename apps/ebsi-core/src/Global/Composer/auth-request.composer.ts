@@ -64,7 +64,9 @@ export class AuthRequestComposer {
         if (!this.issuerUrl) {
             throw new Error('Issuer URL is missing.');
         }
-        const queryParams = new URLSearchParams(this.request as any).toString();
+        const req = this.request as any;
+        req.authorization_details = JSON.stringify(req.authorization_details);
+        const queryParams = new URLSearchParams(req as any).toString();
         return `${this.issuerUrl}?${queryParams}`;
     }
 
@@ -75,11 +77,14 @@ export class AuthRequestComposer {
         metadata: ClientMetadata,
         code_challenge: string,
         code_challenge_method: string,
+        state?: string,
         issuer_state?: string,
     ): AuthRequestComposer {
+        const randomState = state ? state : Math.random().toString(36).substring(2, 15);
         const composer = new AuthRequestComposer(response_type, client_id, redirect_uri)
             .setMetadata(metadata)
-            .setCodeChallenge(code_challenge, code_challenge_method);
+            .setCodeChallenge(code_challenge, code_challenge_method)
+            .setState(randomState);
         if (issuer_state) {
             composer.setIssuerState(issuer_state);
         }

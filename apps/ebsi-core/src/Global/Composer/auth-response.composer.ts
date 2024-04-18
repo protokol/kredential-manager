@@ -1,15 +1,14 @@
-export interface AuthorisationResponse {
+export interface AuthorizationResponse {
     code: string;
-    state: number;
+    state: string;
 }
 
-export class AuthorisationResponseComposer {
-    private payload?: AuthorisationResponse;
+export class AuthorizationResponseComposer {
     private code: string;
-    private state: number
+    private state: string
     private uri?: string;
 
-    constructor(code: string, state: number) {
+    constructor(code: string, state: string) {
         this.code = code;
         this.state = state;
     }
@@ -23,7 +22,10 @@ export class AuthorisationResponseComposer {
         if (!this.uri) {
             throw new Error('Redirect URI is not set');
         }
-        const redirectUri = `${this.uri}code=${encodeURIComponent(this.code)}&response_type=${encodeURIComponent(this.state)}`;
-        return redirectUri;
+        const uriParams = new URLSearchParams({
+            code: this.code,
+            state: this.state,
+        }).toString();
+        return `${this.uri}?${uriParams}`;
     }
 }

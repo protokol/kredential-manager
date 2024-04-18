@@ -9,7 +9,14 @@ export class HttpClient {
      */
     async get(url: string, options: RequestInit = {}): Promise<any> {
         options.method = 'GET';
-        return makeRequest(url, options);
+        options.redirect = 'manual';
+        try {
+            const response = await fetch(url, options);
+            return response
+        } catch (error) {
+            console.error("Fetch error: ", error);
+            throw error;
+        }
     }
 
     /**
@@ -20,6 +27,8 @@ export class HttpClient {
      * @returns {Promise<any>} - The request promise.
      */
     async post(url: string, data: any, options: RequestInit = {}): Promise<any> {
+        options.method = 'POST';
+        options.redirect = 'manual';
         // Define default headers
         const defaultHeaders = {
             'Content-Type': 'application/json',
@@ -31,12 +40,18 @@ export class HttpClient {
             ...(options.headers as Record<string, string>),
         };
 
+        if (options && headers['Content-Type'] === 'application/x-www-form-urlencoded' && data && typeof data === 'object') {
+            data = new URLSearchParams(data)
+        } else if (options && headers['Content-Type'] === 'application/json' && data && typeof data === 'object') {
+            data = JSON.stringify(data);
+        } else {
+            data = data;
+        }
         // Prepare the final options for the fetch request
         const finalOptions: RequestInit = {
             ...options,
-            method: 'POST',
             headers: headers,
-            body: headers['Content-Type'] === 'application/json' ? JSON.stringify(data) : data,
+            body: data,
         };
 
         return makeRequest(url, finalOptions);

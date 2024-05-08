@@ -80,11 +80,9 @@ export class AuthRequestComposer {
         state?: string,
         issuer_state?: string,
     ): AuthRequestComposer {
-        const randomState = state ? state : Math.random().toString(36).substring(2, 15);
         const composer = new AuthRequestComposer(response_type, client_id, redirect_uri)
             .setMetadata(metadata)
             .setCodeChallenge(code_challenge, code_challenge_method)
-            .setState(randomState);
         if (issuer_state) {
             composer.setIssuerState(issuer_state);
         }

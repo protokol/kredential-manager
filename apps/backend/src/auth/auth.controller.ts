@@ -1,13 +1,15 @@
-import { Body, Controller, Get, Post, Query, Res, Headers } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Res, Headers, Inject } from '@nestjs/common';
 import { Response } from 'express';
 import {
     Public,
 } from 'nest-keycloak-connect';
 import { OpenIDProviderService } from '../openId/openId.service';
 import { IssuerService } from 'src/issuer/issuer.service';
-import { AuthorizeRequest } from '@protokol/ebsi-core';
+import { AuthorizeRequest, IdTokenResponse, TokenRequestBody, parseDuration } from '@protokol/ebsi-core';
 import { JWK } from 'jose';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateAuthDto } from './dto/create-authorization.dto';
+import { AuthService } from './auth.service';
 
 interface JWKS {
     keys: JWK[];
@@ -16,7 +18,7 @@ interface JWKS {
 @Controller('')
 @ApiTags('OIDC')
 export class AuthController {
-    constructor(private provider: OpenIDProviderService, private issuer: IssuerService) { }
+    constructor(private provider: OpenIDProviderService, private issuer: IssuerService, private auth: AuthService) { }
     @Get('.well-known/openid-configuration')
     @Public(true)
     getIssuerMetadata() {
@@ -45,13 +47,12 @@ export class AuthController {
         @Res() res: Response,
     ) {
         try {
-            const { header, redirectUrl, requestedCredentials } = await this.provider.verifyAuthorizatioAndReturnIdTokenRequest(req)
-            // TODO Save requestedCredentials
+            console.log("Authorize")
+            const { header, code, url } = await this.auth.authorize(req);
             for (const [key, value] of Object.entries(header)) {
                 res.setHeader(key, value);
             }
-            console.log({ req })
-            return res.redirect(302, redirectUrl);
+            return res.redirect(code, url);
         } catch (error) {
             console.log(error.message)
             return res.status(400).json({ message: error.message });
@@ -68,6 +69,10 @@ export class AuthController {
     ) {
         console.log({ req })
         try {
+            const { header, code, url } = await this.auth.directPost(req, headers);
+            return res.redirect(code, url);
+
+            /*
             const kid = headers['kid'] as string;
             const alg = headers['alg'] as string;
             const typ = headers['typ'] as string;
@@ -81,6 +86,7 @@ export class AuthController {
             const redirectUrl = await this.provider.composeAuthorizationResponse(code, state);
             console.log({ redirectUrl })
             return res.redirect(302, redirectUrl);
+            */
         } catch (error) {
             console.log("!!!!!!!")
             console.log(error.message)
@@ -91,13 +97,13 @@ export class AuthController {
     @Post('token')
     @Public(true)
     async tokenRequest(
-        @Body() req: any,
+        @Body() req: TokenRequestBody,
         @Res() res: Response,
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const response = await this.provider.composeTokenResponse();
-            return res.status(200).json(response);
+            const { header, code, url: response } = await this.auth.token(req);
+            return res.status(code).json(response);
         } catch (error) {
             console.log(error.message)
             return res.status(400).json({ message: error.message });

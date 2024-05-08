@@ -6,6 +6,9 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+mkdir src/$1
+
+
 # Generate module, controller, and service
 nest g mo $1
 nest g co $1

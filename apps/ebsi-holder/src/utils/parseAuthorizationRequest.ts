@@ -15,6 +15,7 @@ export function parseAuthorizeRequestSigned(data: string): AuthorizeRequestSigne
         state: params.get('state') ?? '',
         redirect_uri: decodeURIComponent(params.get('redirect_uri')!),
         request: params.get('request')!,
+        nonce: params.get('nonce') ?? '',
     };
 
     return authorizeRequestSigned;

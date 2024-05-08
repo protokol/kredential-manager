@@ -47,15 +47,12 @@ export class IssuerService {
      */
     async requestCredential(issuerMetadata: OpenIdIssuer, requestedCredentials: string[], accessToken: string, cNonce: string): Promise<any> {
         try {
-
             const credentialRequest = new CredentialRequestComposer(MOCK_DID_KEY_PRIVATE_KEY_JWK).setTypes(requestedCredentials).setCNonce(cNonce).compose()
             console.log({ credentialRequest })
             const header = { 'Authorization': `Bearer ${accessToken}` }
             const credentialResponse = await this.httpClient.post(issuerMetadata.credential_endpoint, credentialRequest, { headers: { "Content-Type": 'application/json', ...header } });
-
             console.log({ credentialResponse })
             return credentialResponse.json();
-            // return metadata.json();
         } catch (error) {
             console.error('Error discovering configuration metadata:', error);
             throw error;

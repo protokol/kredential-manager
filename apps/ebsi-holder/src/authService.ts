@@ -1,4 +1,4 @@
-import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer, parseDuration } from "@protokol/ebsi-core";
+import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer, jwtDecode, jwtDecodeUrl, parseDuration } from "@protokol/ebsi-core";
 import { HttpClient } from "./httpClient";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { log } from "./utils/log";
@@ -14,6 +14,19 @@ export class AuthService {
     }
 
     /**
+     * Generates a code challenge from a code verifier.
+     * @param {string} codeVerifier - The code verifier.
+     * @returns {string} - The code challenge.
+     */
+    generateCodeChallenge(codeVerifier: string) {
+        const hash = createHash("sha256")
+        hash.update(codeVerifier);
+        const digest = hash.digest();
+        const codeChallenge = digest.toString('base64url');
+        return codeChallenge;
+    }
+
+    /**
      * Performs authentication with the issuer to obtain an access token.
      * @param {OpenIdIssuer} issuerMetadata - Issuer metadata.
      * @param {OpenIdConfiguration} configMetadata - Config metadata.
@@ -22,9 +35,24 @@ export class AuthService {
      */
     async authenticateWithIssuer(issuerMetadata: OpenIdIssuer, configMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string) {
         const codeVerifier = randomBytes(50).toString("base64url");
+        const codeChallenge = this.generateCodeChallenge(codeVerifier);
+        const codeChallenge2 = this.generateCodeChallenge(codeVerifier);
+        log('Code verifier:', codeVerifier)
+        log('Code challenge:', codeChallenge)
+        log('Code challenge2:', codeChallenge2)
+
+        // const clientDefinedState = 'clien_defined_state' //randomBytes(50).toString("base64url")
+        // const cliendDefinedNonce = 'client_defined_nonce'
+        const clientDefinedState = randomBytes(50).toString("base64url")
+        const cliendDefinedNonce = randomBytes(25).toString("base64url")
+        //randomBytes(25).toString("base64url")
+        // const cliendDefinedNonce = "cc";
+
         try {
             // 1.) Authorisation Request
-            const authRequest = AuthRequestComposer.holder('code', clientId, 'openid:', { authorization_endpoint: 'openid:' }, createHash("sha256").update(codeVerifier).digest().toString("base64url"), 'S256')
+            log("1.) --->")
+            const authRequest = AuthRequestComposer
+                .holder('code', clientId, 'openid:', { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')
                 .addAuthDetails([
                     {
                         type: "openid_credential", //TODO...
@@ -32,27 +60,46 @@ export class AuthService {
                         locations: [issuerMetadata.credential_issuer], //If the Credential Issuer metadata contains an authorization_server parameter, the authorization detail's locations common data field MUST be set to the Credential Issuer's identifier value
                         types: requestedCredentials
                     },
-                ]).setIssuerUrl(issuerMetadata.authorization_endpoint)
-            log('Auth request endpoint:', issuerMetadata.authorization_endpoint);
+                ])
+                .setIssuerUrl(issuerMetadata.authorization_endpoint)
+                .setState(clientDefinedState)
+                .setNonce(cliendDefinedNonce)
+            // log('Auth request endpoint:', issuerMetadata.authorization_endpoint);
             log('Auth request:', authRequest)
-
-            // 2.) ID Token Request: Perform the authorization request and get ID Token
+            log("--------------")
+            // // 2.) ID Token Request: Perform the authorization request and get ID Token
+            log("2.) <---")
             const authResult = await this.httpClient.get(authRequest.createGetRequestUrl());
-            log('Auth result:', authResult);
+
+            if (authResult.status !== 302) throw new Error('Invalid status code')
+            log('Auth result:', authResult.status)
             const { location } = parseRedirectHeaders(authResult.headers)
-
-            // TODO Validate headers... check response if it was signed by the issuer
+            log('Location:', location)
             const parsedSignedRequest = parseAuthorizeRequestSigned(location);
-            log({ parsedSignedRequest })
+            const signedRequest = parsedSignedRequest.request ?? ''
 
+            const decodedRequest = await jwtDecodeUrl(signedRequest, configMetadata.issuer, configMetadata.jwks_uri, '')
+            if (!decodedRequest) throw new Error('Could not decode signed request')
+            // return ""
+            const { header: idTokenReqHeader, payload: idTokenReqPayload } = decodedRequest
+            console.log('Decoded', decodedRequest)
+
+            if (idTokenReqPayload.iss !== issuerMetadata.credential_issuer) throw new Error('Issuer does not match')
+            if (idTokenReqPayload.aud !== clientId) throw new Error('Audience does not match')
+            if (idTokenReqPayload.exp < Math.floor(Date.now() / 1000)) throw new Error('Token expired')
+            if (idTokenReqPayload.nonce !== cliendDefinedNonce) throw new Error('Nonce does not match')
+            console.log('server response nonce: ', idTokenReqPayload.nonce, ' == ', cliendDefinedNonce)
+            // log({ parsedSignedRequest })
+            const serverDefinedState = parsedSignedRequest.state ?? ''
 
             // 3.)  ID Token Response
+            log("3.) --->")
             const header: JwtHeader = {
                 typ: 'JWT',
                 alg: 'ES256',
                 kid: MOCK_DID_KEY_PRIVATE_KEY_JWK.kid ?? ''
             }
-            const idTokenResponseBody = await new IdTokenResponseComposer(MOCK_DID_KEY_PRIVATE_KEY_JWK, 'state')
+            const idTokenResponseBody = await new IdTokenResponseComposer(MOCK_DID_KEY_PRIVATE_KEY_JWK, serverDefinedState)
                 .setHeader(header)
                 .setPayload({
                     iss: MOCK_DID_KEY,
@@ -60,36 +107,53 @@ export class AuthService {
                     aud: issuerMetadata.credential_issuer,
                     exp: Math.floor(Date.now() / 1000) + parseDuration('5m'),
                     iat: Math.floor(Date.now() / 1000),
-                    nonce: 'n-0S6_WzA2Mj' //TODO
-                } as IdTokenResponse).compose();
+                    nonce: idTokenReqPayload.nonce
+                } as IdTokenResponse)
+                .compose();
 
             // 4.) Authorization Response from server
+            log("4.) <---")
+            // console.log({ idTokenResponseBody })
             const authorizationResponse = await this.httpClient.post(configMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
+
+            console.log('Location:', idLocation)
+            console.log({ idLocation })
+            console.log({ status: authorizationResponse.status })
+            if (authorizationResponse.status !== 302) throw new Error('Invalid status code')
             const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.split('?')[1])
-            log(parsedAuthorizationResponse)
+            if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
 
             // 5.) Token Request
+            log("5.) --->")
             const tokenRequestBody = await new TokenRequestComposer(
                 MOCK_DID_KEY_PRIVATE_KEY_JWK,
                 'authorization_code',
                 parsedAuthorizationResponse.code,
-            ).setHeader(header).setPayload({
-                iss: MOCK_DID_KEY,
-                sub: MOCK_DID_KEY,
-                aud: issuerMetadata.credential_issuer, //TODO
-                jti: randomUUID(),
-                exp: Math.floor(Date.now() / 1000) + parseDuration('5m'),
-                iat: Math.floor(Date.now() / 1000),
-            } as TokenRequest).compose()
-            log({ tokenRequestBody })
+            ).setHeader(header)
+                .setPayload({
+                    iss: MOCK_DID_KEY,
+                    sub: MOCK_DID_KEY,
+                    aud: issuerMetadata.credential_issuer,
+                    jti: randomUUID(),
+                    exp: Math.floor(Date.now() / 1000) + parseDuration('5m'),
+                    iat: Math.floor(Date.now() / 1000),
+                } as TokenRequest)
+                .setCodeVerifier(codeVerifier)
+                .compose()
 
+            console.log("Code Challenge!!!!!: ", codeChallenge)
+            console.log("Code verifier!!!!! : ", codeVerifier)
+            console.log("-------------------")
+
+            log({ tokenRequestBody })
             //6.) Token Response
-            const tokenResponse = await this.httpClient.post(configMetadata.token_endpoint, idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
+            log("6.) <---")
+            const tokenResponse = await this.httpClient.post(configMetadata.token_endpoint, tokenRequestBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const token = await tokenResponse.json()
             return token
         } catch (error) {
-            console.error('Error authenticating with issuer:', error);
+            console.error(error);
             throw error;
         }
     }

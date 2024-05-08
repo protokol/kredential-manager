@@ -27,11 +27,17 @@ import { SeedModule } from "./seed/seed.module";
 import { ResolverService } from "./resolver/resolver.service";
 import { AuthController } from "./auth/auth.controller";
 import { IssuerService } from "./issuer/issuer.service";
+import { AuthService } from "./auth/auth.service";
+import { NonceService } from "./nonce/nonce.service";
+import { Nonce } from "./nonce/entities/nonce.entity";
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         TypeOrmModule.forRoot(dataSourceOptions),
+        TypeOrmModule.forFeature([Nonce]),
+
+        // Keycloak
         KeycloakConnectModule.register({
             authServerUrl: process.env.REALM_SERVER || "",
             bearerOnly: true,
@@ -45,22 +51,19 @@ import { IssuerService } from "./issuer/issuer.service";
             tokenValidation: TokenValidation.OFFLINE,
             realmPublicKey: process.env.REALM_PUBLIC_KEY || "",
         }),
-
         VcModule,
-
         StudentModule,
-
         ProgramModule,
-
         CourseModule,
-
         DiplomaModule,
-
         EnrollmentModule,
-
-        SeedModule,
+        SeedModule
     ],
-    controllers: [AppController, VcController, AuthController],
+    controllers: [
+        AppController,
+        VcController,
+        AuthController
+    ],
     providers: [
         AppService,
         VcService,
@@ -78,8 +81,10 @@ import { IssuerService } from "./issuer/issuer.service";
             useClass: RoleGuard,
         },
         ResolverService,
+        NonceService,
         OpenIDProviderService,
         IssuerService,
+        AuthService,
     ],
     exports: [],
 })

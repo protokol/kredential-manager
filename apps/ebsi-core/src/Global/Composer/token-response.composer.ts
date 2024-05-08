@@ -1,5 +1,5 @@
 import { JWK } from 'jose';
-import { JwtSigner, jwtSign } from "../../OpenIdProvider/utility/jwt.util";
+import { JwtSigner, jwtSign } from "../../OpenIdProvider/utils/jwt.util";
 
 interface TokenResponse {
     access_token: string,

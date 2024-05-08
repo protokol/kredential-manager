@@ -1,5 +1,5 @@
 import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
-import { JwtSigner, jwtSign } from "./../../OpenIdProvider/utility/jwt.util";
+import { JwtSigner, jwtSign } from "../../OpenIdProvider/utils/jwt.util";
 import { JwtHeader } from './../../OpenIdProvider/types/jwt-header.type';
 import { IdTokenResponse } from './../../OpenIdProvider/types/id-token-response.type';
 

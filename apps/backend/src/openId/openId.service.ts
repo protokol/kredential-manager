@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { IdTokenResponse, OpenIdProvider, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@protokol/ebsi-core';
+import { IdTokenResponse, IdTokenResponseDecoded, OpenIdProvider, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@protokol/ebsi-core';
+import { IdTokenResponseRequest } from '@protokol/ebsi-core/dist/OpenIdProvider/interfaces/id-token-response.interface';
 
 const HOST = 'localhost:3000';
 
@@ -25,12 +26,24 @@ export class OpenIDProviderService {
         return this.provider.getConfigMetadata();
     }
 
-    verifyAuthorizatioAndReturnIdTokenRequest(request: any) {
-        return this.provider.verifyAuthorizatioAndReturnIdTokenRequest(request);
+    verifyRequestedCredentials(requestedCredentials: string[]) {
+        return this.provider.verifyRequestedCredentials(requestedCredentials);
     }
 
-    verifyIdTokenResponse(request: IdTokenResponse, kid: string, alg: string, typ: string) {
-        return this.provider.verifyIdTokenResponse(request, kid, alg, typ);
+    validateCodeChallenge(codeChallenge: string, codeVerifier: string): boolean {
+        return this.provider.validateCodeChallenge(codeChallenge, codeVerifier);
+    }
+
+    handleAuthorizationRequest(request: any) {
+        return this.provider.handleAuthorizationRequest(request);
+    }
+
+    decodeIdTokenRequest(request: any): Promise<IdTokenResponseDecoded> {
+        return this.provider.decodeIdTokenRequest(request);
+    }
+
+    createAuthorizationRequest(code: string, state: string): Promise<string> {
+        return this.provider.createAuthorizationRequest(code, state);
     }
 
     composeAuthorizationResponse(code: string, state: string) {

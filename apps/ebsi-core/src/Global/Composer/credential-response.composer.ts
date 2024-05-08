@@ -1,5 +1,5 @@
 import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
-import { JwtSigner } from '../../OpenIdProvider/utility/jwt.util';
+import { JwtSigner } from '../../OpenIdProvider/utils/jwt.util';
 
 export interface CredentialResponse {
     format: string,

@@ -33,9 +33,10 @@ const main = async () => {
     console.log('Authenticated with issuer:', token);
 
     // Request credential
-    // console.log('Requesting credential...');
-    // const credential = await issuerService.requestCredential(issuerMetadata, requestedCredentials, token.access_token, token.c_nonce);
-    // console.log({ credential })
+    console.log('Requesting credential...');
+    console.log(token.c_nonce)
+    const credential = await issuerService.requestCredential(issuerMetadata, requestedCredentials, token.access_token, token.c_nonce);
+    console.log({ credential })
 
     console.log('\n\n')
 }

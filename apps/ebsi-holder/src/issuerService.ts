@@ -1,6 +1,6 @@
 import { CredentialRequestComposer, OpenIdConfiguration, OpenIdIssuer } from "@protokol/ebsi-core";
 import { HttpClient } from "./httpClient";
-import { MOCK_DID_KEY_PRIVATE_KEY_JWK } from "./utils/mocks";
+import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK } from "./utils/mocks";
 
 export class IssuerService {
     private httpClient: HttpClient;
@@ -47,8 +47,22 @@ export class IssuerService {
      */
     async requestCredential(issuerMetadata: OpenIdIssuer, requestedCredentials: string[], accessToken: string, cNonce: string): Promise<any> {
         try {
-            const credentialRequest = new CredentialRequestComposer(MOCK_DID_KEY_PRIVATE_KEY_JWK).setTypes(requestedCredentials).setCNonce(cNonce).compose()
-            console.log({ credentialRequest })
+            const credentialRequest = await new CredentialRequestComposer(MOCK_DID_KEY_PRIVATE_KEY_JWK)
+                .setPayload({
+                    aud: issuerMetadata.credential_issuer,
+                    iss: MOCK_DID_KEY,
+                    iat: Math.floor(Date.now() / 1000),
+                    exp: Math.floor(Date.now() / 1000) + 60,
+                    nonce: cNonce,
+                })
+                .setHeader({
+                    typ: "JWT",
+                    alg: "ES256",
+                    kid: MOCK_DID_KEY_PRIVATE_KEY_JWK.kid ?? ''
+                })
+                .setTypes(requestedCredentials)
+                .setCNonce(cNonce)
+                .compose()
             const header = { 'Authorization': `Bearer ${accessToken}` }
             const credentialResponse = await this.httpClient.post(issuerMetadata.credential_endpoint, credentialRequest, { headers: { "Content-Type": 'application/json', ...header } });
             console.log({ credentialResponse })

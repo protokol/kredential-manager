@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IdTokenResponse, IdTokenResponseDecoded, OpenIdProvider, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@protokol/ebsi-core';
+import { AuthorizationDetail, CredentialRequestPayload, IdTokenResponse, IdTokenResponseDecoded, OpenIdProvider, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@protokol/ebsi-core';
 import { IdTokenResponseRequest } from '@protokol/ebsi-core/dist/OpenIdProvider/interfaces/id-token-response.interface';
 
 const HOST = 'localhost:3000';
@@ -26,8 +26,8 @@ export class OpenIDProviderService {
         return this.provider.getConfigMetadata();
     }
 
-    verifyRequestedCredentials(requestedCredentials: string[]) {
-        return this.provider.verifyRequestedCredentials(requestedCredentials);
+    verifyAuthorizationDetails(authDetails: AuthorizationDetail[]) {
+        return this.provider.verifyAuthorizationDetails(authDetails);
     }
 
     validateCodeChallenge(codeChallenge: string, codeVerifier: string): boolean {
@@ -42,6 +42,10 @@ export class OpenIDProviderService {
         return this.provider.decodeIdTokenRequest(request);
     }
 
+    decodeCredentialRequest(request: any): Promise<CredentialRequestPayload> {
+        return this.provider.decodeCredentialRequest(request);
+    }
+
     createAuthorizationRequest(code: string, state: string): Promise<string> {
         return this.provider.createAuthorizationRequest(code, state);
     }
@@ -50,8 +54,8 @@ export class OpenIDProviderService {
         return this.provider.composeAuthorizationResponse(code, state);
     }
 
-    composeTokenResponse() {
-        return this.provider.composeTokenResponse();
+    composeTokenResponse(idToken: string, cNonce: string, authorizationDetails: AuthorizationDetail[]) {
+        return this.provider.composeTokenResponse(idToken, cNonce, authorizationDetails);
     }
 
     composeCredentialResponse(format: string, cNonce: string, unsignedCredential: any) {

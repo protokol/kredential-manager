@@ -67,7 +67,6 @@ export class AuthController {
         @Res() res: Response,
         @Headers() headers: Record<string, string | string[]>
     ) {
-        console.log({ req })
         try {
             const { header, code, url } = await this.auth.directPost(req, headers);
             return res.redirect(code, url);
@@ -102,7 +101,7 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const { header, code, url: response } = await this.auth.token(req);
+            const { header, code, response } = await this.auth.token(req);
             return res.status(code).json(response);
         } catch (error) {
             console.log(error.message)
@@ -119,28 +118,13 @@ export class AuthController {
     ) {
         try {
 
-            // TODO Get the requested credential from the Auth request,.. use nonce ...
-            // TODO Fill the credential for the requested credential
-            // TODO Save the credential to the database
-            const credential = {
-                "@context": [
-                    "https://www.w3.org/2018/credentials/v1",
-                    "https://www.w3.org/2018/credentials/examples/v1"
-                ],
-                "type": ["VerifiableCredential", "UniversityDegreeCredential"],
-                "credentialSubject": {
-                    "id": "did:key:ebfeb1f712ebc6f1c276e12ec21",
-                    "degree": {
-                        "type": "BachelorDegree",
-                        "name": "Bachelor of Science in Computer Science",
-                        "degreeType": "Undergraduate",
-                        "degreeSchool": "Best University",
-                        "degreeDate": "2023-04-18"
-                    }
-                }
+            try {
+                const { header, code, response } = await this.auth.credentail(req);
+                return res.status(code).json(response);
+            } catch (error) {
+                console.log(error.message)
+                return res.status(400).json({ message: error.message });
             }
-            const response = await this.provider.composeCredentialResponse('jwt_vc', 'cnonce', credential);
-            return res.status(200).json(response);
         } catch (error) {
             console.log(error.message)
             return res.status(400).json({ message: error.message });

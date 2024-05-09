@@ -8,8 +8,11 @@ export class Nonce {
     @Column()
     nonce: string;
 
-    @Column()
+    @Column({ nullable: true })
     code: string;
+
+    @Column({ nullable: true })
+    cNonce: string;
 
     @Column()
     step: string;

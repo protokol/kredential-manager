@@ -1,7 +1,7 @@
 import { OpenIdConfiguration } from "./interfaces/openid-provider-configuration";
 import { OpenIdIssuer } from "./interfaces/openid-provider-issuer";
 import { AuthorizeRequestSigned } from "./interfaces/authorize-request.interface";
-import { JWK, JWTPayload, decodeJwt } from 'jose';
+import { JWK, JWTPayload, decodeJwt, decodeProtectedHeader } from 'jose';
 import { composeIdTokenRequest } from "./utils/id-token-request.composer";
 import { AuthorizationResponseComposer } from "./../Global/Composer/auth-response.composer";
 import { TokenResponseComposer } from "./../Global/Composer/token-response.composer";
@@ -12,6 +12,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { CredentialResponseComposer } from "./../Global/Composer/credential-response.composer";
 import { IdTokenResponseRequest } from "./interfaces/id-token-response.interface";
 import { IdTokenResponseDecoded } from "./interfaces/id-token-response-decoded.interface";
+import { AuthorizationDetail, CredentialRequestPayload } from "./interfaces";
 
 export class OpenIdProvider {
     private issuer: OpenIdIssuer;
@@ -45,12 +46,46 @@ export class OpenIdProvider {
 
     /**
      * Verifies if the requested credentials are supported by the issuer.
-     * @param requestedCredentials Array of credential types requested.
+     * @param authDetails Array of requested authorization detail.
      * @returns A boolean indicating if all requested credentials are supported.
      */
-    verifyRequestedCredentials(requestedCredentials: string[]): boolean {
-        const supportedCredentials = this.issuer.credentials_supported.flatMap(credential => credential.types ?? []);
-        return requestedCredentials.every(credential => supportedCredentials.includes(credential));
+    verifyAuthorizationDetails(authDetails: AuthorizationDetail[]): boolean {
+        let isCredentialFound = false;
+
+        if (authDetails.length == 0) {
+            throw new Error('Invalid authorization details.');
+        } else if (authDetails.length > 1) {
+            throw new Error('Multiple authorization details not supported.');
+        }
+
+        for (const authDetail of authDetails) {
+            // Must be openid_credential
+            if (authDetail.type !== 'openid_credential') {
+                throw new Error('Invalid authorization detail type.');
+            }
+
+            for (const credential of this.issuer.credentials_supported) {
+                const isMatch = credential.types.length === authDetail.types.length &&
+                    credential.types.every(type => authDetail.types.includes(type)) &&
+                    authDetail.types.every(type => credential.types.includes(type));
+
+                if (isMatch) {
+                    isCredentialFound = true;
+                    break;
+                }
+
+            }
+
+            if (isCredentialFound) {
+                break;
+            }
+        }
+
+        if (!isCredentialFound) {
+            throw new Error('Requested credentials are not supported by the issuer.');
+        }
+
+        return isCredentialFound;
     }
 
     async verifyAuthorizeRequest(request: AuthorizeRequestSigned): Promise<(AuthorizeRequestSigned)> {
@@ -93,12 +128,11 @@ export class OpenIdProvider {
         return request;
     }
 
-    async handleAuthorizationRequest(request: AuthorizeRequestSigned): Promise<({ header: JwtHeader, redirectUrl: string, requestedCredentials: string[], serverDefinedState: string })> {
+    async handleAuthorizationRequest(request: AuthorizeRequestSigned): Promise<({ header: JwtHeader, redirectUrl: string, authorizationDetails: AuthorizationDetail[], serverDefinedState: string })> {
         // Verify the authorization request
         const verifiedRequest = await this.verifyAuthorizeRequest(request);
-        const authDetails = JSON.parse(typeof verifiedRequest.authorization_details === 'string' ? verifiedRequest.authorization_details : '[]'); //TODO enhance this
-        const requestedCredentials = authDetails[0].types;
-        const serverDefinedState = 'server_defined_state' //randomBytes(20).toString("base64url")
+        const authorizationDetails = JSON.parse(typeof verifiedRequest.authorization_details === 'string' ? verifiedRequest.authorization_details : '[]'); //TODO enhance this
+        const serverDefinedState = randomBytes(20).toString("base64url")
 
         // console.log({ verifiedRequest })
         // Jwt Header
@@ -126,7 +160,7 @@ export class OpenIdProvider {
         const redirectUrl = await composeIdTokenRequest(this.privateKey, payload, header);
 
         // Return header and url
-        return { header, redirectUrl, requestedCredentials, serverDefinedState };
+        return { header, redirectUrl, authorizationDetails, serverDefinedState };
     }
 
     async decodeIdTokenRequest(request: string): Promise<IdTokenResponseDecoded> {
@@ -138,6 +172,25 @@ export class OpenIdProvider {
             ...decoded,
             nonce: decoded.nonce as string
         } as IdTokenResponseDecoded
+        return decodedRequest;
+    }
+
+    async decodeCredentialRequest(request: any): Promise<CredentialRequestPayload> {
+        if (request.proof.proof_type !== 'jwt') {
+            throw new Error('Invalid proof token request.');
+        }
+        const header = decodeProtectedHeader(request.proof.jwt)
+        if (header && header.typ !== 'openid4vci-proof+jwt') {
+            throw new Error('Invalid proof token request.');
+        }
+        const decoded = decodeJwt(request.proof.jwt)
+        if (!decoded) {
+            throw new Error('Invalid cred token request.');
+        }
+        const decodedRequest = {
+            ...decoded,
+            nonce: decoded.nonce as string
+        } as CredentialRequestPayload
         return decodedRequest;
     }
 
@@ -158,10 +211,8 @@ export class OpenIdProvider {
         return await authResponseComposer.compose();
     }
 
-    async composeTokenResponse(): Promise<any> {
-        const idToken = randomBytes(50).toString("base64url");
-        const cNonce = randomBytes(50).toString("base64url");
-        const tokenResponse = new TokenResponseComposer(this.privateKey, 'bearer', idToken, cNonce, 86400)
+    async composeTokenResponse(idToken: string, cNonce: string, authorizationDetails: AuthorizationDetail[]): Promise<any> {
+        const tokenResponse = new TokenResponseComposer(this.privateKey, 'bearer', idToken, cNonce, 86400, authorizationDetails)
         return await tokenResponse.compose()
     }
 

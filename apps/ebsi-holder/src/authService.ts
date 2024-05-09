@@ -130,7 +130,8 @@ export class AuthService {
                 MOCK_DID_KEY_PRIVATE_KEY_JWK,
                 'authorization_code',
                 parsedAuthorizationResponse.code,
-            ).setHeader(header)
+            )
+                .setHeader(header)
                 .setPayload({
                     iss: MOCK_DID_KEY,
                     sub: MOCK_DID_KEY,

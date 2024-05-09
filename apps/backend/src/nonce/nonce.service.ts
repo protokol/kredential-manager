@@ -28,7 +28,7 @@ export class NonceService {
         return nonceValue;
     }
 
-    async createAuthResponseNonce(nonceValue: string, code: string): Promise<boolean> {
+    async createAuthResponseNonce(nonceValue: string, code: string, idToken: string): Promise<boolean> {
         const nonce = await this.nonceRepository.findOne({
             where: { nonce: nonceValue },
         });
@@ -37,6 +37,24 @@ export class NonceService {
             nonce.step = NonceStep.AUTH_RESPONSE;
             nonce.status = NonceStatus.UNCLAIMED;
             nonce.code = code;
+            nonce.payload.idToken = idToken;
+            await this.nonceRepository.save(nonce);
+            return true;
+        }
+        return false;
+    }
+
+    async createTokenRequestCNonce(nonceValue: string, cNonce: string): Promise<boolean> {
+        const nonce = await this.nonceRepository.findOne({
+            where: { nonce: nonceValue },
+        });
+
+        console.log('Saving c nonce: ', cNonce, nonceValue, nonce);
+
+        if (nonce) {
+            nonce.step = NonceStep.TOKEN_REQUEST;
+            nonce.status = NonceStatus.UNCLAIMED;
+            nonce.cNonce = cNonce;
             await this.nonceRepository.save(nonce);
             return true;
         }
@@ -63,6 +81,20 @@ export class NonceService {
             where: { code: code },
         });
 
+        if (nonce && nonce.step === step && nonce.status === status) {
+            await this.updateNonceStatus(nonce.nonce, NonceStatus.CLAIMED);
+            if (clientId && nonce.clientId !== clientId) {
+                throw new Error('Invalid request');
+            }
+            return nonce;
+        }
+        throw new Error('Invalid nonce');
+    }
+
+    async getNonceByCNonce(cNonce: string, step: NonceStep, status: NonceStatus, clientId?: string): Promise<Nonce | undefined> {
+        const nonce = await this.nonceRepository.findOne({
+            where: { cNonce: cNonce },
+        });
         if (nonce && nonce.step === step && nonce.status === status) {
             await this.updateNonceStatus(nonce.nonce, NonceStatus.CLAIMED);
             if (clientId && nonce.clientId !== clientId) {

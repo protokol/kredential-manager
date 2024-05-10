@@ -10,12 +10,14 @@ import { Filtering } from "src/types/pagination/FilteringParams";
 import { getOrder, getWhere } from "src/helpers/Order";
 import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
 import { Repository } from "typeorm";
+import { DidService } from "./did.service";
 
 @Injectable()
 export class StudentService {
     constructor(
         @InjectRepository(Student)
         private studentsRepository: Repository<Student>,
+        private didService: DidService,
     ) { }
 
     create(createStudentDto: CreateStudentDto): Promise<Student> {
@@ -31,6 +33,15 @@ export class StudentService {
         if (!student) {
             throw new BadRequestException(`Student with ID ${id} not found`);
         }
+        return student;
+    }
+
+    async findByDid(did: string): Promise<Student | undefined> {
+        const student = await this.studentsRepository
+            .createQueryBuilder("student")
+            .leftJoinAndSelect("student.dids", "did")
+            .where("did.identifier = :did", { did })
+            .getOne();
         return student;
     }
 
@@ -95,12 +106,18 @@ export class StudentService {
             );
         }
 
-        await this.studentsRepository.save(student);
+        const existingUnattachedDid = await this.didService.findByDid(identifier);
+
+        console.log({ existingUnattachedDid })
+        if (!existingUnattachedDid) {
+            throw new BadRequestException(
+                `DID ${identifier} not found`,
+            );
+        }
+
         await dataSource.transaction(async (transactionalEntityManager) => {
-            const did = new Did();
-            did.identifier = identifier;
-            did.student = student;
-            await transactionalEntityManager.save(did);
+            existingUnattachedDid.student = student;
+            await transactionalEntityManager.save(existingUnattachedDid);
         });
         const updatedStudent = await this.studentsRepository.findOne({
             where: { student_id: studentId },

@@ -47,9 +47,9 @@ export class OpenIdProvider {
     /**
      * Verifies if the requested credentials are supported by the issuer.
      * @param authDetails Array of requested authorization detail.
-     * @returns A boolean indicating if all requested credentials are supported.
+     * @throws {Error} If the key validation fails.
      */
-    verifyAuthorizationDetails(authDetails: AuthorizationDetail[]): boolean {
+    private verifyAuthorizationDetails(authDetails: AuthorizationDetail[]) {
         let isCredentialFound = false;
 
         if (authDetails.length == 0) {
@@ -73,7 +73,6 @@ export class OpenIdProvider {
                     isCredentialFound = true;
                     break;
                 }
-
             }
 
             if (isCredentialFound) {
@@ -84,11 +83,9 @@ export class OpenIdProvider {
         if (!isCredentialFound) {
             throw new Error('Requested credentials are not supported by the issuer.');
         }
-
-        return isCredentialFound;
     }
 
-    async verifyAuthorizeRequest(request: AuthorizeRequestSigned): Promise<(AuthorizeRequestSigned)> {
+    async verifyAuthorizeRequest(request: AuthorizeRequestSigned): Promise<({ verifiedRequest: AuthorizeRequestSigned, authDetails: AuthorizationDetail[] })> {
         // Request parameter is available only for Service Wallets ?
         if (request.request) {
             throw new Error('Service wallet not supported.');
@@ -123,15 +120,19 @@ export class OpenIdProvider {
             throw new Error('The code challenge must be between 43 and 128 characters in length.');
         }
 
-        // TODO Validate Authorization details
+        const authDetails = JSON.parse(typeof request.authorization_details === 'string' ? request.authorization_details : '[]');
 
-        return request;
+        // Verify if the authorization details / requested credentials are supported by the issuer
+        this.verifyAuthorizationDetails(authDetails)
+
+
+        return { verifiedRequest: request, authDetails };
     }
 
-    async handleAuthorizationRequest(request: AuthorizeRequestSigned): Promise<({ header: JwtHeader, redirectUrl: string, authorizationDetails: AuthorizationDetail[], serverDefinedState: string })> {
+    async handleAuthorizationRequest(request: AuthorizeRequestSigned): Promise<({ header: JwtHeader, redirectUrl: string, authDetails: AuthorizationDetail[], serverDefinedState: string })> {
         // Verify the authorization request
-        const verifiedRequest = await this.verifyAuthorizeRequest(request);
-        const authorizationDetails = JSON.parse(typeof verifiedRequest.authorization_details === 'string' ? verifiedRequest.authorization_details : '[]'); //TODO enhance this
+        const { verifiedRequest, authDetails } = await this.verifyAuthorizeRequest(request);
+
         const serverDefinedState = randomBytes(20).toString("base64url")
 
         // console.log({ verifiedRequest })
@@ -160,7 +161,7 @@ export class OpenIdProvider {
         const redirectUrl = await composeIdTokenRequest(this.privateKey, payload, header);
 
         // Return header and url
-        return { header, redirectUrl, authorizationDetails, serverDefinedState };
+        return { header, redirectUrl, authDetails, serverDefinedState };
     }
 
     async decodeIdTokenRequest(request: string): Promise<IdTokenResponseDecoded> {
@@ -216,9 +217,14 @@ export class OpenIdProvider {
         return await tokenResponse.compose()
     }
 
-    async composeCredentialResponse(format: string, cNonce: string, unsignedCredential: any): Promise<any> {
-        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, 86400, unsignedCredential)
-        return await response.compose()
+    async composeInTimeCredentialResponse(format: string, cNonce: string, signedCredential: any): Promise<any> {
+        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, 86400)
+        return await response.inTime(signedCredential)
+    }
+
+    async composeDeferredCredentialResponse(format: string, cNonce: string, acceptanceToken: any): Promise<any> {
+        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, 86400)
+        return await response.deferred(acceptanceToken)
     }
 
     // Utility function to validate the request object signing algorithm

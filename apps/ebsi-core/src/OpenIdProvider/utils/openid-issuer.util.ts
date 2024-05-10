@@ -9,7 +9,7 @@ export function getOpenIdIssuerMetadata(host: string): OpenIdIssuer {
         credential_issuer: `${baseUrl}`,
         authorization_endpoint: `${baseUrl}/authorize`,
         credential_endpoint: `${baseUrl}/credential`,
-        deferred_credential_endpoint: `${baseUrl}/deferred-credential`,
+        deferred_credential_endpoint: `${baseUrl}/credential_deferred`,
         credentials_supported: [
             {
                 format: 'jwt',

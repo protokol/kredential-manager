@@ -19,12 +19,12 @@ export const dataSourceOptions: DataSourceOptions = {
     synchronize: true, // must be disabled in production
     entities: [
         Student,
+        Did,
         VerifiableCredential,
         Enrollment,
         Diploma,
         Course,
         Program,
-        Did,
         Authorization,
         Nonce
     ],

@@ -33,20 +33,17 @@ export class AuthService {
      * @param {string} clientId - The client ID.
      * @returns {Promise<string>} - A promise that resolves to the access token.
      */
-    async authenticateWithIssuer(issuerMetadata: OpenIdIssuer, configMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string) {
+    async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string) {
+        console.log({ openIdIssuer })
+        console.log({ openIdMetadata })
         const codeVerifier = randomBytes(50).toString("base64url");
         const codeChallenge = this.generateCodeChallenge(codeVerifier);
-        const codeChallenge2 = this.generateCodeChallenge(codeVerifier);
-        log('Code verifier:', codeVerifier)
-        log('Code challenge:', codeChallenge)
-        log('Code challenge2:', codeChallenge2)
+        // log('Code verifier:', codeVerifier)
+        // log('Code challenge:', codeChallenge)
 
-        // const clientDefinedState = 'clien_defined_state' //randomBytes(50).toString("base64url")
-        // const cliendDefinedNonce = 'client_defined_nonce'
+        // Define state and nonce
         const clientDefinedState = randomBytes(50).toString("base64url")
         const cliendDefinedNonce = randomBytes(25).toString("base64url")
-        //randomBytes(25).toString("base64url")
-        // const cliendDefinedNonce = "cc";
 
         try {
             // 1.) Authorisation Request
@@ -55,36 +52,41 @@ export class AuthService {
                 .holder('code', clientId, 'openid:', { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')
                 .addAuthDetails([
                     {
-                        type: "openid_credential", //TODO...
+                        type: "openid_credential", // Must be set to openid_credential
                         format: "jwt_vc",
-                        locations: [issuerMetadata.credential_issuer], //If the Credential Issuer metadata contains an authorization_server parameter, the authorization detail's locations common data field MUST be set to the Credential Issuer's identifier value
+                        locations: [openIdIssuer.credential_issuer], //If the Credential Issuer metadata contains an authorization_server parameter, the authorization detail's locations common data field MUST be set to the Credential Issuer's identifier value
                         types: requestedCredentials
                     },
                 ])
-                .setIssuerUrl(issuerMetadata.authorization_endpoint)
+                .setIssuerUrl(openIdIssuer.authorization_endpoint)
                 .setState(clientDefinedState)
                 .setNonce(cliendDefinedNonce)
             // log('Auth request endpoint:', issuerMetadata.authorization_endpoint);
-            log('Auth request:', authRequest)
-            log("--------------")
+            // log('Auth request:', authRequest)
+            // log("--------------")
             // // 2.) ID Token Request: Perform the authorization request and get ID Token
             log("2.) <---")
             const authResult = await this.httpClient.get(authRequest.createGetRequestUrl());
-
+            // console.log('Test', authRequest.createGetRequestUrl())
+            // console.log({ authResult })
             if (authResult.status !== 302) throw new Error('Invalid status code')
-            log('Auth result:', authResult.status)
+            // log('Auth result:', authResult.status)
             const { location } = parseRedirectHeaders(authResult.headers)
-            log('Location:', location)
+            // log('Location:', location)
             const parsedSignedRequest = parseAuthorizeRequestSigned(location);
             const signedRequest = parsedSignedRequest.request ?? ''
 
-            const decodedRequest = await jwtDecodeUrl(signedRequest, configMetadata.issuer, configMetadata.jwks_uri, '')
+            console.log({ openIdMetadata })
+            console.log("issuer: ", openIdMetadata.issuer)
+            console.log("jwks_uri: ", openIdMetadata.jwks_uri)
+
+            const decodedRequest = await jwtDecodeUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, '')
             if (!decodedRequest) throw new Error('Could not decode signed request')
             // return ""
             const { header: idTokenReqHeader, payload: idTokenReqPayload } = decodedRequest
             console.log('Decoded', decodedRequest)
 
-            if (idTokenReqPayload.iss !== issuerMetadata.credential_issuer) throw new Error('Issuer does not match')
+            if (idTokenReqPayload.iss !== openIdIssuer.credential_issuer) throw new Error('Issuer does not match')
             if (idTokenReqPayload.aud !== clientId) throw new Error('Audience does not match')
             if (idTokenReqPayload.exp < Math.floor(Date.now() / 1000)) throw new Error('Token expired')
             if (idTokenReqPayload.nonce !== cliendDefinedNonce) throw new Error('Nonce does not match')
@@ -104,7 +106,7 @@ export class AuthService {
                 .setPayload({
                     iss: MOCK_DID_KEY,
                     sub: MOCK_DID_KEY,
-                    aud: issuerMetadata.credential_issuer,
+                    aud: openIdIssuer.credential_issuer,
                     exp: Math.floor(Date.now() / 1000) + parseDuration('5m'),
                     iat: Math.floor(Date.now() / 1000),
                     nonce: idTokenReqPayload.nonce
@@ -114,7 +116,7 @@ export class AuthService {
             // 4.) Authorization Response from server
             log("4.) <---")
             // console.log({ idTokenResponseBody })
-            const authorizationResponse = await this.httpClient.post(configMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
+            const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
 
             console.log('Location:', idLocation)
@@ -135,7 +137,7 @@ export class AuthService {
                 .setPayload({
                     iss: MOCK_DID_KEY,
                     sub: MOCK_DID_KEY,
-                    aud: issuerMetadata.credential_issuer,
+                    aud: openIdIssuer.credential_issuer,
                     jti: randomUUID(),
                     exp: Math.floor(Date.now() / 1000) + parseDuration('5m'),
                     iat: Math.floor(Date.now() / 1000),
@@ -150,7 +152,7 @@ export class AuthService {
             log({ tokenRequestBody })
             //6.) Token Response
             log("6.) <---")
-            const tokenResponse = await this.httpClient.post(configMetadata.token_endpoint, tokenRequestBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
+            const tokenResponse = await this.httpClient.post(openIdMetadata.token_endpoint, tokenRequestBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const token = await tokenResponse.json()
             return token
         } catch (error) {

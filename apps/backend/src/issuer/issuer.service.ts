@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { generateDidFromPrivateKey } from '@protokol/ebsi-core';
+import { JwtSigner, generateDidFromPrivateKey } from '@protokol/ebsi-core';
 import { JWK } from 'jose';
 @Injectable()
 export class IssuerService {
@@ -26,6 +26,20 @@ export class IssuerService {
 
     getPublicKeyJwk(): JWK {
         return this.publicKeyJwk;
+    }
+
+    async issueCredential(payload: object): Promise<string> {
+        const extendedUnsignedCredential = {
+            ...payload,
+            issuer: this.did,
+            issuanceDate: new Date().toISOString(),
+        };
+
+        // Sign the credential
+        const signer = new JwtSigner(this.privateKeyJwk);
+        const signedCredential = await signer.sign(extendedUnsignedCredential);
+
+        return signedCredential;
     }
 }
 

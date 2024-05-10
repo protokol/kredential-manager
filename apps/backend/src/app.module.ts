@@ -30,6 +30,7 @@ import { IssuerService } from "./issuer/issuer.service";
 import { AuthService } from "./auth/auth.service";
 import { NonceService } from "./nonce/nonce.service";
 import { Nonce } from "./nonce/entities/nonce.entity";
+import { DidService } from "./student/did.service";
 
 @Module({
     imports: [
@@ -68,6 +69,7 @@ import { Nonce } from "./nonce/entities/nonce.entity";
         AppService,
         VcService,
         StudentService,
+        DidService,
         {
             provide: APP_GUARD,
             useClass: AuthGuard,

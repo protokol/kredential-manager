@@ -20,24 +20,36 @@ const main = async () => {
 
     // Discover issuer metadata
     console.log('Discovering issuer metadata...');
-    const issuerMetadata = await issuerService.discoverIssuerMetadata(issuerUrl);
-    const configMetadata = await issuerService.discoverConfigurationMetadata(issuerUrl);
-    console.log('Discovered Issuer:', issuerMetadata.credential_issuer);
-    console.log('Issuer metadata discovered:', issuerMetadata);
-    console.log('Issuer config discovered:', configMetadata);
+    const openIdMetadata = await issuerService.discoverConfigurationMetadata(issuerUrl);
+    const openIdIssuer = await issuerService.discoverIssuerMetadata(issuerUrl);
+    console.log('Discovered Issuer:', openIdIssuer.credential_issuer);
+    console.log('Issuer metadata discovered:', openIdIssuer);
+    console.log('Issuer config discovered:', openIdIssuer);
     console.log('-----------------------------------')
 
     // Authenticate with the issuer
     console.log('Athenticating client...');
-    const token = await authService.authenticateWithIssuer(issuerMetadata, configMetadata, requestedCredentials, MOCK_DID_KEY);
+    const token = await authService.authenticateWithIssuer(openIdIssuer, openIdMetadata, requestedCredentials, MOCK_DID_KEY);
     console.log('Authenticated with issuer:', token);
 
     // Request credential
     console.log('Requesting credential...');
-    console.log(token.c_nonce)
-    const credential = await issuerService.requestCredential(issuerMetadata, requestedCredentials, token.access_token, token.c_nonce);
+    const credential = await issuerService.requestCredential(openIdIssuer, requestedCredentials, token.access_token, token.c_nonce);
     console.log({ credential })
 
+    if (credential.acceptance_token) {
+        console.log('Deferred token received, processing...');
+        let deferredResponse;
+        do {
+            deferredResponse = await issuerService.deferredCredentialEndpoint(openIdIssuer.deferred_credential_endpoint, credential.acceptance_token);
+            // console.log('Deferred response:', deferredResponse);
+            if (!deferredResponse.credential) {
+                console.log('Credential is still pending, waiting before retrying...');
+                await new Promise(resolve => setTimeout(resolve, 10000));
+            }
+        } while (!deferredResponse.credential);
+        console.log('Final deferred credential:', deferredResponse);
+    }
     console.log('\n\n')
 }
 

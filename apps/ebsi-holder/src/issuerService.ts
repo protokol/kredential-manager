@@ -65,10 +65,26 @@ export class IssuerService {
                 .compose()
             const header = { 'Authorization': `Bearer ${accessToken}` }
             const credentialResponse = await this.httpClient.post(issuerMetadata.credential_endpoint, credentialRequest, { headers: { "Content-Type": 'application/json', ...header } });
-            console.log({ credentialResponse })
             return credentialResponse.json();
         } catch (error) {
             console.error('Error discovering configuration metadata:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Calls the deferred credential endpoint with the acceptance token.
+     * @param {string} deferredEndpoint - The endpoint for deferred credential request.
+     * @param {string} acceptanceToken - The acceptance token to authorize the request.
+     * @returns {Promise<any>} - A promise that resolves to the response from the deferred endpoint.
+     */
+    async deferredCredentialEndpoint(deferredEndpoint: string, acceptanceToken: string): Promise<any> {
+        try {
+            const headers = { 'Authorization': `Bearer ${acceptanceToken}` };
+            const response = await this.httpClient.post(deferredEndpoint, { headers });
+            return response.json();
+        } catch (error) {
+            console.error('Error calling deferred credential endpoint:', error);
             throw error;
         }
     }

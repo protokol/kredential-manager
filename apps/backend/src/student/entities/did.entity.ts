@@ -5,6 +5,7 @@ import {
     ManyToOne,
     OneToMany,
     Relation,
+    ManyToMany
 } from "typeorm";
 import { Student } from "./student.entity";
 import { VerifiableCredential } from "./../../vc/entities/VerifiableCredential";
@@ -14,16 +15,30 @@ export class Did {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     identifier: string;
 
     @ManyToOne(() => Student, (student) => student.dids)
     student: Relation<Student>;
-    verifiableCredential: any;
 
-    @OneToMany(
-        () => VerifiableCredential,
-        (verifiableCredential) => verifiableCredential.did,
-    )
+    @OneToMany(() => VerifiableCredential, verifiableCredential => verifiableCredential.did)
     verifiableCredentials: VerifiableCredential[];
+    // @OneToMany(
+    //     () => VerifiableCredential,
+    //     (verifiableCredential) => verifiableCredential.did,
+    // )
+    // verifiableCredentials: VerifiableCredential[];
+
+    // @ManyToOne(() => VerifiableCredential, (vc) => vc.did)
+    // verifiableCredential: Relation<VerifiableCredential>;
+    // verifiableCredential: any;
+
+    // @ManyToOne(() => VerifiableCredential)
+    // verifiableCredentials: Relation<VerifiableCredential>;
+    // verifiableCredentials: VerifiableCredential[];
+    // @OneToMany(
+    //     () => VerifiableCredential,
+    //     (verifiableCredential) => verifiableCredential.did,
+    // )
+    // verifiableCredentials: VerifiableCredential[];
 }

@@ -8,6 +8,8 @@ import {
     OneToOne,
     JoinColumn,
     Relation,
+    OneToMany,
+    ManyToOne,
 } from "typeorm";
 
 @Entity()
@@ -15,24 +17,30 @@ export class VerifiableCredential {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @OneToOne(() => Did, (did) => did.verifiableCredential)
-    @JoinColumn()
+    @ManyToOne(() => Did, (did) => did.verifiableCredentials, {})
     did: Relation<Did>;
 
-    @Column({ type: "text", nullable: true })
-    displayName: string;
 
-    @Column({ type: "text", nullable: true })
-    mail: string;
 
-    @Column({ type: "date", nullable: true })
-    dateOfBirth: Date;
+    // @Column({ type: "text", nullable: true })
+    // displayName: string;
 
-    @Column({ type: "jsonb", nullable: false })
-    vc_data: Record<string, any>;
+    // @Column({ type: "text", nullable: true })
+    // mail: string;
+
+    // @Column({ type: "date", nullable: true })
+    // dateOfBirth: Date;
 
     @Column({ type: "jsonb", default: {}, nullable: true })
-    vc_data_signed: Record<string, any>;
+    requested_credentials: Record<string, any>;
+
+    @Column({ nullable: true })
+    credential: string;
+
+    @Column({
+        default: {}, nullable: true
+    })
+    credential_signed: string;
 
     @Column({
         type: "enum",
@@ -60,4 +68,7 @@ export class VerifiableCredential {
 
     @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     updated_at: Date;
+
+    @UpdateDateColumn({ type: "timestamp", nullable: true })
+    issued_at: Date;
 }

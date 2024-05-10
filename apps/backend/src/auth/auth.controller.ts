@@ -18,17 +18,20 @@ interface JWKS {
 @Controller('')
 @ApiTags('OIDC')
 export class AuthController {
+
     constructor(private provider: OpenIDProviderService, private issuer: IssuerService, private auth: AuthService) { }
-    @Get('.well-known/openid-configuration')
-    @Public(true)
-    getIssuerMetadata() {
-        return this.provider.getIssuerMetadata();
-    }
+
 
     @Get('.well-known/openid-credential-issuer')
     @Public(true)
+    getIssuerMetadata() {
+        return this.provider.getInstance().getIssuerMetadata();
+    }
+
+    @Get('.well-known/openid-configuration')
+    @Public(true)
     getConfigMetadata() {
-        return this.provider.getConfigMetadata();
+        return this.provider.getInstance().getConfigMetadata();
     }
 
     @Get('jwks')
@@ -59,7 +62,6 @@ export class AuthController {
         }
     }
 
-
     @Post('direct_post')
     @Public(true)
     async directPost(
@@ -70,22 +72,6 @@ export class AuthController {
         try {
             const { header, code, url } = await this.auth.directPost(req, headers);
             return res.redirect(code, url);
-
-            /*
-            const kid = headers['kid'] as string;
-            const alg = headers['alg'] as string;
-            const typ = headers['typ'] as string;
-
-            if (!kid || !alg || !typ) {
-                return res.status(400).json({ message: 'Missing required headers.' });
-            }
-            await this.provider.verifyIdTokenResponse(req, kid, alg, typ);
-            const code = "SplxlOBeZQQYbYS6WxSbIA"
-            const state = "af0ifjsldkj"
-            const redirectUrl = await this.provider.composeAuthorizationResponse(code, state);
-            console.log({ redirectUrl })
-            return res.redirect(302, redirectUrl);
-            */
         } catch (error) {
             console.log("!!!!!!!")
             console.log(error.message)
@@ -117,14 +103,24 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
+            const { header, code, response } = await this.auth.credentail(req);
+            return res.status(code).json(response);
+        } catch (error) {
+            console.log(error.message)
+            return res.status(400).json({ message: error.message });
+        }
+    }
 
-            try {
-                const { header, code, response } = await this.auth.credentail(req);
-                return res.status(code).json(response);
-            } catch (error) {
-                console.log(error.message)
-                return res.status(400).json({ message: error.message });
-            }
+    @Post('credential_deferred')
+    @Public(true)
+    async credentialsDeferredRequest(
+        @Body() req: any,
+        @Res() res: Response,
+        @Headers() headers: Record<string, string | string[]>
+    ) {
+        try {
+            const { header, code, response } = await this.auth.credentailDeferred(req);
+            return res.status(code).json(response);
         } catch (error) {
             console.log(error.message)
             return res.status(400).json({ message: error.message });

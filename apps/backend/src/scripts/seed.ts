@@ -72,12 +72,12 @@ export async function seedData(
         // Seed VerifiableCredentials for each DID
         for (const did of dids) {
             const vc = new VerifiableCredential();
-            vc.displayName = student.first_name;
-            vc.mail = student.email;
+            // vc.displayName = student.first_name;
+            // vc.mail = student.email;
             vc.type = "VerifiableDiploma202211";
-            vc.dateOfBirth = student.date_of_birth;
+            // vc.dateOfBirth = student.date_of_birth;
             vc.did = did;
-            vc.vc_data = generateVerifiableDiploma(did.identifier);
+            vc.credential = '';//generateVerifiableDiploma(did.identifier);
             await vcRepository.save(vc);
         }
     }
@@ -124,8 +124,10 @@ export async function seedData(
     console.log("Data has been seeded.");
 }
 
-// dataSource // seed locally
-//     .initialize()
+dataSource
+    .initialize() // Must be called!!!!!!
+
+
 //     .then(async (connection) => {
 //         const studentRepository = connection.getRepository(Student);
 //         const programRepository = connection.getRepository(Program);

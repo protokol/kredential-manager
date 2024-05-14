@@ -13,11 +13,12 @@ interface Claims {
 }
 
 export interface BearerToken {
-    nonce: string;
-    claims: Claims;
+    nonce?: string;
+    claims?: Claims;
     iss: string;
     aud: string[];
     sub: string;
     iat: number;
     exp: number;
+    vcId?: number; // Reference to verifiable credential
 }

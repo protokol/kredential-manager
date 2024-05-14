@@ -7,12 +7,14 @@ import { AuthNonce } from './interfaces/auth-nonce.interface';
 import { NonceStep } from './enum/step.enum';
 import { NonceStatus } from './enum/status.enum';
 
+
 @Injectable()
 export class NonceService {
     constructor(
         @InjectRepository(Nonce)
         private nonceRepository: Repository<Nonce>,
     ) { }
+
 
     async createAuthNonce(clientId: string, nonceValue: string, payload?: AuthNonce): Promise<string> {
         const nonce = this.nonceRepository.create({
@@ -61,48 +63,47 @@ export class NonceService {
         return false;
     }
 
-    async getNonce(nonceValue: string, step: NonceStep, status: NonceStatus, clientId?: string): Promise<Nonce | undefined> {
+    async createDeferredResoponse(nonceValue: string, acceptanceToken: string): Promise<boolean> {
         const nonce = await this.nonceRepository.findOne({
             where: { nonce: nonceValue },
         });
 
-        if (nonce && nonce.step === step && nonce.status === status) {
-            await this.updateNonceStatus(nonceValue, NonceStatus.CLAIMED);
-            if (clientId && nonce.clientId !== clientId) {
-                throw new Error('Invalid request');
-            }
-            return nonce;
+        if (nonce) {
+            nonce.step = NonceStep.DEFERRED_REQUEST;
+            nonce.status = NonceStatus.UNCLAIMED;
+            nonce.acceptanceToken = acceptanceToken;
+            await this.nonceRepository.save(nonce);
+            return true;
         }
-        throw new Error('Invalid nonce');
+        return false;
     }
 
-    async getNonceByCode(code: string, step: NonceStep, status: NonceStatus, clientId?: string): Promise<Nonce | undefined> {
+    async getNonceByField(fieldName: string, value: string, step: NonceStep, status: NonceStatus, clientId?: string): Promise<Nonce | undefined> {
         const nonce = await this.nonceRepository.findOne({
-            where: { code: code },
+            where: { [fieldName]: value },
         });
 
         if (nonce && nonce.step === step && nonce.status === status) {
-            await this.updateNonceStatus(nonce.nonce, NonceStatus.CLAIMED);
+            // Don't update nonce status if it's a deferred request
+            if (step !== NonceStep.DEFERRED_REQUEST) {
+                await this.updateNonceStatus(nonce.nonce, NonceStatus.CLAIMED);
+            }
             if (clientId && nonce.clientId !== clientId) {
                 throw new Error('Invalid request');
             }
             return nonce;
         }
-        throw new Error('Invalid nonce');
-    }
-
-    async getNonceByCNonce(cNonce: string, step: NonceStep, status: NonceStatus, clientId?: string): Promise<Nonce | undefined> {
-        const nonce = await this.nonceRepository.findOne({
-            where: { cNonce: cNonce },
-        });
-        if (nonce && nonce.step === step && nonce.status === status) {
-            await this.updateNonceStatus(nonce.nonce, NonceStatus.CLAIMED);
-            if (clientId && nonce.clientId !== clientId) {
-                throw new Error('Invalid request');
-            }
-            return nonce;
+        switch (step) {
+            case NonceStep.AUTHORIZE:
+                throw new Error('Invalid nonce');
+            case NonceStep.AUTH_RESPONSE:
+                throw new Error('Invalid code');
+            case NonceStep.TOKEN_REQUEST:
+                throw new Error('Invalid nonce');
+            case NonceStep.DEFERRED_REQUEST:
+                // Deferred request can be claimed multiple times
+                return;
         }
-        throw new Error('Invalid nonce');
     }
 
     private async updateNonceStatus(nonceValue: string, status: NonceStatus): Promise<Boolean> {

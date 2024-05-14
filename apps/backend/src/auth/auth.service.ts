@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, IdTokenResponse, JwtHeader, OpenIdProvider, TokenRequestBody, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@protokol/ebsi-core';
+import { AuthorizeRequest, IdTokenResponse, JwtHeader, JwtSigner, OpenIdProvider, TokenRequestBody, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata, jwtDecode, jwtDecodeUrl } from '@protokol/ebsi-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
 import { IdTokenResponseRequest } from '@protokol/ebsi-core/dist/OpenIdProvider/interfaces/id-token-response.interface';
-import { mapHeadersToJwtHeader } from './auth.utils';
+import { extractBearerToken, mapHeadersToJwtHeader } from './auth.utils';
 import { decodeJwt } from 'jose';
 import { randomBytes } from 'crypto';
 import { AuthNonce } from './../nonce/interfaces/auth-nonce.interface';
@@ -40,7 +40,6 @@ export class AuthService {
         return { header, code: 302, url: redirectUrl };
     }
 
-
     async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header: JwtHeader, code: number, url: string }> {
 
         // Map headers to JWT header
@@ -48,7 +47,7 @@ export class AuthService {
         const decodedRequest = await this.provider.getInstance().decodeIdTokenRequest(request.id_token)
 
         // Get nonce => check if it exists and is unclaimed
-        const nonceData = await this.nonce.getNonce(decodedRequest.nonce, NonceStep.AUTHORIZE, NonceStatus.UNCLAIMED, decodedRequest.iss);
+        const nonceData = await this.nonce.getNonceByField('nonce', decodedRequest.nonce, NonceStep.AUTHORIZE, NonceStatus.UNCLAIMED, decodedRequest.iss);
 
         // The authz response must contain the client defined state send in the authorization
         const state = nonceData.payload.clientDefinedState;
@@ -66,7 +65,7 @@ export class AuthService {
     async token(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
 
         // Get nonce => check if it exists and is unclaimed
-        const nonceData = await this.nonce.getNonceByCode(request.code, NonceStep.AUTH_RESPONSE, NonceStatus.UNCLAIMED, request.client_id);
+        const nonceData = await this.nonce.getNonceByField('code', request.code, NonceStep.AUTH_RESPONSE, NonceStatus.UNCLAIMED, request.client_id);
         // Validate the code challenge that was send in the first auth request
         if (this.provider.getInstance().validateCodeChallenge(nonceData.payload.codeChallenge, request.code_verifier) !== true) {
             throw new Error('Invalid code challenge.');
@@ -84,24 +83,24 @@ export class AuthService {
         return { header: this.header, code: 200, response };
     }
 
-    async credentail(request: any): Promise<{ header: any, code: number, response: any }> {
+    async credentail(headers: any, request: any): Promise<{ header: any, code: number, response: any }> {
+
 
         // Decode request payload
         const decodedRequest = await this.provider.getInstance().decodeCredentialRequest(request)
         const cNonce = decodedRequest.nonce
         // Get nonce by cNonce parameter => check if it exists and is unclaimed
-        const nonceData = await this.nonce.getNonceByCNonce(cNonce, NonceStep.TOKEN_REQUEST, NonceStatus.UNCLAIMED, request.client_id);
+        const nonceData = await this.nonce.getNonceByField('cNonce', cNonce, NonceStep.TOKEN_REQUEST, NonceStatus.UNCLAIMED, request.client_id);
 
         if (decodedRequest.iss !== nonceData.clientId) {
             throw new Error('Invalid issuer');
         }
 
-        // console.log('Credential request: ', decodedRequest)
-        console.log({ nonceData })
         // Take first requested credential, since this is not a batch request
         const requestedCredentials = nonceData.payload.authorizationDetails[0].types
         // Get the DID of the client
         const did = nonceData.clientId
+        let vcId;
 
 
         const existingDid = await this.didService.findByDid(did)
@@ -112,6 +111,7 @@ export class AuthService {
                 requested_credentials: requestedCredentials,
                 type: "UniversityDegreeCredential001", // TODO
             })
+            vcId = newVc.id
         } else {
             const newDid = await this.didService.create({
                 identifier: did
@@ -121,11 +121,13 @@ export class AuthService {
                 requested_credentials: requestedCredentials,
                 type: "UniversityDegreeCredential001", // TODO
             })
+            vcId = newVc.id
         }
 
-        const acceptanceToken = randomBytes(25).toString("base64url");
-        const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, acceptanceToken);
-
+        // Deferred response
+        const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, vcId);
+        // Create/Update a nonce for the client, add acceptanceToken
+        await this.nonce.createDeferredResoponse(nonceData.nonce, response.acceptance_token);
         const header = {
             'Content-Type': 'application/x-www-form-urlencoded'
         };
@@ -133,44 +135,40 @@ export class AuthService {
         return { header, code: 200, response };
     }
 
-    async credentailDeferred(request: any): Promise<{ header: any, code: number, response: any }> {
+    async credentilDeferred(request: any): Promise<{ header: any, code: number, response: any }> {
 
-        // Decode request payload
-        // const decodedRequest = await this.provider.getInstance().decodeCredentialRequest(request)
-        // const cNonce = decodedRequest.nonce
-        // // // Get nonce by cNonce parameter => check if it exists and is unclaimed
-        // const nonceData = await this.nonce.getNonceByCNonce(cNonce, NonceStep.TOKEN_REQUEST, NonceStatus.UNCLAIMED, request.client_id);
+        const acceptanceToken = extractBearerToken(request.headers)
 
-        const nonceData = randomBytes(25).toString("base64url")
-        const cNonce = randomBytes(25).toString("base64url")
+        // Get nonce by cNonce parameter => check if it exists and is unclaimed
+        const nonceData = await this.nonce.getNonceByField('acceptanceToken', acceptanceToken, NonceStep.DEFERRED_REQUEST, NonceStatus.UNCLAIMED, request.client_id);
+        if (!nonceData) {
+            throw new Error('Invalid acceptance token');
+        }
 
-        // if (decodedRequest.iss !== nonceData.clientId) {
-        //     throw new Error('Invalid issuer');
-        // }
+        const decodedAcceptanceToken = await this.issuer.decodeJWT(acceptanceToken) as any
 
-        // // console.log('Credential request: ', decodedRequest)
-        // console.log({ nonceData })
-        // // Take first requested credential, since this is not a batch request
-        // const requestedCredentials = nonceData.payload.authorizationDetails[0].types
-        // // Get the DID of the client
-        // const did = nonceData.clientId
+        if (!decodedAcceptanceToken || !decodedAcceptanceToken.vcId) {
+            throw new Error('Invalid acceptance token');
+        }
 
+        if (this.issuer.isJwtTokenExpired(decodedAcceptanceToken)) {
+            return { header: this.header, code: 401, response: "" };
+        }
 
-        const did = "did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kbns7ZWNqwNNXRVtDg4wQYHxn2NGgqcTG5ehNhytKPrBdEw2mpy65bAdPKxFAZPbSTkLi6rPrkGjCXXTKz4hDvPBiWXHmR1CUgdJuXPjRn9S1ooLvYzKbv5P5zxMzzkEGiqJ"
-        const credentials = await this.vcService.findByDid(did)
+        const credential = await this.vcService.findOne(decodedAcceptanceToken.vcId)
 
-        console.log({ credentials })
+        if (!credential) {
+            throw new Error('Credential not found');
+        }
 
-        if (credentials.length > 0) {
-            const credential = credentials[0]
+        if (credential.status === 'issued') {
             if (credential.credential_signed != '{}') {
+                const cNonce = randomBytes(25).toString("base64url");
                 const response = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, credential.credential_signed);
-                console.log({ response })
                 return { header: this.header, code: 200, response: response };
 
             }
         }
-
 
         return { header: this.header, code: 200, response: "" };
     }

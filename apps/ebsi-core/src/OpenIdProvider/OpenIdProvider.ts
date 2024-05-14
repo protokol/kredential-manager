@@ -52,6 +52,8 @@ export class OpenIdProvider {
     private verifyAuthorizationDetails(authDetails: AuthorizationDetail[]) {
         let isCredentialFound = false;
 
+        const tokenResponse = new TokenResponseComposer(this.privateKey, 'bearer', 'test', "234", 86400, []).compose()
+
         if (authDetails.length == 0) {
             throw new Error('Invalid authorization details.');
         } else if (authDetails.length > 1) {
@@ -195,6 +197,29 @@ export class OpenIdProvider {
         return decodedRequest;
     }
 
+    async decodeDeferredCredentialRequest(bearerToken: string): Promise<CredentialRequestPayload> {
+
+        console.log({ bearerToken })
+
+        throw new Error('Not implemented');
+        // if (request.proof.proof_type !== 'jwt') {
+        //     throw new Error('Invalid proof token request.');
+        // }
+        // const header = decodeProtectedHeader(request.proof.jwt)
+        // if (header) {
+        //     throw new Error('Invalid proof token request.');
+        // }
+        // const decoded = decodeJwt(request.proof.jwt)
+        // if (!decoded) {
+        //     throw new Error('Invalid cred token request.');
+        // }
+        // const decodedRequest = {
+        //     ...decoded,
+        //     nonce: decoded.nonce as string
+        // } as CredentialRequestPayload
+        // return decodedRequest;
+    }
+
     async createAuthorizationRequest(code: string, state: string): Promise<string> {
         const redirectUrl = await this.composeAuthorizationResponse(code, state);
         return redirectUrl
@@ -222,9 +247,9 @@ export class OpenIdProvider {
         return await response.inTime(signedCredential)
     }
 
-    async composeDeferredCredentialResponse(format: string, cNonce: string, acceptanceToken: any): Promise<any> {
+    async composeDeferredCredentialResponse(format: string, cNonce: string, vcId: number): Promise<any> {
         const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, 86400)
-        return await response.deferred(acceptanceToken)
+        return await response.deferred(vcId)
     }
 
     // Utility function to validate the request object signing algorithm

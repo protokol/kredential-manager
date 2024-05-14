@@ -41,5 +41,41 @@ export class IssuerService {
 
         return signedCredential;
     }
+
+    async verifyJWT(token: string): Promise<boolean> {
+        const signer = new JwtSigner(this.publicKeyJwk);
+        return signer.verify(token);
+    }
+
+    async decodeJWT(token: string): Promise<object> {
+        const signer = new JwtSigner(this.publicKeyJwk);
+        return signer.decode(token);
+    }
+
+    /**
+     * Validates if the JWT token has expired.
+     * @param token The JWT token to validate.
+     * @returns A promise that resolves to a boolean indicating whether the token has expired.
+     */
+    async isTokenExpired(token: string): Promise<boolean> {
+        try {
+            const { payload } = await this.decodeJWT(token) as any;
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (payload.exp && currentTime > payload.exp) {
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error verifying token for expiration:', error);
+            return true;
+        }
+    }
+
+    async isJwtTokenExpired(decodedToken: { exp: number }): Promise<boolean> {
+        const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+        return decodedToken.exp < currentTime;
+    }
+
+
 }
 

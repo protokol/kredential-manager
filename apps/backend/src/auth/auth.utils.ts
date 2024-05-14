@@ -15,3 +15,18 @@ export async function mapHeadersToJwtHeader(headers: Record<string, string | str
 
     return jwtHeader;
 }
+
+export function extractBearerToken(headers: { [key: string]: string }): string {
+    const authorizationHeader = headers['Authorization'];
+    if (!authorizationHeader) {
+        throw new Error('Authorization header is missing');
+    }
+
+    const tokenParts = authorizationHeader.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+        throw new Error('Authorization header is not a Bearer token');
+    }
+
+    const bearerToken = tokenParts[1];
+    return bearerToken;
+}

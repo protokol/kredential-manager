@@ -1,6 +1,7 @@
 import { JWK } from 'jose';
 import { JwtSigner, jwtSign } from "../../OpenIdProvider/utils/jwt.util";
 import { BearerToken, AuthorizationDetail } from '../../OpenIdProvider';
+import { parseDuration } from '../utility';
 
 interface TokenResponse {
     access_token: string,
@@ -35,13 +36,13 @@ export class TokenResponseComposer {
             iss: this.privateKeyJWK.iss as string,
             aud: this.privateKeyJWK.aud as string[],
             sub: this.privateKeyJWK.sub as string,
-            iat: Date.now(),
-            exp: expiresIn,
+            exp: Math.floor(Date.now() / 1000) + parseDuration('5m'),
+            iat: Math.floor(Date.now() / 1000),
             nonce: this.cNonce ?? '',
-            claims: {
+            claims: { //TODO check, the tests have this in the docs there is no claims
                 authorization_details: this.authorizationDetails ?? [],
                 c_nonce: this.cNonce ?? '',
-                c_nonce_expires_in: expiresIn,
+                c_nonce_expires_in: expiresIn, // TODO
                 client_id: this.privateKeyJWK.kid as string
             }
         };

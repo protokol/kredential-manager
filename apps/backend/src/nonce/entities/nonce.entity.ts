@@ -12,6 +12,9 @@ export class Nonce {
     code: string;
 
     @Column({ nullable: true })
+    acceptanceToken: string;
+
+    @Column({ nullable: true })
     cNonce: string;
 
     @Column()

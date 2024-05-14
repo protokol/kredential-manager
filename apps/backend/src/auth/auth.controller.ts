@@ -103,7 +103,7 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const { header, code, response } = await this.auth.credentail(req);
+            const { header, code, response } = await this.auth.credentail(headers, req);
             return res.status(code).json(response);
         } catch (error) {
             console.log(error.message)
@@ -119,7 +119,7 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const { header, code, response } = await this.auth.credentailDeferred(req);
+            const { header, code, response } = await this.auth.credentilDeferred(req);
             return res.status(code).json(response);
         } catch (error) {
             console.log(error.message)

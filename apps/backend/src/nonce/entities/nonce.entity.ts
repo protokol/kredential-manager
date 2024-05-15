@@ -17,6 +17,9 @@ export class Nonce {
     @Column({ nullable: true })
     cNonce: string;
 
+    @Column({ nullable: true })
+    cNonceExpiresIn: number;
+
     @Column()
     step: string;
 

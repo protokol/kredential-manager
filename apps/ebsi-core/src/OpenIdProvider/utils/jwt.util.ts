@@ -54,10 +54,9 @@ export class JwtSigner {
             const { payload } = await jwtVerify(token, key);
             return payload;
         } catch (error) {
-            console.error('Decoding failed:', error);
-            return {};
+            console.log('Decoding failed:', error);
+            return { error: (error as any).message };
         }
-
     }
 }
 // Utility function to fetch a JWK by kid from a url
@@ -100,16 +99,12 @@ export async function jwtDecodeUrl(token: string, issuer: string, url: string, k
             throw new Error('Failed to fetch JWK');
         }
         for (const jwk of key.keys) {
-            console.log({ jwk })
-            console.log({ issuer })
             const { header, payload } = await jwtDecode(token, issuer, jwk, algo);
-            console.log({ payload })
             if (header && payload) return { header, payload };
         }
-        throw new Error('Failed to decode token11');
+        throw new Error('Failed to decode token');
     } catch (error) {
-        console.error('Error decoding token!!!!:', error);
-        throw new Error('Failed to decode toke22n');
+        throw new Error('Failed to decode token');
     }
 }
 
@@ -128,10 +123,4 @@ export async function jwtSign(payload: any, privateKeyJWK: JWK, issuer: string, 
         .sign(key);
 }
 
-// Utility function to validate the presence of a jwks_uri in client metadata
-function validateClientMetadataJwksUri(clientMetadata: any): void {
-    if (!clientMetadata || !clientMetadata.jwks_uri) {
-        throw new Error('Expected client metadata with jwks_uri');
-    }
-}
 

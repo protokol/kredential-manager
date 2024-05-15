@@ -12,7 +12,7 @@ export function getOpenIdConfigMetadata(host: string): OpenIdConfiguration {
         token_endpoint: `${baseUrl}/token`,
         jwks_uri: `${baseUrl}/jwks`,
         scopes_supported: ["openid"],
-        response_types_supported: ["code", "vp_token", "id_token"],
+        response_types_supported: ["id_token"], //"code", "vp_token",
         response_modes_supported: ["query"],
         grant_types_supported: ["authorization_code"],
         subject_types_supported: ["public"],
@@ -32,8 +32,8 @@ export function getOpenIdConfigMetadata(host: string): OpenIdConfiguration {
         subject_syntax_types_supported: ["did:key", "did:ebsi"],
         subject_trust_frameworks_supported: ["ebsi"],
         id_token_types_supported: [
-            "subject_signed_id_token",
-            "attester_signed_id_token"
+            // "subject_signed_id_token",
+            // "attester_signed_id_token"
         ]
     };
 }

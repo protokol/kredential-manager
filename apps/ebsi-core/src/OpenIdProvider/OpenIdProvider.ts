@@ -2,14 +2,14 @@ import { OpenIdConfiguration } from "./interfaces/openid-provider-configuration"
 import { OpenIdIssuer } from "./interfaces/openid-provider-issuer";
 import { AuthorizeRequestSigned } from "./interfaces/authorize-request.interface";
 import { JWK, JWTPayload, decodeJwt, decodeProtectedHeader } from 'jose';
-import { composeIdTokenRequest } from "./utils/id-token-request.composer";
-import { AuthorizationResponseComposer } from "./../Global/Composer/auth-response.composer";
-import { TokenResponseComposer } from "./../Global/Composer/token-response.composer";
-import { parseDuration } from "../Global/utility";
+import { IdTokenRequestComposer } from "./helpers/2.OP.id-token-request.composer";
+import { AuthorizationResponseComposer } from "./helpers/4.OP.auth-response.composer";
+import { TokenResponseComposer } from "./helpers/6.OP.token-response.composer";
+import { parseDuration } from "./utils/parse-duration.utility";
 import { JwtHeader } from "./interfaces/id-token-request.interface";
 import { IdTokenResponse } from "./types/id-token-response.type";
 import { createHash, randomBytes } from "node:crypto";
-import { CredentialResponseComposer } from "./../Global/Composer/credential-response.composer";
+import { CredentialResponseComposer } from "./helpers/8.OP.credential-response.composer";
 import { IdTokenResponseRequest } from "./interfaces/id-token-response.interface";
 import { IdTokenResponseDecoded } from "./interfaces/id-token-response-decoded.interface";
 import { AuthorizationDetail, CredentialRequestPayload } from "./interfaces";
@@ -52,13 +52,12 @@ export class OpenIdProvider {
     private verifyAuthorizationDetails(authDetails: AuthorizationDetail[]) {
         let isCredentialFound = false;
 
-        const tokenResponse = new TokenResponseComposer(this.privateKey, 'bearer', 'test', "234", 86400, []).compose()
-
         if (authDetails.length == 0) {
             throw new Error('Invalid authorization details.');
         } else if (authDetails.length > 1) {
             throw new Error('Multiple authorization details not supported.');
         }
+
 
         for (const authDetail of authDetails) {
             // Must be openid_credential
@@ -124,9 +123,7 @@ export class OpenIdProvider {
 
         const authDetails = JSON.parse(typeof request.authorization_details === 'string' ? request.authorization_details : '[]');
 
-        // Verify if the authorization details / requested credentials are supported by the issuer
         this.verifyAuthorizationDetails(authDetails)
-
 
         return { verifiedRequest: request, authDetails };
     }
@@ -160,7 +157,10 @@ export class OpenIdProvider {
         }
 
         // Compose the redirect URL
-        const redirectUrl = await composeIdTokenRequest(this.privateKey, payload, header);
+        const redirectUrl = await new IdTokenRequestComposer(this.privateKey)
+            .setHeader(header)
+            .setPayload(payload)
+            .compose()
 
         // Return header and url
         return { header, redirectUrl, authDetails, serverDefinedState };
@@ -197,29 +197,6 @@ export class OpenIdProvider {
         return decodedRequest;
     }
 
-    async decodeDeferredCredentialRequest(bearerToken: string): Promise<CredentialRequestPayload> {
-
-        console.log({ bearerToken })
-
-        throw new Error('Not implemented');
-        // if (request.proof.proof_type !== 'jwt') {
-        //     throw new Error('Invalid proof token request.');
-        // }
-        // const header = decodeProtectedHeader(request.proof.jwt)
-        // if (header) {
-        //     throw new Error('Invalid proof token request.');
-        // }
-        // const decoded = decodeJwt(request.proof.jwt)
-        // if (!decoded) {
-        //     throw new Error('Invalid cred token request.');
-        // }
-        // const decodedRequest = {
-        //     ...decoded,
-        //     nonce: decoded.nonce as string
-        // } as CredentialRequestPayload
-        // return decodedRequest;
-    }
-
     async createAuthorizationRequest(code: string, state: string): Promise<string> {
         const redirectUrl = await this.composeAuthorizationResponse(code, state);
         return redirectUrl
@@ -237,18 +214,18 @@ export class OpenIdProvider {
         return await authResponseComposer.compose();
     }
 
-    async composeTokenResponse(idToken: string, cNonce: string, authorizationDetails: AuthorizationDetail[]): Promise<any> {
-        const tokenResponse = new TokenResponseComposer(this.privateKey, 'bearer', idToken, cNonce, 86400, authorizationDetails)
+    async composeTokenResponse(idToken: string, cNonce: string, cNonceExpiresIn: number, authorizationDetails: AuthorizationDetail[]): Promise<any> {
+        const tokenResponse = new TokenResponseComposer(this.privateKey, 'bearer', idToken, cNonce, cNonceExpiresIn, authorizationDetails)
         return await tokenResponse.compose()
     }
 
-    async composeInTimeCredentialResponse(format: string, cNonce: string, signedCredential: any): Promise<any> {
-        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, 86400)
+    async composeInTimeCredentialResponse(format: string, cNonce: string, cNonceExpiresIn: number, tokenExpiresIn: number, signedCredential: any): Promise<any> {
+        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, cNonceExpiresIn, tokenExpiresIn)
         return await response.inTime(signedCredential)
     }
 
-    async composeDeferredCredentialResponse(format: string, cNonce: string, vcId: number): Promise<any> {
-        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, 86400)
+    async composeDeferredCredentialResponse(format: string, cNonce: string, cNonceExpiresIn: number, tokenExpiresIn: number, vcId: number): Promise<any> {
+        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, cNonceExpiresIn, tokenExpiresIn)
         return await response.deferred(vcId)
     }
 

@@ -16,18 +16,35 @@ export class IssuerService {
         })();
     }
 
+    /**
+     * 
+     * @returns The DID of the issuer.
+     */
     getDid() {
         return this.did;
     }
 
+    /**
+     * 
+     * @returns The private key in JWK format.
+     */
     getPrivateKeyJwk() {
         return this.privateKeyJwk;
     }
 
+    /**
+     * 
+     * @returns The public key in JWK format.
+     */
     getPublicKeyJwk(): JWK {
         return this.publicKeyJwk;
     }
 
+    /**
+     * Issue a credential.
+     * @param payload The payload to issue the credential with.
+     * @returns A promise that resolves to the signed credential.
+     */
     async issueCredential(payload: object): Promise<string> {
         const extendedUnsignedCredential = {
             ...payload,
@@ -42,11 +59,21 @@ export class IssuerService {
         return signedCredential;
     }
 
+    /**
+     * Verify the JWT token for the current private keys.
+     * @param token The JWT token to validate.
+     * @returns A promise that resolves to a boolean indicating whether the token has expired.
+     */
     async verifyJWT(token: string): Promise<boolean> {
         const signer = new JwtSigner(this.publicKeyJwk);
         return signer.verify(token);
     }
 
+    /**
+     * Decode the JWT token for the current private keys.
+     * @param token The JWT token to validate.
+     * @returns A promise that resolves to a boolean indicating whether the token has expired.
+     */
     async decodeJWT(token: string): Promise<object> {
         const signer = new JwtSigner(this.publicKeyJwk);
         return signer.decode(token);
@@ -71,11 +98,13 @@ export class IssuerService {
         }
     }
 
+    /**
+    * Validates if the expiration.
+    * @param token The JWT token to validate.
+    * @returns A promise that resolves to a boolean indicating whether the token has expired.
+    */
     async isJwtTokenExpired(decodedToken: { exp: number }): Promise<boolean> {
-        const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+        const currentTime = Math.floor(Date.now() / 1000);
         return decodedToken.exp < currentTime;
     }
-
-
 }
-

@@ -1,1 +1,0 @@
-export * from '../../OpenIdProvider/types/response-type.type'

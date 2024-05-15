@@ -1,9 +1,4 @@
-import { AuthRequestComposer, AuthorizationResponse, AuthorizeRequestSigned, ClientMetadata, IdTokenResponse, IdTokenResponseComposer, JwtHeader, ResponseType, TokenRequest, TokenRequestComposer, parseDuration } from '@protokol/ebsi-core';
-import makeRequest from './makeRequest';
 import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK, MOCK_REQUESTED_TYPES } from './utils/mocks';
-import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { parseAuthorizeRequestSigned } from './utils/parseAuthorizationRequest';
-import { parseAuthorizationResponse } from './utils/parseAuthorizationResponse';
 import { IssuerService } from './issuerService';
 import { AuthService } from './authService';
 
@@ -19,12 +14,12 @@ const main = async () => {
     const requestedCredentials = ["VerifiableCredential", "UniversityDegreeCredential"]
 
     // Discover issuer metadata
-    console.log('Discovering issuer metadata...');
+    // console.log('Discovering issuer metadata...');
     const openIdMetadata = await issuerService.discoverConfigurationMetadata(issuerUrl);
     const openIdIssuer = await issuerService.discoverIssuerMetadata(issuerUrl);
-    console.log('Discovered Issuer:', openIdIssuer.credential_issuer);
-    console.log('Issuer metadata discovered:', openIdIssuer);
-    console.log('Issuer config discovered:', openIdIssuer);
+    // console.log('Discovered Issuer:', openIdIssuer.credential_issuer);
+    // console.log('Issuer metadata discovered:', openIdIssuer);
+    // console.log('Issuer config discovered:', openIdIssuer);
     console.log('-----------------------------------')
 
     // Authenticate with the issuer

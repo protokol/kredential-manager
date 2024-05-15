@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, IdTokenResponse, JwtHeader, JwtSigner, OpenIdProvider, TokenRequestBody, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata, jwtDecode, jwtDecodeUrl } from '@protokol/ebsi-core';
+import { AuthorizeRequest, IdTokenResponse, JwtHeader, JwtSigner, OpenIdProvider, TokenRequestBody, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata, jwtDecode, jwtDecodeUrl, parseDuration } from '@protokol/ebsi-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
@@ -15,119 +15,169 @@ import { StudentService } from './../student/student.service';
 import { CreateStudentDto } from './../student/dto/create-student';
 import { VerifiableCredential } from 'src/vc/entities/VerifiableCredential';
 import { DidService } from 'src/student/did.service';
+import { VCStatus } from 'src/types/VC';
 @Injectable()
 export class AuthService {
+
+    // Represents the header configuration used across various HTTP requests.
     private header = {
         'Content-Type': 'application/x-www-form-urlencoded'
     };
 
-    constructor(private provider: OpenIDProviderService, private issuer: IssuerService, private nonce: NonceService, private vcService: VcService, private studentService: StudentService, private didService: DidService) { }
+    /**
+     * Constructor initializes the service with necessary dependencies.
+     * @param provider An instance of OpenIDProviderService for handling OAuth flows.
+     * @param issuer An instance of IssuerService for issuing tokens.
+     * @param nonce An instance of NonceService for managing nonces.
+     * @param vcService An instance of VcService for creating and managing verifiable credentials.
+     * @param studentService An instance of StudentService for handling student-related operations.
+     * @param didService An instance of DidService for managing Decentralized Identifiers (DIDs).
+     */
+    constructor(
+        private provider: OpenIDProviderService,
+        private issuer: IssuerService,
+        private nonce: NonceService,
+        private vcService: VcService,
+        private studentService: StudentService,
+        private didService: DidService
+    ) { }
 
+    /**
+     * Creates or retrieves a DID entity based on the provided DID, then creates a verifiable credential.
+     * @param did The Decentralized Identifier (DID) for which the credential is being created.
+     * @param requestedCredentials The list of credentials to be included in the verifiable credential.
+     * @returns A promise resolving to the ID of the newly created verifiable credential.
+     */
+    private async handleCredentialCreation(did: string, requestedCredentials: any[]): Promise<number> {
+        // Attempt to find an existing DID entity by the provided DID.
+        let didEntity = await this.didService.findByDid(did);
+
+        // If no DID entity is found, create a new one.
+        if (!didEntity) {
+            didEntity = await this.didService.create({ identifier: did });
+        }
+
+        // Create a new verifiable credential with the specified DID entity and requested credentials.
+        const newVc = await this.vcService.create({
+            did: didEntity,
+            requested_credentials: requestedCredentials,
+            type: "UniversityDegreeCredential001" // Placeholder type, replace with actual type when finalized.
+        });
+
+        // Return the ID of the newly created verifiable credential.
+        return newVc.id;
+    }
+
+    /**
+     * Handles the authorization process.
+     * @param request The authorization request object containing necessary details.
+     * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
+     */
     async authorize(request: AuthorizeRequest): Promise<{ header: JwtHeader, code: number, url: string }> {
+        // Verify the authorization request and return the header, redirect URL, requested credentials, and server-defined state.
+        const { header, redirectUrl, authDetails, serverDefinedState } = await this.provider.getInstance().handleAuthorizationRequest(request);
 
-        // Verify the authorization request and return the header, redirect URL, requested credentials and server defined state
-        const { header, redirectUrl, authDetails, serverDefinedState } = await this.provider.getInstance().handleAuthorizationRequest(request)
-
-        // Create a nonce for the client
+        // Create a nonce for the client.
         const noncePayload: AuthNonce = {
             authorizationDetails: authDetails,
             redirectUri: request.redirect_uri,
             serverDefinedState: serverDefinedState,
             clientDefinedState: request.state,
             codeChallenge: request.code_challenge,
-        }
+        };
         await this.nonce.createAuthNonce(request.client_id, request.nonce, noncePayload);
         return { header, code: 302, url: redirectUrl };
     }
 
+    /**
+     * Directly posts the ID token response after mapping headers to JWT header.
+     * @param request The ID token response request object.
+     * @param headers Headers record to map to JWT header.
+     * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
+     */
     async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header: JwtHeader, code: number, url: string }> {
-
-        // Map headers to JWT header
+        // Map headers to JWT header.
         const header = await mapHeadersToJwtHeader(headers);
-        const decodedRequest = await this.provider.getInstance().decodeIdTokenRequest(request.id_token)
+        const decodedRequest = await this.provider.getInstance().decodeIdTokenRequest(request.id_token);
 
-        // Get nonce => check if it exists and is unclaimed
+        // Retrieve the nonce data to ensure it exists and is unclaimed.
         const nonceData = await this.nonce.getNonceByField('nonce', decodedRequest.nonce, NonceStep.AUTHORIZE, NonceStatus.UNCLAIMED, decodedRequest.iss);
 
-        // The authz response must contain the client defined state send in the authorization
+        // Extract the client-defined state from the authorization response.
         const state = nonceData.payload.clientDefinedState;
 
-        // Create a code for the client, 
+        // Generate a unique code for the client.
         const code = randomBytes(50).toString("base64url");
 
-        // Create/Update a nonce for the client, add code and id_token to the payload
-        // On the token request, the client will send the code and the server will check if the code is valid and if the nonce is claimed
+        // Update the nonce for the client, including the generated code and ID token.
         await this.nonce.createAuthResponseNonce(decodedRequest.nonce, code, request.id_token);
         const redirectUrl = await this.provider.getInstance().createAuthorizationRequest(code, state);
         return { header, code: 302, url: redirectUrl };
     }
 
+    /**
+     * Processes the token request by validating the code challenge and composing the token response.
+     * @param request The token request body.
+     * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
+     */
     async token(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
-
-        // Get nonce => check if it exists and is unclaimed
+        // Retrieve the nonce data to ensure it exists and is unclaimed.
         const nonceData = await this.nonce.getNonceByField('code', request.code, NonceStep.AUTH_RESPONSE, NonceStatus.UNCLAIMED, request.client_id);
-        // Validate the code challenge that was send in the first auth request
+
+        // Validate the code challenge against the one sent in the initial auth request.
         if (this.provider.getInstance().validateCodeChallenge(nonceData.payload.codeChallenge, request.code_verifier) !== true) {
             throw new Error('Invalid code challenge.');
         }
 
-        // Set idToken from the direct post call
+        // Prepare the token response.
         const idToken = nonceData.payload.idToken;
         const authDetails = nonceData.payload.authorizationDetails;
         const cNonce = randomBytes(25).toString("base64url");
+        const cNonceExpiresIn = 60 * 60; // seconds
 
-        // Create/Update a nonce for the client, add cNonce
-        await this.nonce.createTokenRequestCNonce(nonceData.nonce, cNonce);
-        const response = await this.provider.getInstance().composeTokenResponse(idToken, cNonce, authDetails);
+        // Update the nonce for the client, including the cNonce.
+        await this.nonce.createTokenRequestCNonce(nonceData.nonce, cNonce, cNonceExpiresIn);
+        const response = await this.provider.getInstance().composeTokenResponse(idToken, cNonce, cNonceExpiresIn, authDetails);
 
         return { header: this.header, code: 200, response };
     }
 
+    /**
+     * Handles the creation of a deferred credential response.
+     * @param headers Request headers.
+     * @param request The request object containing the nonce and other necessary details.
+     * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
+     */
     async credentail(headers: any, request: any): Promise<{ header: any, code: number, response: any }> {
+        // Decode the request payload to retrieve the nonce and other details.
+        const decodedRequest = await this.provider.getInstance().decodeCredentialRequest(request);
+        const cNonce = decodedRequest.nonce;
 
-
-        // Decode request payload
-        const decodedRequest = await this.provider.getInstance().decodeCredentialRequest(request)
-        const cNonce = decodedRequest.nonce
-        // Get nonce by cNonce parameter => check if it exists and is unclaimed
+        // Retrieve the nonce data associated with the cNonce to ensure it exists and is unclaimed.
         const nonceData = await this.nonce.getNonceByField('cNonce', cNonce, NonceStep.TOKEN_REQUEST, NonceStatus.UNCLAIMED, request.client_id);
 
+        // Validate the issuer of the request against the stored nonce data.
         if (decodedRequest.iss !== nonceData.clientId) {
             throw new Error('Invalid issuer');
         }
 
-        // Take first requested credential, since this is not a batch request
-        const requestedCredentials = nonceData.payload.authorizationDetails[0].types
-        // Get the DID of the client
-        const did = nonceData.clientId
-        let vcId;
+        // Extract the requested credentials from the nonce payload.
+        const requestedCredentials = nonceData.payload.authorizationDetails[0].types;
+        // Retrieve the DID of the client from the nonce data.
+        const did = nonceData.clientId;
 
+        // Create the verifiable credential.
+        let vcId = await this.handleCredentialCreation(did, requestedCredentials);
 
-        const existingDid = await this.didService.findByDid(did)
-        if (existingDid) {
-            console.log({ existingDid })
-            const newVc = await this.vcService.create({
-                did: existingDid,
-                requested_credentials: requestedCredentials,
-                type: "UniversityDegreeCredential001", // TODO
-            })
-            vcId = newVc.id
-        } else {
-            const newDid = await this.didService.create({
-                identifier: did
-            })
-            const newVc = await this.vcService.create({
-                did: newDid,
-                requested_credentials: requestedCredentials,
-                type: "UniversityDegreeCredential001", // TODO
-            })
-            vcId = newVc.id
-        }
+        // Compose the deferred credential response.
+        const cNonceExpiresIn = parseDuration('1h')
+        const tokenExpiresIn = parseDuration('1h')
+        const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, vcId, cNonceExpiresIn, tokenExpiresIn);
 
-        // Deferred response
-        const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, vcId);
-        // Create/Update a nonce for the client, add acceptanceToken
+        // Update the nonce for the client, including the acceptance token.
         await this.nonce.createDeferredResoponse(nonceData.nonce, response.acceptance_token);
+
+        // Define the header for the response.
         const header = {
             'Content-Type': 'application/x-www-form-urlencoded'
         };
@@ -135,41 +185,47 @@ export class AuthService {
         return { header, code: 200, response };
     }
 
+    /**
+     * Handles the processing of a deferred credential response.
+     * @param request The request object containing the acceptance token and other necessary details.
+     * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
+     */
     async credentilDeferred(request: any): Promise<{ header: any, code: number, response: any }> {
+        // Extract the bearer token from the request headers.
+        const acceptanceToken = extractBearerToken(request.headers);
 
-        const acceptanceToken = extractBearerToken(request.headers)
+        // Decode the acceptance token to validate its contents.
+        const decodedAcceptanceToken = await this.issuer.decodeJWT(acceptanceToken) as any;
 
-        // Get nonce by cNonce parameter => check if it exists and is unclaimed
-        const nonceData = await this.nonce.getNonceByField('acceptanceToken', acceptanceToken, NonceStep.DEFERRED_REQUEST, NonceStatus.UNCLAIMED, request.client_id);
-        if (!nonceData) {
-            throw new Error('Invalid acceptance token');
-        }
-
-        const decodedAcceptanceToken = await this.issuer.decodeJWT(acceptanceToken) as any
-
+        console.log({ decodedAcceptanceToken })
+        // Validate the decoded acceptance token.
         if (!decodedAcceptanceToken || !decodedAcceptanceToken.vcId) {
             throw new Error('Invalid acceptance token');
         }
 
-        if (this.issuer.isJwtTokenExpired(decodedAcceptanceToken)) {
-            return { header: this.header, code: 401, response: "" };
-        }
-
-        const credential = await this.vcService.findOne(decodedAcceptanceToken.vcId)
-
+        // Retrieve the credential by its ID.
+        const credential = await this.vcService.findOne(decodedAcceptanceToken.vcId);
         if (!credential) {
-            throw new Error('Credential not found');
+            return { header: this.header, code: 500, response: 'Credential not found' };
         }
 
-        if (credential.status === 'issued') {
-            if (credential.credential_signed != '{}') {
-                const cNonce = randomBytes(25).toString("base64url");
-                const response = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, credential.credential_signed);
-                return { header: this.header, code: 200, response: response };
-
-            }
+        // Determine the response based on the credential's status.
+        switch (credential.status) {
+            case VCStatus.ISSUED:
+                if (credential.credential_signed === '{}') {
+                    const cNonce = randomBytes(25).toString("base64url");
+                    const cNonceExpiresIn = parseDuration('1h')
+                    const tokenExpiresIn = parseDuration('1h')
+                    const response = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, credential.credential_signed);
+                    return { header: this.header, code: 200, response: response };
+                }
+                return { header: this.header, code: 500, response: 'Credential not found' };
+            case VCStatus.PENDING:
+                return { header: this.header, code: 202, response: '' };
+            case VCStatus.REJECTED:
+                return { header: this.header, code: 403, response: '' };
+            default:
+                return { header: this.header, code: 500, response: 'Credential not found' };
         }
-
-        return { header: this.header, code: 200, response: "" };
     }
 }

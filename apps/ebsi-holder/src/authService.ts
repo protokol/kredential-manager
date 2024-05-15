@@ -1,4 +1,4 @@
-import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer, jwtDecode, jwtDecodeUrl, parseDuration } from "@protokol/ebsi-core";
+import { IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer, jwtDecode, jwtDecodeUrl, parseDuration, AuthRequestComposer, } from "@protokol/ebsi-core";
 import { HttpClient } from "./httpClient";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { log } from "./utils/log";
@@ -50,6 +50,7 @@ export class AuthService {
             log("1.) --->")
             const authRequest = AuthRequestComposer
                 .holder('code', clientId, 'openid:', { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')
+                .setIssuerUrl(openIdIssuer.authorization_endpoint)
                 .addAuthDetails([
                     {
                         type: "openid_credential", // Must be set to openid_credential
@@ -58,39 +59,29 @@ export class AuthService {
                         types: requestedCredentials
                     },
                 ])
-                .setIssuerUrl(openIdIssuer.authorization_endpoint)
                 .setState(clientDefinedState)
                 .setNonce(cliendDefinedNonce)
-            // log('Auth request endpoint:', issuerMetadata.authorization_endpoint);
-            // log('Auth request:', authRequest)
-            // log("--------------")
+
+            console.log({ authNew: authRequest.createGetRequestUrl() })
+
             // // 2.) ID Token Request: Perform the authorization request and get ID Token
             log("2.) <---")
             const authResult = await this.httpClient.get(authRequest.createGetRequestUrl());
-            // console.log('Test', authRequest.createGetRequestUrl())
-            // console.log({ authResult })
             if (authResult.status !== 302) throw new Error('Invalid status code')
-            // log('Auth result:', authResult.status)
             const { location } = parseRedirectHeaders(authResult.headers)
-            // log('Location:', location)
             const parsedSignedRequest = parseAuthorizeRequestSigned(location);
             const signedRequest = parsedSignedRequest.request ?? ''
-
-            console.log({ openIdMetadata })
-            console.log("issuer: ", openIdMetadata.issuer)
-            console.log("jwks_uri: ", openIdMetadata.jwks_uri)
 
             const decodedRequest = await jwtDecodeUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, '')
             if (!decodedRequest) throw new Error('Could not decode signed request')
             // return ""
             const { header: idTokenReqHeader, payload: idTokenReqPayload } = decodedRequest
-            console.log('Decoded', decodedRequest)
+            // console.log('Decoded', decodedRequest)
 
             if (idTokenReqPayload.iss !== openIdIssuer.credential_issuer) throw new Error('Issuer does not match')
             if (idTokenReqPayload.aud !== clientId) throw new Error('Audience does not match')
             if (idTokenReqPayload.exp < Math.floor(Date.now() / 1000)) throw new Error('Token expired')
             if (idTokenReqPayload.nonce !== cliendDefinedNonce) throw new Error('Nonce does not match')
-            console.log('server response nonce: ', idTokenReqPayload.nonce, ' == ', cliendDefinedNonce)
             // log({ parsedSignedRequest })
             const serverDefinedState = parsedSignedRequest.state ?? ''
 
@@ -119,9 +110,6 @@ export class AuthService {
             const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
 
-            console.log('Location:', idLocation)
-            console.log({ idLocation })
-            console.log({ status: authorizationResponse.status })
             if (authorizationResponse.status !== 302) throw new Error('Invalid status code')
             const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.split('?')[1])
             if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
@@ -149,7 +137,7 @@ export class AuthService {
             console.log("Code verifier!!!!! : ", codeVerifier)
             console.log("-------------------")
 
-            log({ tokenRequestBody })
+            // log({ tokenRequestBody })
             //6.) Token Response
             log("6.) <---")
             const tokenResponse = await this.httpClient.post(openIdMetadata.token_endpoint, tokenRequestBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });

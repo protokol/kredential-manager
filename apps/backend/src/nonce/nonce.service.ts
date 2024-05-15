@@ -46,7 +46,7 @@ export class NonceService {
         return false;
     }
 
-    async createTokenRequestCNonce(nonceValue: string, cNonce: string): Promise<boolean> {
+    async createTokenRequestCNonce(nonceValue: string, cNonce: string, cNonceExpiresIn: number): Promise<boolean> {
         const nonce = await this.nonceRepository.findOne({
             where: { nonce: nonceValue },
         });
@@ -57,6 +57,7 @@ export class NonceService {
             nonce.step = NonceStep.TOKEN_REQUEST;
             nonce.status = NonceStatus.UNCLAIMED;
             nonce.cNonce = cNonce;
+            nonce.cNonceExpiresIn = cNonceExpiresIn;
             await this.nonceRepository.save(nonce);
             return true;
         }
@@ -100,9 +101,6 @@ export class NonceService {
                 throw new Error('Invalid code');
             case NonceStep.TOKEN_REQUEST:
                 throw new Error('Invalid nonce');
-            case NonceStep.DEFERRED_REQUEST:
-                // Deferred request can be claimed multiple times
-                return;
         }
     }
 

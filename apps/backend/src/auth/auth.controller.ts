@@ -50,11 +50,7 @@ export class AuthController {
         @Res() res: Response,
     ) {
         try {
-            console.log("Authorize")
-            const { header, code, url } = await this.auth.authorize(req);
-            for (const [key, value] of Object.entries(header)) {
-                res.setHeader(key, value);
-            }
+            const { code, url } = await this.auth.authorize(req);
             return res.redirect(code, url);
         } catch (error) {
             console.log(error.message)
@@ -70,7 +66,7 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const { header, code, url } = await this.auth.directPost(req, headers);
+            const { code, url } = await this.auth.directPost(req, headers);
             return res.redirect(code, url);
         } catch (error) {
             console.log("!!!!!!!")
@@ -103,7 +99,7 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const { header, code, response } = await this.auth.credentail(headers, req);
+            const { code, response } = await this.auth.credentail(headers, req);
             return res.status(code).json(response);
         } catch (error) {
             console.log(error.message)
@@ -119,7 +115,7 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const { header, code, response } = await this.auth.credentilDeferred(req);
+            const { code, response } = await this.auth.credentilDeferred(req);
             return res.status(code).json(response);
         } catch (error) {
             console.log(error.message)

@@ -63,15 +63,13 @@ export class CredentialResponseComposer {
      * @returns A promise that resolves to the composed credential response.
      */
     async deferred(vcId: number): Promise<CredentialDeferredResponse> {
-        console.log({ EXP: parseDuration('1m') });
-        console.log({ EXP: parseDuration('2w') });
         // Create the payload for the JWT token
         const payload: BearerToken = {
             iss: this.privateKey.iss as string,
             aud: this.privateKey.aud as string[],
             sub: this.privateKey.sub as string,
-            exp: Math.floor(Date.now() / 1000) + this.tokenExpiresIn, // Expiration time calculated
-            iat: Math.floor(Date.now() / 1000), // Issued at time set to current timestamp
+            exp: Math.floor(Date.now() / 1000) + this.tokenExpiresIn,
+            iat: Math.floor(Date.now() / 1000),
             vcId: vcId,
         };
 

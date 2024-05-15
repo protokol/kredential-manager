@@ -148,7 +148,7 @@ export class AuthService {
      * @param request The request object containing the nonce and other necessary details.
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
-    async credentail(headers: any, request: any): Promise<{ header: any, code: number, response: any }> {
+    async credentail(request: any): Promise<{ header: any, code: number, response: any }> {
         // Decode the request payload to retrieve the nonce and other details.
         const decodedRequest = await this.provider.getInstance().decodeCredentialRequest(request);
         const cNonce = decodedRequest.nonce;
@@ -172,17 +172,12 @@ export class AuthService {
         // Compose the deferred credential response.
         const cNonceExpiresIn = parseDuration('1h')
         const tokenExpiresIn = parseDuration('1h')
-        const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, vcId, cNonceExpiresIn, tokenExpiresIn);
+        const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, vcId);
 
         // Update the nonce for the client, including the acceptance token.
         await this.nonce.createDeferredResoponse(nonceData.nonce, response.acceptance_token);
 
-        // Define the header for the response.
-        const header = {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        };
-
-        return { header, code: 200, response };
+        return { header: this.header, code: 200, response };
     }
 
     /**
@@ -193,16 +188,13 @@ export class AuthService {
     async credentilDeferred(request: any): Promise<{ header: any, code: number, response: any }> {
         // Extract the bearer token from the request headers.
         const acceptanceToken = extractBearerToken(request.headers);
-
         // Decode the acceptance token to validate its contents.
         const decodedAcceptanceToken = await this.issuer.decodeJWT(acceptanceToken) as any;
 
-        console.log({ decodedAcceptanceToken })
         // Validate the decoded acceptance token.
         if (!decodedAcceptanceToken || !decodedAcceptanceToken.vcId) {
-            throw new Error('Invalid acceptance token');
+            return { header: this.header, code: 400, response: 'Invalid acceptance token' };
         }
-
         // Retrieve the credential by its ID.
         const credential = await this.vcService.findOne(decodedAcceptanceToken.vcId);
         if (!credential) {

@@ -1,19 +1,7 @@
 import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
 import { JwtSigner, jwtSign } from "../utils/jwt.util";
 import { JwtHeader } from '../types/jwt-header.type';
-
-export interface IdTokenRequest {
-    iss: string;
-    aud: string;
-    exp: number;
-    response_type: string;
-    response_mode: string;
-    client_id: string;
-    redirect_uri: string;
-    state: string;
-    scope: string;
-    nonce: string;
-}
+import { IdTokenRequestPayload } from '../interfaces/id-token-request-payload.interface';
 
 /**
  * Constructs and customizes an ID token request.
@@ -21,7 +9,7 @@ export interface IdTokenRequest {
 export class IdTokenRequestComposer {
     private privateKeyJWK: JWK;
     private header?: JwtHeader;
-    private payload?: IdTokenRequest;
+    private payload?: IdTokenRequestPayload;
 
     /**
      * Initializes a new instance of the IdTokenRequestComposer with the private key used for signing the JWT.
@@ -36,7 +24,7 @@ export class IdTokenRequestComposer {
      * @param payload - The payload to be included in the JWT.
      * @returns This instance for method chaining.
      */
-    setPayload(payload: IdTokenRequest): this {
+    setPayload(payload: IdTokenRequestPayload): this {
         this.payload = payload;
         return this;
     }

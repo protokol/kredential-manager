@@ -21,7 +21,6 @@ export class AuthController {
 
     constructor(private provider: OpenIDProviderService, private issuer: IssuerService, private auth: AuthService) { }
 
-
     @Get('.well-known/openid-credential-issuer')
     @Public(true)
     getIssuerMetadata() {
@@ -53,7 +52,6 @@ export class AuthController {
             const { code, url } = await this.auth.authorize(req);
             return res.redirect(code, url);
         } catch (error) {
-            console.log(error.message)
             return res.status(400).json({ message: error.message });
         }
     }
@@ -69,8 +67,6 @@ export class AuthController {
             const { code, url } = await this.auth.directPost(req, headers);
             return res.redirect(code, url);
         } catch (error) {
-            console.log("!!!!!!!")
-            console.log(error.message)
             return res.status(400).json({ message: error.message });
         }
     }
@@ -86,7 +82,6 @@ export class AuthController {
             const { header, code, response } = await this.auth.token(req);
             return res.status(code).json(response);
         } catch (error) {
-            console.log(error.message)
             return res.status(400).json({ message: error.message });
         }
     }
@@ -99,10 +94,9 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const { code, response } = await this.auth.credentail(headers, req);
+            const { code, response } = await this.auth.credentail(req);
             return res.status(code).json(response);
         } catch (error) {
-            console.log(error.message)
             return res.status(400).json({ message: error.message });
         }
     }
@@ -118,7 +112,6 @@ export class AuthController {
             const { code, response } = await this.auth.credentilDeferred(req);
             return res.status(code).json(response);
         } catch (error) {
-            console.log(error.message)
             return res.status(400).json({ message: error.message });
         }
     }

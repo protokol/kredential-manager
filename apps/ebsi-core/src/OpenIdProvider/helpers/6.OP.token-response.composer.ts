@@ -38,7 +38,6 @@ export class TokenResponseComposer {
      * @returns The composed token response including the access token, token type, expiration time, ID token, nonce, and nonce expiration.
      */
     async compose(): Promise<TokenResponse> {
-        console.log({ EXP: parseDuration('5m') })
         const expiresIn = this.cNonceExpiresIn ?? 86400;
         // Create the payload
         const payload: BearerToken = {

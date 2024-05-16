@@ -5,7 +5,7 @@ import {
 } from 'nest-keycloak-connect';
 import { OpenIDProviderService } from '../openId/openId.service';
 import { IssuerService } from 'src/issuer/issuer.service';
-import { AuthorizeRequest, IdTokenResponse, TokenRequestBody, parseDuration } from '@protokol/ebsi-core';
+import { AuthorizeRequest, IdTokenResponse, TokenRequestBody, parseDuration } from '@probeta/mp-core';
 import { JWK } from 'jose';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateAuthDto } from './dto/create-authorization.dto';

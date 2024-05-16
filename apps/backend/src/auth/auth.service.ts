@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, IdTokenResponse, JwtHeader, JwtSigner, OpenIdProvider, TokenRequestBody, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata, jwtDecode, jwtDecodeUrl, parseDuration } from '@protokol/ebsi-core';
+import { AuthorizeRequest, IdTokenResponse, JwtHeader, JwtSigner, OpenIdProvider, TokenRequestBody, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata, jwtDecode, jwtDecodeUrl, parseDuration } from '@probeta/mp-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
-import { IdTokenResponseRequest } from '@protokol/ebsi-core/dist/OpenIdProvider/interfaces/id-token-response.interface';
+import { IdTokenResponseRequest } from '@probeta/mp-core/dist/OpenIdProvider/interfaces/id-token-response.interface';
 import { extractBearerToken, mapHeadersToJwtHeader } from './auth.utils';
 import { decodeJwt } from 'jose';
 import { randomBytes } from 'crypto';
@@ -213,9 +213,9 @@ export class AuthService {
                 }
                 return { header: this.header, code: 500, response: 'Credential not found' };
             case VCStatus.PENDING:
-                return { header: this.header, code: 202, response: '' };
+                return { header: this.header, code: 202, response: 'Credential status: pending' };
             case VCStatus.REJECTED:
-                return { header: this.header, code: 403, response: '' };
+                return { header: this.header, code: 403, response: 'Credential status: rejected' };
             default:
                 return { header: this.header, code: 500, response: 'Credential not found' };
         }

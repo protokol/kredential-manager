@@ -1,4 +1,5 @@
-import { AuthorizeRequestSigned, ResponseType, ScopeType } from "@probeta/mp-core";
+import { AuthorizeRequestSigned, ScopeType, ResponseType } from "../../OpenIdProvider";
+
 
 export function parseAuthorizeRequestSigned(data: string): AuthorizeRequestSigned {
     // Remove the data before the colon including the colon itself

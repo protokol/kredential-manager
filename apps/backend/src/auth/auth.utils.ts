@@ -1,4 +1,4 @@
-import { JwtHeader } from "@protokol/ebsi-core";
+import { JwtHeader } from "@probeta/mp-core";
 
 export async function mapHeadersToJwtHeader(headers: Record<string, string | string[]>): Promise<JwtHeader> {
     const jwtHeader: JwtHeader = { typ: '', alg: '', kid: '' };

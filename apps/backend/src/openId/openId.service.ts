@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OpenIdProvider, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@protokol/ebsi-core';
+import { OpenIdProvider, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@probeta/mp-core';
 
 
 const HOST = process.env.HOST || 'localhost:3000'; // The host of the application

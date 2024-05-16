@@ -1,4 +1,4 @@
-import { AuthorizationDetail } from "@protokol/ebsi-core";
+import { AuthorizationDetail } from "@probeta/mp-core";
 
 export interface AuthNonce {
     authorizationDetails: AuthorizationDetail[];

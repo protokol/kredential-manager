@@ -1,5 +1,5 @@
 {
-    "name": "@probeta/ebsi-core",
+    "name": "@probeta/mp-core",
     "version": "0.0.1",
     "type": "module",
     "private": false,
@@ -15,7 +15,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
-        "/dist"
+        "src"
     ],
     "scripts": {
         "build": "tsc",

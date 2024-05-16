@@ -1,6 +1,6 @@
-import { CredentialRequestComposer, OpenIdConfiguration, OpenIdIssuer } from "@probeta/mp-core";
-import { HttpClient } from "./httpClient";
-import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK } from "./utils/mocks";
+import { CredentialRequestComposer, OpenIdConfiguration, OpenIdIssuer } from "../../OpenIdProvider";
+import { HttpClient } from "../utils/httpClient";
+import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK } from "../utils/mocks";
 
 export class IssuerService {
     private httpClient: HttpClient;
@@ -78,10 +78,10 @@ export class IssuerService {
      * @param {string} acceptanceToken - The acceptance token to authorize the request.
      * @returns {Promise<any>} - A promise that resolves to the response from the deferred endpoint.
      */
-    async deferredCredentialEndpoint(deferredEndpoint: string, acceptanceToken: string): Promise<any> {
+    async deferredCredentialEndpoint(issuerMetadata: OpenIdIssuer, acceptanceToken: string): Promise<any> {
         try {
             const headers = { 'Authorization': `Bearer ${acceptanceToken}` };
-            const response = await this.httpClient.post(deferredEndpoint, { headers });
+            const response = await this.httpClient.post(issuerMetadata.deferred_credential_endpoint, { headers });
             return response.json();
         } catch (error) {
             console.error('Error calling deferred credential endpoint:', error);

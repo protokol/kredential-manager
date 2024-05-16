@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JwtSigner, generateDidFromPrivateKey } from '@protokol/ebsi-core';
+import { JwtSigner, generateDidFromPrivateKey } from '@probeta/mp-core';
 import { JWK } from 'jose';
 @Injectable()
 export class IssuerService {

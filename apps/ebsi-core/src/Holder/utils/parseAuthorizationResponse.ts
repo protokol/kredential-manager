@@ -1,4 +1,5 @@
-import { AuthorizationResponse } from "@probeta/mp-core";
+import { AuthorizationResponse } from "./../../OpenIdProvider";
+
 
 export function parseAuthorizationResponse(queryString: string): AuthorizationResponse {
     const params = new URLSearchParams(queryString);

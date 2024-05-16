@@ -1,16 +1,24 @@
-import { IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer, jwtDecode, jwtDecodeUrl, parseDuration, AuthRequestComposer, } from "@probeta/mp-core";
-import { HttpClient } from "./httpClient";
-import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { log } from "./utils/log";
-import { parseAuthorizeRequestSigned } from "./utils/parseAuthorizationRequest";
-import { parseRedirectHeaders } from "./utils/parseRedirectHeaders";
-import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK } from "./utils/mocks";
-import { parseAuthorizationResponse } from "./utils/parseAuthorizationResponse";
+import axios from 'axios';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { log } from '../utils/log';
+import { parseAuthorizeRequestSigned } from "../utils/parseAuthorizationRequest";
+import { parseRedirectHeaders } from "../utils/parseRedirectHeaders";
+import { parseAuthorizationResponse } from "../utils/parseAuthorizationResponse";
+import { HttpClient } from '../utils/httpClient';
+import { JWK } from 'jose';
+import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer, jwtDecodeUrl } from '../../OpenIdProvider';
 
 export class AuthService {
     private httpClient: HttpClient;
-    constructor() {
+    private privateKey: JWK;
+    private did: string;
+    private issuerUrl: string;
+
+    constructor(privateKey: JWK, did: string, issuerUrl: string) {
         this.httpClient = new HttpClient();
+        this.privateKey = privateKey;
+        this.issuerUrl = issuerUrl;
+        this.did = did;
     }
 
     /**
@@ -18,8 +26,8 @@ export class AuthService {
      * @param {string} codeVerifier - The code verifier.
      * @returns {string} - The code challenge.
      */
-    generateCodeChallenge(codeVerifier: string) {
-        const hash = createHash("sha256")
+    private generateCodeChallenge(codeVerifier: string) {
+        const hash = createHash("sha256");
         hash.update(codeVerifier);
         const digest = hash.digest();
         const codeChallenge = digest.toString('base64url');
@@ -34,20 +42,14 @@ export class AuthService {
      * @returns {Promise<string>} - A promise that resolves to the access token.
      */
     async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string) {
-        console.log({ openIdIssuer })
-        console.log({ openIdMetadata })
         const codeVerifier = randomBytes(50).toString("base64url");
-        const codeChallenge = this.generateCodeChallenge(codeVerifier);
-        // log('Code verifier:', codeVerifier)
-        // log('Code challenge:', codeChallenge)
+        const codeChallenge = await this.generateCodeChallenge(codeVerifier);
 
         // Define state and nonce
         const clientDefinedState = randomBytes(50).toString("base64url")
         const cliendDefinedNonce = randomBytes(25).toString("base64url")
 
         try {
-            // 1.) Authorisation Request
-            log("1.) --->")
             const authRequest = AuthRequestComposer
                 .holder('code', clientId, 'openid:', { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')
                 .setIssuerUrl(openIdIssuer.authorization_endpoint)
@@ -62,21 +64,18 @@ export class AuthService {
                 .setState(clientDefinedState)
                 .setNonce(cliendDefinedNonce)
 
-            console.log({ authNew: authRequest.createGetRequestUrl() })
-
-            // // 2.) ID Token Request: Perform the authorization request and get ID Token
-            log("2.) <---")
             const authResult = await this.httpClient.get(authRequest.createGetRequestUrl());
             if (authResult.status !== 302) throw new Error('Invalid status code')
+
+            // Extract ID Token from the authorization response
             const { location } = parseRedirectHeaders(authResult.headers)
             const parsedSignedRequest = parseAuthorizeRequestSigned(location);
             const signedRequest = parsedSignedRequest.request ?? ''
 
             const decodedRequest = await jwtDecodeUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, '')
             if (!decodedRequest) throw new Error('Could not decode signed request')
-            // return ""
+
             const { header: idTokenReqHeader, payload: idTokenReqPayload } = decodedRequest
-            // console.log('Decoded', decodedRequest)
 
             if (idTokenReqPayload.iss !== openIdIssuer.credential_issuer) throw new Error('Issuer does not match')
             if (idTokenReqPayload.aud !== clientId) throw new Error('Audience does not match')
@@ -85,28 +84,25 @@ export class AuthService {
             // log({ parsedSignedRequest })
             const serverDefinedState = parsedSignedRequest.state ?? ''
 
-            // 3.)  ID Token Response
-            log("3.) --->")
+            // 3.) ID Token Response
             const header: JwtHeader = {
                 typ: 'JWT',
                 alg: 'ES256',
-                kid: MOCK_DID_KEY_PRIVATE_KEY_JWK.kid ?? ''
+                kid: this.privateKey.kid ?? ''
             }
-            const idTokenResponseBody = await new IdTokenResponseComposer(MOCK_DID_KEY_PRIVATE_KEY_JWK, serverDefinedState)
+            const idTokenResponseBody = await new IdTokenResponseComposer(this.privateKey, serverDefinedState)
                 .setHeader(header)
                 .setPayload({
-                    iss: MOCK_DID_KEY,
-                    sub: MOCK_DID_KEY,
+                    iss: this.did,
+                    sub: this.did,
                     aud: openIdIssuer.credential_issuer,
-                    exp: Math.floor(Date.now() / 1000) + parseDuration('5m'),
+                    exp: Math.floor(Date.now() / 1000) + 60 * 5,
                     iat: Math.floor(Date.now() / 1000),
                     nonce: idTokenReqPayload.nonce
                 } as IdTokenResponse)
                 .compose();
 
-            // 4.) Authorization Response from server
-            log("4.) <---")
-            // console.log({ idTokenResponseBody })
+
             const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
 
@@ -114,32 +110,23 @@ export class AuthService {
             const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.split('?')[1])
             if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
 
-            // 5.) Token Request
-            log("5.) --->")
             const tokenRequestBody = await new TokenRequestComposer(
-                MOCK_DID_KEY_PRIVATE_KEY_JWK,
+                this.privateKey,
                 'authorization_code',
                 parsedAuthorizationResponse.code,
             )
                 .setHeader(header)
                 .setPayload({
-                    iss: MOCK_DID_KEY,
-                    sub: MOCK_DID_KEY,
+                    iss: this.did,
+                    sub: this.did,
                     aud: openIdIssuer.credential_issuer,
                     jti: randomUUID(),
-                    exp: Math.floor(Date.now() / 1000) + parseDuration('5m'),
+                    exp: Math.floor(Date.now() / 1000) + 60 * 5,
                     iat: Math.floor(Date.now() / 1000),
                 } as TokenRequest)
                 .setCodeVerifier(codeVerifier)
                 .compose()
 
-            console.log("Code Challenge!!!!!: ", codeChallenge)
-            console.log("Code verifier!!!!! : ", codeVerifier)
-            console.log("-------------------")
-
-            // log({ tokenRequestBody })
-            //6.) Token Response
-            log("6.) <---")
             const tokenResponse = await this.httpClient.post(openIdMetadata.token_endpoint, tokenRequestBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const token = await tokenResponse.json()
             return token

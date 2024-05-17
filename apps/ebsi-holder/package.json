@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "/dist"
+    "/src"
   ],
   "scripts": {
     "build": "tsc",
@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@protokol/ebsi-core": "*"
+    "@probeta/mp-core": "*"
   },
   "devDependencies": {
     "nodemon": "^3.1.0",

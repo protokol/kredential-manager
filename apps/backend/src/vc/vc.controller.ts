@@ -27,7 +27,7 @@ import {
     FilteringParams,
 } from "src/types/pagination/FilteringParams";
 import { Public, Resource } from "nest-keycloak-connect";
-import { CreateVcDto } from "./dto/create-vc";
+// import { CreateVcDto } from "./dto/create-vc";
 import { ApiTags } from "@nestjs/swagger";
 
 @Controller("verifiable-credentials")
@@ -49,21 +49,33 @@ export class VcController {
         return { count };
     }
 
+    @Public()
     @Patch(":id/status")
     @HttpCode(HttpStatus.OK)
     async updateStatus(
-        @Param("id") id: string,
+        @Param("id") id: number,
         @Body() updatePayload: UpdateStatusDto,
     ): Promise<any> {
         // TODO: Implement the SIGN process
         // TODO: Save signed data to vc_data_signed
 
-        const updateResult = await this.vcService.update(id, updatePayload);
-        if (updateResult.affected === 0) {
-            throw new BadRequestException(
-                `Credential with ID "${id}" not found.`,
-            );
+        if (updatePayload.status == VCStatus.ISSUED) {
+            console.log("Issuing credential")
+            const { code, response } = await this.vcService.issueVerifiableCredential(id);
+            if (code !== 200) {
+                throw new BadRequestException(
+                    `Error issuing credential: ${response}`,
+                );
+            }
+            return { message: response };
         }
+
+        // const updateResult = await this.vcService.update(id, updatePayload);
+        // if (updateResult.affected === 0) {
+        //     throw new BadRequestException(
+        //         `Credential with ID "${id}" not found.`,
+        //     );
+        // }
         return { message: "Status updated successfully." };
     }
 
@@ -77,6 +89,7 @@ export class VcController {
         return item;
     }
 
+    @Public()
     @Get()
     @HttpCode(HttpStatus.OK)
     async getAll(
@@ -89,63 +102,63 @@ export class VcController {
         return await this.vcService.findAll(paginationParams, sort, filter);
     }
 
-    @Post()
-    @HttpCode(HttpStatus.OK)
-    async create(@Body() createVcDto: CreateVcDto) {
-        console.log({ createVcDto });
-        const newCredentialData = {
-            did: -1,
-            displayName: "",
-            mail: "",
-            dateOfBirth: undefined,
-            vc_data: {},
-            vc_data_signed: {},
-            type: createVcDto.type,
-            role: VCRole.STUDENT,
-            status: VCStatus.PENDING,
-        };
+    // @Post()
+    // @HttpCode(HttpStatus.OK)
+    // async create(@Body() createVcDto: CreateVcDto) {
+    //     console.log({ createVcDto });
+    //     const newCredentialData = {
+    //         did: -1,
+    //         displayName: "",
+    //         mail: "",
+    //         dateOfBirth: undefined,
+    //         vc_data: {},
+    //         vc_data_signed: {},
+    //         type: createVcDto.type,
+    //         role: VCRole.STUDENT,
+    //         status: VCStatus.PENDING,
+    //     };
 
-        switch (createVcDto.type) {
-            case "VerifiableEducationID202311": {
-                const vc_data =
-                    createVcDto.data as unknown as VerifiableEducationalID;
-                const did = await this.vcService.getOrCreateDid(
-                    vc_data.credentialSubject.id,
-                );
-                newCredentialData.did = did.id;
-                newCredentialData.displayName =
-                    vc_data.credentialSubject.displayName ?? "";
-                newCredentialData.mail = vc_data.credentialSubject.mail ?? "";
-                const birthDate = vc_data.credentialSubject.dateOfBirth;
-                newCredentialData.dateOfBirth = birthDate
-                    ? new Date(birthDate)
-                    : undefined;
-                newCredentialData.vc_data = vc_data;
+    //     switch (createVcDto.type) {
+    //         case "VerifiableEducationID202311": {
+    //             const vc_data =
+    //                 createVcDto.data as unknown as VerifiableEducationalID;
+    //             const did = await this.vcService.getOrCreateDid(
+    //                 vc_data.credentialSubject.id,
+    //             );
+    //             newCredentialData.did = did.id;
+    //             newCredentialData.displayName =
+    //                 vc_data.credentialSubject.displayName ?? "";
+    //             newCredentialData.mail = vc_data.credentialSubject.mail ?? "";
+    //             const birthDate = vc_data.credentialSubject.dateOfBirth;
+    //             newCredentialData.dateOfBirth = birthDate
+    //                 ? new Date(birthDate)
+    //                 : undefined;
+    //             newCredentialData.vc_data = vc_data;
 
-                break;
-            }
-            case "VerifiableDiploma202211": {
-                const vc_data =
-                    createVcDto.data as unknown as EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema;
+    //             break;
+    //         }
+    //         case "VerifiableDiploma202211": {
+    //             const vc_data =
+    //                 createVcDto.data as unknown as EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema;
 
-                const did = await this.vcService.getOrCreateDid(
-                    vc_data.credentialSubject.id,
-                );
-                newCredentialData.did = did.id;
-                newCredentialData.vc_data = vc_data;
-                // Birthday, display name and mail are not present in this schema
-                break;
-            }
-            default: {
-                throw new BadRequestException(
-                    `Unknown type "${createVcDto.type}"`,
-                );
-            }
-        }
+    //             const did = await this.vcService.getOrCreateDid(
+    //                 vc_data.credentialSubject.id,
+    //             );
+    //             newCredentialData.did = did.id;
+    //             newCredentialData.vc_data = vc_data;
+    //             // Birthday, display name and mail are not present in this schema
+    //             break;
+    //         }
+    //         default: {
+    //             throw new BadRequestException(
+    //                 `Unknown type "${createVcDto.type}"`,
+    //             );
+    //         }
+    //     }
 
-        const newCredential = new VerifiableCredential();
-        Object.assign(newCredential, newCredentialData);
-        this.vcService.save(newCredential);
-    }
+    //     const newCredential = new VerifiableCredential();
+    //     Object.assign(newCredential, newCredentialData);
+    //     this.vcService.create(newCredential);
+    // }
 
 }

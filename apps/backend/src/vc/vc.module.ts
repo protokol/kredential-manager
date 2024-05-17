@@ -4,11 +4,12 @@ import { VcController } from "./vc.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
 import { Did } from "src/student/entities/did.entity";
+import { IssuerService } from "src/issuer/issuer.service";
 
 @Module({
     imports: [TypeOrmModule.forFeature([VerifiableCredential, Did])],
     exports: [TypeOrmModule],
-    providers: [VcService],
+    providers: [VcService, IssuerService],
     controllers: [VcController],
 })
-export class VcModule {}
+export class VcModule { }

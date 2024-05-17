@@ -1,6 +1,6 @@
 export enum VCStatus {
     PENDING = "pending",
-    APPROVED = "approved",
+    ISSUED = "issued",
     REJECTED = "rejected",
 }
 
@@ -9,6 +9,10 @@ export enum VCRole {
 }
 
 export const VCSupportedSchemas = {
+    UniversityDegreeCredential001: {
+        schemaPath:
+            "src/schemas/education/verifiable-education-id/2023-11/schema.json",
+    },
     VerifiableEducationID202311: {
         schemaPath:
             "src/schemas/education/verifiable-education-id/2023-11/schema.json",

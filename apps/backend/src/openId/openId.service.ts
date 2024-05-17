@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { IdTokenResponse, OpenIdProvider, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@protokol/ebsi-core';
+import { OpenIdProvider, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@probeta/mp-core';
 
-const HOST = 'localhost:3000';
+
+const HOST = process.env.HOST || 'localhost:3000'; // The host of the application
+
 
 @Injectable()
 export class OpenIDProviderService {
@@ -17,31 +19,7 @@ export class OpenIDProviderService {
         this.provider = new OpenIdProvider(issuerMetadata, configMetadata, privateKeyJwk);
     }
 
-    getConfigMetadata() {
-        return this.provider.getIssuerMetadata();
-    }
-
-    getIssuerMetadata() {
-        return this.provider.getConfigMetadata();
-    }
-
-    verifyAuthorizatioAndReturnIdTokenRequest(request: any) {
-        return this.provider.verifyAuthorizatioAndReturnIdTokenRequest(request);
-    }
-
-    verifyIdTokenResponse(request: IdTokenResponse, kid: string, alg: string, typ: string) {
-        return this.provider.verifyIdTokenResponse(request, kid, alg, typ);
-    }
-
-    composeAuthorizationResponse(code: string, state: string) {
-        return this.provider.composeAuthorizationResponse(code, state);
-    }
-
-    composeTokenResponse() {
-        return this.provider.composeTokenResponse();
-    }
-
-    composeCredentialResponse(format: string, cNonce: string, unsignedCredential: any) {
-        return this.provider.composeCredentialResponse(format, cNonce, unsignedCredential);
+    getInstance() {
+        return this.provider;
     }
 }

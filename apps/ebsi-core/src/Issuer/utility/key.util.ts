@@ -96,3 +96,4 @@ export function generateDidFromPrivateKey(privateKeyHex: string, kid: string): {
         publicKeyJwk
     };
 }
+

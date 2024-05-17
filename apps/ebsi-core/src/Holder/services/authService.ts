@@ -1,0 +1,138 @@
+import axios from 'axios';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { log } from '../utils/log';
+import { parseAuthorizeRequestSigned } from "../utils/parseAuthorizationRequest";
+import { parseRedirectHeaders } from "../utils/parseRedirectHeaders";
+import { parseAuthorizationResponse } from "../utils/parseAuthorizationResponse";
+import { HttpClient } from '../utils/httpClient';
+import { JWK } from 'jose';
+import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer, jwtDecodeUrl } from '../../OpenIdProvider';
+
+export class AuthService {
+    private httpClient: HttpClient;
+    private privateKey: JWK;
+    private did: string;
+    private issuerUrl: string;
+
+    constructor(privateKey: JWK, did: string, issuerUrl: string) {
+        this.httpClient = new HttpClient();
+        this.privateKey = privateKey;
+        this.issuerUrl = issuerUrl;
+        this.did = did;
+    }
+
+    /**
+     * Generates a code challenge from a code verifier.
+     * @param {string} codeVerifier - The code verifier.
+     * @returns {string} - The code challenge.
+     */
+    private generateCodeChallenge(codeVerifier: string) {
+        const hash = createHash("sha256");
+        hash.update(codeVerifier);
+        const digest = hash.digest();
+        const codeChallenge = digest.toString('base64url');
+        return codeChallenge;
+    }
+
+    /**
+     * Performs authentication with the issuer to obtain an access token.
+     * @param {OpenIdIssuer} issuerMetadata - Issuer metadata.
+     * @param {OpenIdConfiguration} configMetadata - Config metadata.
+     * @param {string} clientId - The client ID.
+     * @returns {Promise<string>} - A promise that resolves to the access token.
+     */
+    async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string) {
+        const codeVerifier = randomBytes(50).toString("base64url");
+        const codeChallenge = await this.generateCodeChallenge(codeVerifier);
+
+        // Define state and nonce
+        const clientDefinedState = randomBytes(50).toString("base64url")
+        const cliendDefinedNonce = randomBytes(25).toString("base64url")
+
+        try {
+            const authRequest = AuthRequestComposer
+                .holder('code', clientId, 'openid:', { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')
+                .setIssuerUrl(openIdIssuer.authorization_endpoint)
+                .addAuthDetails([
+                    {
+                        type: "openid_credential", // Must be set to openid_credential
+                        format: "jwt_vc",
+                        locations: [openIdIssuer.credential_issuer], //If the Credential Issuer metadata contains an authorization_server parameter, the authorization detail's locations common data field MUST be set to the Credential Issuer's identifier value
+                        types: requestedCredentials
+                    },
+                ])
+                .setState(clientDefinedState)
+                .setNonce(cliendDefinedNonce)
+
+            const authResult = await this.httpClient.get(authRequest.createGetRequestUrl());
+            if (authResult.status !== 302) throw new Error('Invalid status code')
+
+            // Extract ID Token from the authorization response
+            const { location } = parseRedirectHeaders(authResult.headers)
+            const parsedSignedRequest = parseAuthorizeRequestSigned(location);
+            const signedRequest = parsedSignedRequest.request ?? ''
+
+            const decodedRequest = await jwtDecodeUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, '')
+            if (!decodedRequest) throw new Error('Could not decode signed request')
+
+            const { header: idTokenReqHeader, payload: idTokenReqPayload } = decodedRequest
+
+            if (idTokenReqPayload.iss !== openIdIssuer.credential_issuer) throw new Error('Issuer does not match')
+            if (idTokenReqPayload.aud !== clientId) throw new Error('Audience does not match')
+            if (idTokenReqPayload.exp < Math.floor(Date.now() / 1000)) throw new Error('Token expired')
+            if (idTokenReqPayload.nonce !== cliendDefinedNonce) throw new Error('Nonce does not match')
+            // log({ parsedSignedRequest })
+            const serverDefinedState = parsedSignedRequest.state ?? ''
+
+            // 3.) ID Token Response
+            const header: JwtHeader = {
+                typ: 'JWT',
+                alg: 'ES256',
+                kid: this.privateKey.kid ?? ''
+            }
+            const idTokenResponseBody = await new IdTokenResponseComposer(this.privateKey, serverDefinedState)
+                .setHeader(header)
+                .setPayload({
+                    iss: this.did,
+                    sub: this.did,
+                    aud: openIdIssuer.credential_issuer,
+                    exp: Math.floor(Date.now() / 1000) + 60 * 5,
+                    iat: Math.floor(Date.now() / 1000),
+                    nonce: idTokenReqPayload.nonce
+                } as IdTokenResponse)
+                .compose();
+
+
+            const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
+            const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
+
+            if (authorizationResponse.status !== 302) throw new Error('Invalid status code')
+            const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.split('?')[1])
+            if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
+
+            const tokenRequestBody = await new TokenRequestComposer(
+                this.privateKey,
+                'authorization_code',
+                parsedAuthorizationResponse.code,
+            )
+                .setHeader(header)
+                .setPayload({
+                    iss: this.did,
+                    sub: this.did,
+                    aud: openIdIssuer.credential_issuer,
+                    jti: randomUUID(),
+                    exp: Math.floor(Date.now() / 1000) + 60 * 5,
+                    iat: Math.floor(Date.now() / 1000),
+                } as TokenRequest)
+                .setCodeVerifier(codeVerifier)
+                .compose()
+
+            const tokenResponse = await this.httpClient.post(openIdMetadata.token_endpoint, tokenRequestBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
+            const token = await tokenResponse.json()
+            return token
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+}

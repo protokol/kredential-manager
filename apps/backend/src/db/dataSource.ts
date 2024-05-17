@@ -6,6 +6,8 @@ import { Diploma } from "../diploma/entities/diploma.entity";
 import { Course } from "../course/entities/course.entity";
 import { Program } from "../program/entities/program.entity";
 import { Did } from "../student/entities/did.entity";
+import { Authorization } from "src/auth/entities/auth.entity";
+import { Nonce } from "./../nonce/entities/nonce.entity";
 
 export const dataSourceOptions: DataSourceOptions = {
     type: "postgres",
@@ -17,12 +19,14 @@ export const dataSourceOptions: DataSourceOptions = {
     synchronize: true, // must be disabled in production
     entities: [
         Student,
+        Did,
         VerifiableCredential,
         Enrollment,
         Diploma,
         Course,
         Program,
-        Did,
+        Authorization,
+        Nonce
     ],
     migrations: ["dist/migrations/*{.js,.ts}"],
     migrationsTableName: "custom_migration_table",

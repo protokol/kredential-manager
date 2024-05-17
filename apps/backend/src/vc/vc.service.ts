@@ -8,6 +8,8 @@ import { Sorting } from "src/types/pagination/SortingParams";
 import { Filtering } from "src/types/pagination/FilteringParams";
 import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
 import { getOrder, getWhere } from "src/helpers/Order";
+import { VCStatus } from "src/types/VC";
+import { IssuerService } from "src/issuer/issuer.service";
 
 @Injectable()
 export class VcService {
@@ -17,6 +19,7 @@ export class VcService {
         private vcRepository: Repository<VerifiableCredential>,
         @InjectRepository(Did)
         private didRepository: Repository<Did>,
+        private issuerService: IssuerService
     ) { }
 
     async findOne(id: number): Promise<VerifiableCredential | null> {
@@ -37,7 +40,23 @@ export class VcService {
         return this.vcRepository.findOneBy({ id });
     }
 
-    async save(entity: DeepPartial<VerifiableCredential>): Promise<any> {
+    async findByDid(did: string): Promise<VerifiableCredential[]> {
+        try {
+            const vcs = await this.vcRepository.find({
+                where: { did: { identifier: did }, status: VCStatus.ISSUED },
+                relations: ["did", "did.student"],
+            });
+            // if (!vcs || vcs.length === 0) {
+            //     throw new BadRequestException(`No verifiable credentials found for DID: ${did}`);
+            // }
+            return vcs;
+        } catch (error) {
+            this.logger.error(`VCsService:findByDid : ${JSON.stringify(error.message)}`);
+            throw new BadRequestException(error.message);
+        }
+    }
+
+    async create(entity: DeepPartial<VerifiableCredential>): Promise<any> {
         try {
             return this.vcRepository.save(entity);
         } catch (error) {
@@ -81,15 +100,14 @@ export class VcService {
             skip: offset,
             select: [
                 "id",
-                "displayName", // *: What happends if vc was not filled correctly => this will be different to the matched student inside did
-                "mail", // *
-                "dateOfBirth", // *
+                "credential",
+                "credential_signed",
                 "status",
                 "role",
                 "type",
-                "displayName",
                 "created_at",
                 "updated_at",
+                "issued_at",
                 "did",
             ],
             relations: ["did", "did.student"],
@@ -113,9 +131,65 @@ export class VcService {
             .groupBy("vc.status");
 
         return query.getRawMany();
-        // return this.vcRepository.count({
-        //     where,
-        //     groupBy: ["status"],
-        // });
+    }
+
+    async issueVerifiableCredential(id: number): Promise<{ code: number, response: string }> {
+        console.log({ id })
+        const vc = await this.vcRepository.findOne({
+            where: { id: id },
+            relations: ["did", "did.student"],
+        });
+        if (!vc) {
+            return {
+                code: 400, response: `VC with ID ${id} not found.`
+            }
+        }
+        console.log({ vc })
+
+        if (!vc.did.student) {
+            return {
+                code: 400, response: `Student not found for VC with ID ${id}.`
+            }
+        }
+
+        if (vc.status === VCStatus.ISSUED) {
+            return {
+                code: 400, response: `VC with ID ${id} already issued.`
+            }
+        }
+
+        const header = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        };
+        const credential = {
+            "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://www.w3.org/2018/credentials/examples/v1"
+            ],
+            "type": ["VerifiableCredential", "UniversityDegreeCredential"],
+            "credentialSubject": {
+                "id": "test",
+                "degree": {
+                    "type": "BachelorDegree",
+                    "name": "Bachelor of Science in Computer Science",
+                    "degreeType": "Undergraduate",
+                    "degreeSchool": "Best University",
+                    "degreeDate": "2023-04-18"
+                }
+            }
+        }
+        // vc.did.identifier
+        const signedCredential = await this.issuerService.issueCredential(credential);
+        await this.vcRepository.update(
+            id,
+            {
+                status: VCStatus.ISSUED,
+                credential: JSON.stringify(credential),
+                credential_signed: signedCredential,
+                issued_at: new Date(),
+            }
+
+        );
+        return { code: 200, response: "Verifiable credential issued successfully." };
     }
 }

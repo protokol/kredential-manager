@@ -24,18 +24,21 @@ import {
 } from "./../types/pagination/FilteringParams";
 import { PaginatedResource } from "./../types/pagination/dto/PaginatedResource";
 import { ApiTags } from "@nestjs/swagger";
+import { Public } from "nest-keycloak-connect";
 
 @Controller("students")
 @ApiTags('Students')
 export class StudentController {
     constructor(private readonly studentService: StudentService) { }
 
+    @Public()
     @Post()
     @HttpCode(HttpStatus.OK)
     create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
         return this.studentService.create(createStudentDto);
     }
 
+    @Public()
     @Get()
     @HttpCode(HttpStatus.OK)
     async getAll(
@@ -65,6 +68,7 @@ export class StudentController {
         return this.studentService.update(+id, updateStudentDto);
     }
 
+    @Public()
     @Post(":id/dids")
     @HttpCode(HttpStatus.OK)
     async addDidToStudent(

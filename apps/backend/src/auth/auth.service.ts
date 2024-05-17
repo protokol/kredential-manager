@@ -3,7 +3,7 @@ import { AuthorizeRequest, IdTokenResponse, JwtHeader, JwtSigner, OpenIdProvider
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
-import { IdTokenResponseRequest } from '@probeta/mp-core/dist/OpenIdProvider/interfaces/id-token-response.interface';
+import { IdTokenResponseRequest } from '@probeta/mp-core'
 import { extractBearerToken, mapHeadersToJwtHeader } from './auth.utils';
 import { decodeJwt } from 'jose';
 import { randomBytes } from 'crypto';
@@ -12,8 +12,6 @@ import { NonceStep } from './../nonce/enum/step.enum';
 import { NonceStatus } from './../nonce/enum/status.enum';
 import { VcService } from './../vc/vc.service';
 import { StudentService } from './../student/student.service';
-import { CreateStudentDto } from './../student/dto/create-student';
-import { VerifiableCredential } from 'src/vc/entities/VerifiableCredential';
 import { DidService } from 'src/student/did.service';
 import { VCStatus } from 'src/types/VC';
 @Injectable()

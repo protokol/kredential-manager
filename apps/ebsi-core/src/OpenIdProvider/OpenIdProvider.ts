@@ -179,6 +179,7 @@ export class OpenIdProvider {
     }
 
     async decodeCredentialRequest(request: any): Promise<CredentialRequestPayload> {
+        //TODO RESOLVER validation
         if (request.proof.proof_type !== 'jwt') {
             throw new Error('Invalid proof token request.');
         }

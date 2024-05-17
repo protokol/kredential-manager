@@ -10,25 +10,23 @@ const main = async () => {
     log('-----------------------------------')
 
     const did = MOCK_DID_KEY
-    const rp = new Holder(MOCK_DID_KEY_PRIVATE_KEY_JWK, did, issuerUrl)
+    const hw = new Holder(MOCK_DID_KEY_PRIVATE_KEY_JWK, did, issuerUrl)
 
     // Discover issuer and configuration metadata
-    const openIdIssuer = await rp.discoverIssuerMetadata()
-    const openIdMetadata = await rp.discoverConfigurationMetadata()
-    log({ openIdIssuer })
-    log({ openIdMetadata })
+    const openIdIssuer = await hw.discoverIssuerMetadata()
+    const openIdMetadata = await hw.discoverConfigurationMetadata()
 
     // Authenticate with the issuer
     const requestedCredentials = ["VerifiableCredential", "UniversityDegreeCredential"];
-    const accessToken = await rp.authenticateWithIssuer(openIdIssuer, openIdMetadata, requestedCredentials)
+    const accessToken = await hw.authenticateWithIssuer(openIdIssuer, openIdMetadata, requestedCredentials)
 
     // Request credential
-    const credential = await rp.requestCredential(openIdIssuer, requestedCredentials, accessToken);
+    const credential = await hw.requestCredential(openIdIssuer, requestedCredentials, accessToken);
     if (credential.credential) {
         log('InTime Credential', credential.credential);
     } else if (credential.acceptance_token) {
         log('Deferred Credential')
-        const deferredResponse = await rp.deferredCredentialEndpoint(openIdIssuer, credential.acceptance_token);
+        const deferredResponse = await hw.deferredCredentialEndpoint(openIdIssuer, credential.acceptance_token);
         log('Response:', deferredResponse);
     }
 }

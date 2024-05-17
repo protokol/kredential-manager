@@ -1,9 +1,6 @@
 import { OpenIdIssuer } from "../interfaces/openid-provider-issuer";
 
-export function getOpenIdIssuerMetadata(host: string): OpenIdIssuer {
-
-    const protocol = host.includes('localhost') ? 'http://' : 'https://';
-    const baseUrl = `${protocol}${host}`;
+export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
 
     return {
         credential_issuer: `${baseUrl}`,

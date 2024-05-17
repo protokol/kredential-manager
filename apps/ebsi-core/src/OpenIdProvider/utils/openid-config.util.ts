@@ -1,10 +1,6 @@
 import { OpenIdConfiguration } from "../interfaces/openid-provider-configuration";
 
-export function getOpenIdConfigMetadata(host: string): OpenIdConfiguration {
-
-    const protocol = host.includes('localhost') ? 'http://' : 'https://';
-    const baseUrl = `${protocol}${host}`;
-
+export function getOpenIdConfigMetadata(baseUrl: string): OpenIdConfiguration {
     return {
         redirect_uris: [`${baseUrl}/direct_post`],
         issuer: `${baseUrl}`,

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OpenIdProvider, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@probeta/mp-core';
 
 
-const HOST = process.env.HOST || 'localhost:3000'; // The host of the application
+const HOST = process.env.ISSUER_BASE_URL || 'localhost:3000'; // The host of the application
 
 
 @Injectable()

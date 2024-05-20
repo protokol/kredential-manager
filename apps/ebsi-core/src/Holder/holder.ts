@@ -22,7 +22,7 @@ export class Holder {
     constructor(privateKey: JWK, did: string, issuerUrl: string) {
         this.issuerUrl = issuerUrl;
         this.did = did;
-        this.auth = new AuthService(privateKey, did, issuerUrl);
+        this.auth = new AuthService(privateKey, did);
         this.issuer = new IssuerService();
     }
 

@@ -244,10 +244,12 @@ export class OpenIdProvider {
    * @returns {string} - The code challenge.
    */
     generateCodeChallenge(codeVerifier: string) {
-        const hash = createHash("sha256")
-        hash.update(codeVerifier);
-        const digest = hash.digest();
-        const codeChallenge = digest.toString('base64url');
+        const hash = CryptoJS.SHA256(codeVerifier);
+        const base64String = hash.toString(CryptoJS.enc.Base64);
+        const codeChallenge = base64String
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
         return codeChallenge;
     }
 

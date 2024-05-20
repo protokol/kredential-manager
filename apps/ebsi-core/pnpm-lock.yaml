@@ -11,6 +11,9 @@ dependencies:
   '@types/elliptic':
     specifier: ^6.4.18
     version: 6.4.18
+  crypto-js:
+    specifier: ^4.2.0
+    version: 4.2.0
   elliptic:
     specifier: ^6.5.4
     version: 6.5.5
@@ -25,6 +28,9 @@ dependencies:
     version: 1.1.0(typescript@5.4.4)
 
 devDependencies:
+  '@types/crypto-js':
+    specifier: ^4.2.2
+    version: 4.2.2
   '@types/jest':
     specifier: ^29.5.12
     version: 29.5.12
@@ -999,6 +1005,10 @@ packages:
       '@types/node': 20.12.6
     dev: false
 
+  /@types/crypto-js@4.2.2:
+    resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
+    dev: true
+
   /@types/elliptic@6.4.18:
     resolution: {integrity: sha512-UseG6H5vjRiNpQvrhy4VF/JXdA3V/Fp5amvveaL+fs28BZ6xIKJBPnUPRlEaZpysD9MbpfaLi8lbl7PGUAkpWw==}
     dependencies:
@@ -1429,6 +1439,10 @@ packages:
       shebang-command: 2.0.0
       which: 2.0.2
     dev: true
+
+  /crypto-js@4.2.0:
+    resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
+    dev: false
 
   /debug@4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}

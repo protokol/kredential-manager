@@ -2,7 +2,8 @@ import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK } from './utils/mocks';
 import { Holder } from '@probeta/mp-core';
 import { log } from './utils/log';
 
-const issuerUrl = 'http://localhost:3000';
+// const issuerUrl = 'http://localhost:3000';
+const issuerUrl = 'https://api.eu-dev.protokol.sh';
 
 const main = async () => {
     log('-----------------------------------')

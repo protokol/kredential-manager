@@ -8,11 +8,11 @@ import { TokenResponseComposer } from "./helpers/6.OP.token-response.composer";
 import { parseDuration } from "./utils/parse-duration.utility";
 import { JwtHeader } from "./interfaces/id-token-request.interface";
 import { IdTokenResponse } from "./types/id-token-response.type";
-import { createHash, randomBytes } from "node:crypto";
 import { CredentialResponseComposer } from "./helpers/8.OP.credential-response.composer";
 import { IdTokenResponseRequest } from "./interfaces/id-token-response.interface";
 import { IdTokenResponseDecoded } from "./interfaces/id-token-response-decoded.interface";
 import { AuthorizationDetail, CredentialRequestPayload } from "./interfaces";
+import { generateRandomString } from "./utils/random-string.util";
 
 export class OpenIdProvider {
     private issuer: OpenIdIssuer;
@@ -132,7 +132,7 @@ export class OpenIdProvider {
         // Verify the authorization request
         const { verifiedRequest, authDetails } = await this.verifyAuthorizeRequest(request);
 
-        const serverDefinedState = randomBytes(20).toString("base64url")
+        const serverDefinedState = generateRandomString(16);
 
         // console.log({ verifiedRequest })
         // Jwt Header
@@ -244,13 +244,21 @@ export class OpenIdProvider {
    * @returns {string} - The code challenge.
    */
     generateCodeChallenge(codeVerifier: string) {
-        const hash = CryptoJS.SHA256(codeVerifier);
-        const base64String = hash.toString(CryptoJS.enc.Base64);
-        const codeChallenge = base64String
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '');
-        return codeChallenge;
+        return 'TEST'
+        // const hash = sha256.create();
+        // hash.update(codeVerifier);
+        // const hashBytes = hash.array(); // Get hash as byte array
+
+        // // Convert byte array to base64 string
+        // const base64String = Buffer.from(hashBytes).toString('base64');
+
+        // // Convert base64 to base64url format
+        // const codeChallenge = base64String
+        //     .replace(/\+/g, '-')
+        //     .replace(/\//g, '_')
+        //     .replace(/=+$/, '');
+
+        // return codeChallenge;
     }
 
     /**
@@ -260,6 +268,8 @@ export class OpenIdProvider {
      * @returns {boolean} - Returns true if the code challenge is valid, otherwise false.
      */
     validateCodeChallenge(codeChallenge: string, codeVerifier: string): boolean {
+        console.log("!!!!!")
+        console.log({ codeChallenge, codeVerifier })
         const generatedChallenge = this.generateCodeChallenge(codeVerifier);
         return codeChallenge === generatedChallenge;
     }

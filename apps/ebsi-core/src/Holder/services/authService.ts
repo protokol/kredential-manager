@@ -1,11 +1,12 @@
-import CryptoJS from 'crypto-js';
 import { parseAuthorizeRequestSigned } from "../utils/parseAuthorizationRequest";
 import { parseRedirectHeaders } from "../utils/parseRedirectHeaders";
 import { parseAuthorizationResponse } from "../utils/parseAuthorizationResponse";
 import { HttpClient } from '../utils/httpClient';
 import { JWK } from 'jose';
+// import { sha256, sha224 } from 'js-sha256';
 import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer, jwtDecodeUrl } from '../../OpenIdProvider';
-import { generateCodeChallenge } from '../utils/codeChallenge';
+// import { generateCodeChallenge } from '../utils/codeChallenge';
+import { generateRandomString } from './../../OpenIdProvider/utils/random-string.util';
 
 export class AuthService {
     private httpClient: HttpClient;
@@ -25,12 +26,13 @@ export class AuthService {
      * @param {string} clientId - The client ID.
      * @returns {Promise<string>} - A promise that resolves to the access token.
      */
-    async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string) {
-        const codeVerifier = CryptoJS.lib.WordArray.random(50).toString();
-        const codeChallenge = await generateCodeChallenge(codeVerifier);
+    async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string): Promise<any> {
+        const codeVerifier = generateRandomString(50);
+        // const codeChallenge = sha256(codeVerifier);
+        const codeChallenge = 'TEST' //sha256(codeVerifier);
         // Define state and nonce
-        const clientDefinedState = CryptoJS.lib.WordArray.random(50).toString()
-        const cliendDefinedNonce = CryptoJS.lib.WordArray.random(25).toString()
+        const clientDefinedState = generateRandomString(50)
+        const cliendDefinedNonce = generateRandomString(25)
 
         try {
             const authRequest = AuthRequestComposer
@@ -48,6 +50,11 @@ export class AuthService {
                 .setNonce(cliendDefinedNonce)
 
             const authResult = await this.httpClient.get(authRequest.createGetRequestUrl());
+
+            console.log({ authRequest })
+            console.log({ a: authRequest.createGetRequestUrl() })
+            console.log({ authResult })
+
             if (authResult.status !== 302) throw new Error('Invalid status code')
 
             // Extract ID Token from the authorization response
@@ -93,6 +100,7 @@ export class AuthService {
             const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.split('?')[1])
             if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
 
+            console.log({ parsedAuthorizationResponse })
             const tokenRequestBody = await new TokenRequestComposer(
                 this.privateKey,
                 'authorization_code',
@@ -103,15 +111,18 @@ export class AuthService {
                     iss: this.did,
                     sub: this.did,
                     aud: openIdIssuer.credential_issuer,
-                    jti: CryptoJS.lib.WordArray.random(50).toString(),
+                    jti: generateRandomString(50),
                     exp: Math.floor(Date.now() / 1000) + 60 * 5,
                     iat: Math.floor(Date.now() / 1000),
                 } as TokenRequest)
                 .setCodeVerifier(codeVerifier)
                 .compose()
 
+            console.log({ tokenRequestBody })
+            console.log({ endpoint: openIdMetadata.token_endpoint })
             const tokenResponse = await this.httpClient.post(openIdMetadata.token_endpoint, tokenRequestBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const token = await tokenResponse.json()
+            console.log({ token })
             return token
         } catch (error) {
             console.error(error);

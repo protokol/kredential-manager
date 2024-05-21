@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, IdTokenResponse, JwtHeader, JwtSigner, OpenIdProvider, TokenRequestBody, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata, jwtDecode, jwtDecodeUrl, parseDuration } from '@probeta/mp-core';
+import { AuthorizeRequest, IdTokenResponse, JwtHeader, JwtSigner, OpenIdProvider, TokenRequestBody, getOpenIdConfigMetadata, getOpenIdIssuerMetadata, jwtDecode, jwtDecodeUrl, parseDuration } from '@probeta/mp-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
 import { IdTokenResponseRequest } from '@probeta/mp-core'
 import { extractBearerToken, mapHeadersToJwtHeader } from './auth.utils';
-import { decodeJwt } from 'jose';
 import { randomBytes } from 'crypto';
 import { AuthNonce } from './../nonce/interfaces/auth-nonce.interface';
 import { NonceStep } from './../nonce/enum/step.enum';
@@ -121,12 +120,14 @@ export class AuthService {
     async token(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
         // Retrieve the nonce data to ensure it exists and is unclaimed.
         const nonceData = await this.nonce.getNonceByField('code', request.code, NonceStep.AUTH_RESPONSE, NonceStatus.UNCLAIMED, request.client_id);
-
+        console.log("HERE")
+        console.log({ nonceData })
         // Validate the code challenge against the one sent in the initial auth request.
         if (this.provider.getInstance().validateCodeChallenge(nonceData.payload.codeChallenge, request.code_verifier) !== true) {
+            console.log("Invalid code challenge.")
             throw new Error('Invalid code challenge.');
         }
-
+        console.log("Code challenge validated.")
         // Prepare the token response.
         const idToken = nonceData.payload.idToken;
         const authDetails = nonceData.payload.authorizationDetails;

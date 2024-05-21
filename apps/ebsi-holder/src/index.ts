@@ -2,8 +2,8 @@ import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK } from './utils/mocks';
 import { Holder } from '@probeta/mp-core';
 import { log } from './utils/log';
 
-// const issuerUrl = 'http://localhost:3000';
-const issuerUrl = 'https://api.eu-dev.protokol.sh';
+const issuerUrl = 'http://localhost:3000';
+// const issuerUrl = 'https://api.eu-dev.protokol.sh';
 
 const main = async () => {
     log('-----------------------------------')
@@ -21,6 +21,7 @@ const main = async () => {
     const requestedCredentials = ["VerifiableCredential", "UniversityDegreeCredential"];
     const accessToken = await hw.authenticateWithIssuer(openIdIssuer, openIdMetadata, requestedCredentials)
 
+    console.log({ accessToken })
     // Request credential
     const credential = await hw.requestCredential(openIdIssuer, requestedCredentials, accessToken);
     if (credential.credential) {

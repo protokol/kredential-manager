@@ -3,8 +3,8 @@ import { Holder } from '@probeta/mp-core';
 import { generateCodeChallenge, generateCodeVerifier } from './utils/codeChallenge';
 import { HolderJwtSigner } from './utils/jwt.util';
 
-// const issuerUrl = 'http://localhost:3000';
-const issuerUrl = 'https://api.eu-dev.protokol.sh';
+const issuerUrl = 'http://localhost:3000';
+// const issuerUrl = 'https://api.eu-dev.protokol.sh';
 
 
 const main = async () => {

@@ -3,6 +3,7 @@
 import { BearerToken, AuthorizationDetail } from '..';
 import { parseDuration } from '../utils/parse-duration.utility';
 import { TokenResponse } from '../interfaces/token-response.interface';
+import { JwtUtil } from './../../Signer/jwtUtil.interface';
 
 interface JWK {
     kid?: string;
@@ -20,6 +21,7 @@ export class TokenResponseComposer {
     private cNonce: string;
     private cNonceExpiresIn: number;
     private authorizationDetails: AuthorizationDetail[];
+    private jwtUtil: JwtUtil;
 
     /**
      * Initializes a new instance of the TokenResponseComposer with essential parameters for a token response.
@@ -30,13 +32,14 @@ export class TokenResponseComposer {
      * @param cNonceExpiresIn - The expiration time for the nonce in seconds.
      * @param authorizationDetails - Additional authorization details to be included in the token response.
      */
-    constructor(privateKeyJWK: JWK, tokenType: string, idToken: string, cNonce: string, cNonceExpiresIn: number, authorizationDetails: AuthorizationDetail[]) {
+    constructor(privateKeyJWK: JWK, tokenType: string, idToken: string, cNonce: string, cNonceExpiresIn: number, authorizationDetails: AuthorizationDetail[], jwtUtil: JwtUtil) {
         this.privateKeyJWK = privateKeyJWK;
         this.tokenType = tokenType;
         this.idToken = idToken;
         this.cNonce = cNonce;
         this.cNonceExpiresIn = cNonceExpiresIn;
         this.authorizationDetails = authorizationDetails;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -61,11 +64,10 @@ export class TokenResponseComposer {
             }
         };
         // Sign the JWT
-        // const signer = new JwtSigner(this.privateKeyJWK);
-        // const accessToken = await signer.sign(payload);
+        const accessToken = await this.jwtUtil.sign(payload, {});
 
         return {
-            access_token: 'accessToken',//accessToken,
+            access_token: accessToken,
             token_type: this.tokenType,
             expires_in: this.cNonceExpiresIn,
             id_token: this.idToken,

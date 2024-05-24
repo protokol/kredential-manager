@@ -3,6 +3,7 @@
 import { JwtHeader } from '../types/jwt-header.type';
 import { TokenRequestBody } from '../interfaces';
 import { TokenRequest } from '../interfaces/token-request.interface';
+import { JwtUtil } from 'src';
 
 interface JWK {
     kid?: string;
@@ -20,6 +21,7 @@ export class TokenRequestComposer {
     private payload?: TokenRequest;
     //, clientId: string, code: string, 
     private codeVerifier?: string
+    private jwtUtil: JwtUtil;
 
     /**
      * Initializes a new instance of the TokenRequestComposer with essential parameters for an OAuth 2.0 token request.
@@ -27,10 +29,11 @@ export class TokenRequestComposer {
      * @param grantType - The type of grant requested (e.g., 'authorization_code').
      * @param code - The authorization code received from the authorization server.
      */
-    constructor(privateKeyJWK: JWK, grantType: string, code: string) {
+    constructor(privateKeyJWK: JWK, grantType: string, code: string, jwtUtil: JwtUtil) {
         this.privateKeyJWK = privateKeyJWK;
         this.grantType = grantType;
         this.code = code;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -75,10 +78,10 @@ export class TokenRequestComposer {
 
         // Sign the JWT
         // const signer = new JwtSigner(this.privateKeyJWK);
-        // const signedJwt = await signer.sign(this.payload, this.header);
+        const signedJwt = await this.jwtUtil.sign(this.payload, this.header);
 
         // URL-encode the signed JWT
-        // const clientAssertion = encodeURIComponent(signedJwt);
+        const clientAssertion = encodeURIComponent(signedJwt);
 
         // Construct the request body
         const requestBody = {
@@ -86,7 +89,7 @@ export class TokenRequestComposer {
             client_id: this.payload?.iss,
             code: this.code,
             client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-            client_assertion: 'TODO',//clientAssertion,
+            client_assertion: clientAssertion,
             code_verifier: this.codeVerifier
         } as TokenRequestBody
 

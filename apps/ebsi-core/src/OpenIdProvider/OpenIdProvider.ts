@@ -215,7 +215,7 @@ export class OpenIdProvider {
     }
 
     async composeTokenResponse(idToken: string, cNonce: string, cNonceExpiresIn: number, authorizationDetails: AuthorizationDetail[]): Promise<any> {
-        const tokenResponse = new TokenResponseComposer(this.privateKey, 'bearer', idToken, cNonce, cNonceExpiresIn, authorizationDetails)
+        const tokenResponse = new TokenResponseComposer(this.privateKey, 'bearer', idToken, cNonce, cNonceExpiresIn, authorizationDetails, this.jwtUtil);
         return await tokenResponse.compose()
     }
 

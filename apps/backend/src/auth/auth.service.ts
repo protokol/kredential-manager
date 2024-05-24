@@ -121,6 +121,7 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
     async token(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
+        console.log('token')
         // Retrieve the nonce data to ensure it exists and is unclaimed.
         const nonceData = await this.nonce.getNonceByField('code', request.code, NonceStep.AUTH_RESPONSE, NonceStatus.UNCLAIMED, request.client_id);
         // Validate the code challenge against the one sent in the initial auth request.
@@ -133,11 +134,11 @@ export class AuthService {
         const authDetails = nonceData.payload.authorizationDetails;
         const cNonce = generateRandomString(20);
         const cNonceExpiresIn = 60 * 60; // seconds
-
+        console.log('test')
         // Update the nonce for the client, including the cNonce.
         await this.nonce.createTokenRequestCNonce(nonceData.nonce, cNonce, cNonceExpiresIn);
         const response = await this.provider.getInstance().composeTokenResponse(idToken, cNonce, cNonceExpiresIn, authDetails);
-
+        console.log({ response })
         return { header: this.header, code: 200, response };
     }
 

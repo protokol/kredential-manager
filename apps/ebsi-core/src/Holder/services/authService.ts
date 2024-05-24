@@ -88,10 +88,8 @@ export class AuthService {
                 } as IdTokenResponse)
                 .compose();
 
-            console.log("OK1")
             const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
-            console.log("OK2")
             if (authorizationResponse.status !== 302) throw new Error('Invalid status code')
             const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.split('?')[1])
             if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
@@ -100,6 +98,7 @@ export class AuthService {
                 this.privateKey,
                 'authorization_code',
                 parsedAuthorizationResponse.code,
+                this.signer
             )
                 .setHeader(header)
                 .setPayload({

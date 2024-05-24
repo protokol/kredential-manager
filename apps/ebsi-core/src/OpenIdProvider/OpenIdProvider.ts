@@ -220,12 +220,12 @@ export class OpenIdProvider {
     }
 
     async composeInTimeCredentialResponse(format: string, cNonce: string, cNonceExpiresIn: number, tokenExpiresIn: number, signedCredential: any): Promise<any> {
-        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, cNonceExpiresIn, tokenExpiresIn)
+        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, cNonceExpiresIn, tokenExpiresIn, this.jwtUtil)
         return await response.inTime(signedCredential)
     }
 
     async composeDeferredCredentialResponse(format: string, cNonce: string, cNonceExpiresIn: number, tokenExpiresIn: number, vcId: number): Promise<any> {
-        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, cNonceExpiresIn, tokenExpiresIn)
+        const response = new CredentialResponseComposer(this.privateKey, this.issuer.credential_issuer, format, cNonce, cNonceExpiresIn, tokenExpiresIn, this.jwtUtil)
         return await response.deferred(vcId)
     }
 

@@ -78,18 +78,11 @@ export class CredentialRequestComposer {
         }
 
         // Sign the JWT Proof
-        // const signer = new JwtSigner(this.privateKey);
         const signedJwtProof = await this.jwtUtil.sign(this.payload, {
-            // Use the optional header if provided
             ...(this.header ? { header: this.header } : {}),
             typ: 'openid4vci-proof+jwt',
         });
-        // const signedJwtProof = await signer.sign(this.payload, {
-        //     // Use the optional header if provided
-        //     ...(this.header ? { header: this.header } : {}),
-        //     typ: 'openid4vci-proof+jwt',
-        // });
-        console.log('signedJwtProof', signedJwtProof)
+
         // Construct the request body
         const requestBody = JSON.stringify({
             types: this.types,

@@ -1,8 +1,6 @@
-// import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
-// import { JwtSigner } from '../utils/jwt.util';
 import { BearerToken } from 'src/OpenIdProvider';
-import { parseDuration } from '../utils/parse-duration.utility';
 import { CredentialInTimeResponse, CredentialDeferredResponse } from '../interfaces/credential-response.interface';
+import { JwtUtil } from './../../Signer';
 
 
 interface JWK {
@@ -21,6 +19,7 @@ export class CredentialResponseComposer {
     private cNonce: string;
     private cNonceExpiresIn: number;
     private tokenExpiresIn: number;
+    private jwtUtil: JwtUtil;
 
     /**
      * Constructs a new instance of the CredentialResponseComposer.
@@ -38,7 +37,8 @@ export class CredentialResponseComposer {
         format: string,
         cNonce: string,
         cNonceExpiresIn: number,
-        tokenExpiresIn: number
+        tokenExpiresIn: number,
+        jwtUtil: JwtUtil
     ) {
         this.privateKey = privateKey;
         this.issuer = issuer;
@@ -46,6 +46,7 @@ export class CredentialResponseComposer {
         this.cNonce = cNonce;
         this.cNonceExpiresIn = cNonceExpiresIn;
         this.tokenExpiresIn = tokenExpiresIn;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -81,9 +82,7 @@ export class CredentialResponseComposer {
         };
 
         // Sign the JWT token using the private key
-        // const signer = new JwtSigner(this.privateKey);
-        // const acceptanceToken = await signer.sign(payload);
-        const acceptanceToken = 'acceptanceToken';
+        const acceptanceToken = await this.jwtUtil.sign(payload, {});
 
         // Return the composed credential response
         return {

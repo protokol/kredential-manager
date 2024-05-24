@@ -12,6 +12,7 @@ import { StudentService } from './../student/student.service';
 import { DidService } from 'src/student/did.service';
 import { VCStatus } from 'src/types/VC';
 import { generateRandomString } from '../../../ebsi-core/dist/OpenIdProvider';
+import { validateCodeChallenge } from './../issuer/hash.util';
 
 const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000; // TODO: Move to a shared utility file.
 @Injectable()
@@ -123,15 +124,11 @@ export class AuthService {
     async token(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
         // Retrieve the nonce data to ensure it exists and is unclaimed.
         const nonceData = await this.nonce.getNonceByField('code', request.code, NonceStep.AUTH_RESPONSE, NonceStatus.UNCLAIMED, request.client_id);
-        console.log("Provider")
-        console.log({ codeChallenge: nonceData.payload.codeChallenge, codeVerifier: request.code_verifier })
         // Validate the code challenge against the one sent in the initial auth request.
-        // const isCodeChallengeValid = await this.provider.getInstance().validateCodeChallenge(nonceData.payload.codeChallenge, request.code_verifier);
-        // if (isCodeChallengeValid !== true) {
-        //     console.log("Invalid code challenge.")
-        //     throw new Error('Invalid code challenge.');
-        // }
-        console.log("Code challenge validated.")
+        const isCodeChallengeValid = await validateCodeChallenge(nonceData.payload.codeChallenge, request.code_verifier);
+        if (isCodeChallengeValid !== true) {
+            throw new Error('Invalid code challenge.');
+        }
         // Prepare the token response.
         const idToken = nonceData.payload.idToken;
         const authDetails = nonceData.payload.authorizationDetails;

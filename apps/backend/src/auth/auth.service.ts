@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, JwtHeader, TokenRequestBody, IdTokenResponseRequest } from '@probeta/mp-core';
+import { AuthorizeRequest, JwtHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString } from '@probeta/mp-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
@@ -11,7 +11,6 @@ import { VcService } from './../vc/vc.service';
 import { StudentService } from './../student/student.service';
 import { DidService } from 'src/student/did.service';
 import { VCStatus } from 'src/types/VC';
-import { generateRandomString } from '../../../ebsi-core/dist/OpenIdProvider';
 import { validateCodeChallenge } from './../issuer/hash.util';
 
 const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000; // TODO: Move to a shared utility file.

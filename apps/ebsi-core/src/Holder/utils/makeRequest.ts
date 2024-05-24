@@ -9,6 +9,7 @@ export default async function makeRequest(url: string, options: RequestInit) {
         }
         return response
     } catch (error) {
+        console.log({ error })
         console.error("Fetch error: ", error);
         throw error;
     }

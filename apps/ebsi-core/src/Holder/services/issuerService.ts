@@ -1,11 +1,14 @@
+import { JwtUtil } from "./../../Signer";
 import { CredentialRequestComposer, OpenIdConfiguration, OpenIdIssuer } from "../../OpenIdProvider";
 import { HttpClient } from "../utils/httpClient";
 import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK } from "../utils/mocks";
 
 export class IssuerService {
     private httpClient: HttpClient;
-    constructor() {
+    private signer: JwtUtil;
+    constructor(signer: JwtUtil) {
         this.httpClient = new HttpClient();
+        this.signer = signer;
     }
 
     /**
@@ -47,7 +50,7 @@ export class IssuerService {
      */
     async requestCredential(issuerMetadata: OpenIdIssuer, requestedCredentials: string[], accessToken: string, cNonce: string): Promise<any> {
         try {
-            const credentialRequest = await new CredentialRequestComposer(MOCK_DID_KEY_PRIVATE_KEY_JWK)
+            const credentialRequest = await new CredentialRequestComposer(MOCK_DID_KEY_PRIVATE_KEY_JWK, this.signer)
                 .setPayload({
                     aud: issuerMetadata.credential_issuer,
                     iss: MOCK_DID_KEY,
@@ -65,6 +68,7 @@ export class IssuerService {
                 .compose()
             const header = { 'Authorization': `Bearer ${accessToken}` }
             const credentialResponse = await this.httpClient.post(issuerMetadata.credential_endpoint, credentialRequest, { headers: { "Content-Type": 'application/json', ...header } });
+            console.log({ credentialResponse })
             return credentialResponse.json();
         } catch (error) {
             console.error('Error discovering configuration metadata:', error);

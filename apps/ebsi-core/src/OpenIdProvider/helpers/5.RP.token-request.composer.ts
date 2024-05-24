@@ -1,9 +1,12 @@
-import { JWK } from 'jose';
-import { JwtSigner } from '../utils/jwt.util';
+// import { JWK } from 'jose';
+// import { JwtSigner } from '../utils/jwt.util';
 import { JwtHeader } from '../types/jwt-header.type';
 import { TokenRequestBody } from '../interfaces';
 import { TokenRequest } from '../interfaces/token-request.interface';
 
+interface JWK {
+    kid?: string;
+}
 /**
  * Constructs and customizes a token request.
  */
@@ -71,11 +74,11 @@ export class TokenRequestComposer {
         }
 
         // Sign the JWT
-        const signer = new JwtSigner(this.privateKeyJWK);
-        const signedJwt = await signer.sign(this.payload, this.header);
+        // const signer = new JwtSigner(this.privateKeyJWK);
+        // const signedJwt = await signer.sign(this.payload, this.header);
 
         // URL-encode the signed JWT
-        const clientAssertion = encodeURIComponent(signedJwt);
+        // const clientAssertion = encodeURIComponent(signedJwt);
 
         // Construct the request body
         const requestBody = {
@@ -83,7 +86,7 @@ export class TokenRequestComposer {
             client_id: this.payload?.iss,
             code: this.code,
             client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-            client_assertion: clientAssertion,
+            client_assertion: 'TODO',//clientAssertion,
             code_verifier: this.codeVerifier
         } as TokenRequestBody
 

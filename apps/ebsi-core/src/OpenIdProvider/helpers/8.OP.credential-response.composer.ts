@@ -1,9 +1,16 @@
-import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
-import { JwtSigner } from '../utils/jwt.util';
+// import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
+// import { JwtSigner } from '../utils/jwt.util';
 import { BearerToken } from 'src/OpenIdProvider';
 import { parseDuration } from '../utils/parse-duration.utility';
 import { CredentialInTimeResponse, CredentialDeferredResponse } from '../interfaces/credential-response.interface';
 
+
+interface JWK {
+    kid?: string;
+    iss?: string;
+    aud?: string[];
+    sub?: string;
+}
 /**
  * Handles the composition of credential responses based on the issuance scenario.
  */
@@ -74,8 +81,9 @@ export class CredentialResponseComposer {
         };
 
         // Sign the JWT token using the private key
-        const signer = new JwtSigner(this.privateKey);
-        const acceptanceToken = await signer.sign(payload);
+        // const signer = new JwtSigner(this.privateKey);
+        // const acceptanceToken = await signer.sign(payload);
+        const acceptanceToken = 'acceptanceToken';
 
         // Return the composed credential response
         return {

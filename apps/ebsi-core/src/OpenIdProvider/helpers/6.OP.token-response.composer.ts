@@ -1,9 +1,15 @@
-import { JWK } from 'jose';
-import { JwtSigner, jwtSign } from "../utils/jwt.util";
+// import { JWK } from 'jose';
+// import { JwtSigner, jwtSign } from "../utils/jwt.util";
 import { BearerToken, AuthorizationDetail } from '..';
 import { parseDuration } from '../utils/parse-duration.utility';
 import { TokenResponse } from '../interfaces/token-response.interface';
 
+interface JWK {
+    kid?: string;
+    iss?: string;
+    aud?: string[];
+    sub?: string;
+}
 /**
  * Constructs and customizes a token response.
  */
@@ -55,11 +61,11 @@ export class TokenResponseComposer {
             }
         };
         // Sign the JWT
-        const signer = new JwtSigner(this.privateKeyJWK);
-        const accessToken = await signer.sign(payload);
+        // const signer = new JwtSigner(this.privateKeyJWK);
+        // const accessToken = await signer.sign(payload);
 
         return {
-            access_token: accessToken,
+            access_token: 'accessToken',//accessToken,
             token_type: this.tokenType,
             expires_in: this.cNonceExpiresIn,
             id_token: this.idToken,

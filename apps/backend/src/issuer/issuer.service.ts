@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { JwtSigner } from '@probeta/mp-core';
-import { JWK } from 'jose';
+import { JWK } from '@probeta/mp-core';
+import { EnterpriseJwtUtil } from './jwt.util';
 @Injectable()
 export class IssuerService {
     private did: string;
     private privateKeyJwk: JWK;
     private publicKeyJwk: JWK;
+    private jwtUtil: EnterpriseJwtUtil;
 
     constructor() {
         (async () => {
-            // const { did, privateKeyJwk, publicKeyJwk } = generateDidFromPrivateKey(process.env.ISSUER_PRIVATE_KEY, process.env.ISSUER_PRIVATE_KEY_ID);
             const did = 'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbpjcLy3gYehCgmmjCKEt6pafLdMdcXysUgySbPc4Bno4d7Ef6rk36EFDYnEo1m47SwvTS2S2yLiW1HEyLs3sCs1s7ZkVgknAr8e5YeuTWo23Etw3U83mmRAQji6nSuAAyiU'
             const privateKeyJwk = {
                 kty: 'EC',
@@ -17,11 +17,11 @@ export class IssuerService {
                 x: 'NbkoaUnGy2ma932oIHHxmVr_m3uGeMO7DSJXbXEBAio',
                 y: 'oonFfsV2IRHXoDq0_pvMfHScaKGUNKm5Y43ohxAaAK0',
                 d: 'B8tLRpFVeS3qH2BfE2x5FC-gYr7kVmNrzi4icpPY2r0',
-                kid: 'test'
+                kid: process.env.ISSUER_PRIVATE_KEY_ID
             }
             const publicKeyJwk = {
                 alg: 'ES256',
-                kid: 'test',
+                kid: process.env.ISSUER_PRIVATE_KEY_ID,
                 kty: 'EC',
                 crv: 'P-256',
                 x: 'NbkoaUnGy2ma932oIHHxmVr_m3uGeMO7DSJXbXEBAio',
@@ -30,6 +30,7 @@ export class IssuerService {
             this.did = did;
             this.privateKeyJwk = privateKeyJwk;
             this.publicKeyJwk = publicKeyJwk;
+            this.jwtUtil = new EnterpriseJwtUtil(this.privateKeyJwk);
         })();
     }
 
@@ -70,9 +71,9 @@ export class IssuerService {
         };
 
         // Sign the credential
-        const signer = new JwtSigner(this.privateKeyJwk);
-        const signedCredential = await signer.sign(extendedUnsignedCredential);
-
+        // const signer = new JwtSigner(this.privateKeyJwk);
+        // const signedCredential = await signer.sign(extendedUnsignedCredential);
+        const signedCredential = 'signedCredential';
         return signedCredential;
     }
 
@@ -82,8 +83,7 @@ export class IssuerService {
      * @returns A promise that resolves to a boolean indicating whether the token has expired.
      */
     async verifyJWT(token: string): Promise<boolean> {
-        const signer = new JwtSigner(this.publicKeyJwk);
-        return signer.verify(token);
+        return this.jwtUtil.verify(token);
     }
 
     /**
@@ -92,8 +92,7 @@ export class IssuerService {
      * @returns A promise that resolves to a boolean indicating whether the token has expired.
      */
     async decodeJWT(token: string): Promise<object> {
-        const signer = new JwtSigner(this.publicKeyJwk);
-        return signer.decode(token);
+        return this.jwtUtil.decodeJwt(token);
     }
 
     /**

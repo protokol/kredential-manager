@@ -1,37 +1,23 @@
-import axios from 'axios';
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { log } from '../utils/log';
 import { parseAuthorizeRequestSigned } from "../utils/parseAuthorizationRequest";
 import { parseRedirectHeaders } from "../utils/parseRedirectHeaders";
 import { parseAuthorizationResponse } from "../utils/parseAuthorizationResponse";
 import { HttpClient } from '../utils/httpClient';
-import { JWK } from 'jose';
-import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer, jwtDecodeUrl } from '../../OpenIdProvider';
+import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer } from '../../OpenIdProvider';
+import { generateRandomString } from './../../OpenIdProvider/utils/random-string.util';
+import { JWK } from "./../../Keys";
+import { JwtUtil } from "./../../Signer";
 
 export class AuthService {
     private httpClient: HttpClient;
     private privateKey: JWK;
     private did: string;
-    private issuerUrl: string;
+    private signer: JwtUtil;
 
-    constructor(privateKey: JWK, did: string, issuerUrl: string) {
+    constructor(privateKey: JWK, did: string, signer: JwtUtil) {
         this.httpClient = new HttpClient();
         this.privateKey = privateKey;
-        this.issuerUrl = issuerUrl;
         this.did = did;
-    }
-
-    /**
-     * Generates a code challenge from a code verifier.
-     * @param {string} codeVerifier - The code verifier.
-     * @returns {string} - The code challenge.
-     */
-    private generateCodeChallenge(codeVerifier: string) {
-        const hash = createHash("sha256");
-        hash.update(codeVerifier);
-        const digest = hash.digest();
-        const codeChallenge = digest.toString('base64url');
-        return codeChallenge;
+        this.signer = signer;
     }
 
     /**
@@ -41,13 +27,12 @@ export class AuthService {
      * @param {string} clientId - The client ID.
      * @returns {Promise<string>} - A promise that resolves to the access token.
      */
-    async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string) {
-        const codeVerifier = randomBytes(50).toString("base64url");
-        const codeChallenge = await this.generateCodeChallenge(codeVerifier);
+    async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string, codeVerifier: string, codeChallenge: string): Promise<any> {
 
-        // Define state and nonce
-        const clientDefinedState = randomBytes(50).toString("base64url")
-        const cliendDefinedNonce = randomBytes(25).toString("base64url")
+        console.log('Holder')
+
+        const clientDefinedState = generateRandomString(50)
+        const cliendDefinedNonce = generateRandomString(25)
 
         try {
             const authRequest = AuthRequestComposer
@@ -65,14 +50,15 @@ export class AuthService {
                 .setNonce(cliendDefinedNonce)
 
             const authResult = await this.httpClient.get(authRequest.createGetRequestUrl());
+
             if (authResult.status !== 302) throw new Error('Invalid status code')
 
-            // Extract ID Token from the authorization response
+            // // Extract ID Token from the authorization response
             const { location } = parseRedirectHeaders(authResult.headers)
             const parsedSignedRequest = parseAuthorizeRequestSigned(location);
             const signedRequest = parsedSignedRequest.request ?? ''
 
-            const decodedRequest = await jwtDecodeUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, '')
+            const decodedRequest = await this.signer.decodeFromUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, this.privateKey.kid ?? '', 'ES256')
             if (!decodedRequest) throw new Error('Could not decode signed request')
 
             const { header: idTokenReqHeader, payload: idTokenReqPayload } = decodedRequest
@@ -90,7 +76,7 @@ export class AuthService {
                 alg: 'ES256',
                 kid: this.privateKey.kid ?? ''
             }
-            const idTokenResponseBody = await new IdTokenResponseComposer(this.privateKey, serverDefinedState)
+            const idTokenResponseBody = await new IdTokenResponseComposer(this.privateKey, serverDefinedState, this.signer)
                 .setHeader(header)
                 .setPayload({
                     iss: this.did,
@@ -102,10 +88,10 @@ export class AuthService {
                 } as IdTokenResponse)
                 .compose();
 
-
+            console.log("OK1")
             const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
-
+            console.log("OK2")
             if (authorizationResponse.status !== 302) throw new Error('Invalid status code')
             const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.split('?')[1])
             if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
@@ -120,7 +106,7 @@ export class AuthService {
                     iss: this.did,
                     sub: this.did,
                     aud: openIdIssuer.credential_issuer,
-                    jti: randomUUID(),
+                    jti: generateRandomString(50),
                     exp: Math.floor(Date.now() / 1000) + 60 * 5,
                     iat: Math.floor(Date.now() / 1000),
                 } as TokenRequest)

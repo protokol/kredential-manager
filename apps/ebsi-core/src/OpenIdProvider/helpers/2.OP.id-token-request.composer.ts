@@ -1,8 +1,12 @@
-import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
-import { JwtSigner, jwtSign } from "../utils/jwt.util";
+// import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
+// import { JwtSigner, jwtSign } from "../utils/jwt.util";
 import { JwtHeader } from '../types/jwt-header.type';
 import { IdTokenRequestPayload } from '../interfaces/id-token-request-payload.interface';
+import { JwtUtil } from './../../Signer';
 
+interface JWK {
+    kid?: string;
+}
 /**
  * Constructs and customizes an ID token request.
  */
@@ -10,13 +14,15 @@ export class IdTokenRequestComposer {
     private privateKeyJWK: JWK;
     private header?: JwtHeader;
     private payload?: IdTokenRequestPayload;
+    private jwtUtil: JwtUtil;
 
     /**
      * Initializes a new instance of the IdTokenRequestComposer with the private key used for signing the JWT.
      * @param privateKeyJWK - The private key in JWK format used for signing the JWT.
      */
-    constructor(privateKeyJWK: JWK) {
+    constructor(privateKeyJWK: JWK, jwtUtil: JwtUtil) {
         this.privateKeyJWK = privateKeyJWK;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -49,8 +55,7 @@ export class IdTokenRequestComposer {
             throw new Error('Payload must be set before composing the request.');
         }
         // Sign the JWT
-        const signer = new JwtSigner(this.privateKeyJWK);
-        const signedJwt = await signer.sign(this.payload, this.header);
+        const signedJwt = await this.jwtUtil.sign(this.payload, this.header);
 
         // URL-encode the signed JWT
         const encodedJwt = encodeURIComponent(signedJwt);

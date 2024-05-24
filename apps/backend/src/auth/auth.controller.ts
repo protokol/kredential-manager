@@ -5,11 +5,11 @@ import {
 } from 'nest-keycloak-connect';
 import { OpenIDProviderService } from '../openId/openId.service';
 import { IssuerService } from 'src/issuer/issuer.service';
-import { AuthorizeRequest, IdTokenResponse, TokenRequestBody, parseDuration } from '@probeta/mp-core';
-import { JWK } from 'jose';
+import { AuthorizeRequest, IdTokenResponse, JWK, TokenRequestBody, parseDuration } from '@probeta/mp-core';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateAuthDto } from './dto/create-authorization.dto';
 import { AuthService } from './auth.service';
+
 
 interface JWKS {
     keys: JWK[];

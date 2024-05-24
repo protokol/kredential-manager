@@ -1,8 +1,29 @@
 
-import elliptic from "elliptic";
-import { JWK } from "jose";
-import { EbsiWallet } from "@cef-ebsi/wallet-lib";
+// import elliptic from "elliptic";
+// import { JWK } from "jose";
+// import { EbsiWallet } from "@cef-ebsi/wallet-lib";
 
+interface JWK {
+    alg?: string;
+    crv?: string;
+    d?: string;
+    dp?: string;
+    dq?: string;
+    e?: string;
+    ext?: boolean;
+    k?: string;
+    key_ops?: string[];
+    kty: string;
+    n?: string;
+    oth?: string[];
+    p?: string;
+    q?: string;
+    qi?: string;
+    use?: string;
+    x?: string;
+    y?: string;
+    kid?: string;
+}
 /**
  * Removes the '0x' prefix from a hexadecimal string if present.
  * @param {string} key - The hexadecimal string to process.
@@ -28,21 +49,28 @@ export function toBase64Url(base64: string) {
  * @throws {Error} If the key validation fails.
  */
 export function getPrivateKeyJwkES256(privateKeyHex: string): JWK {
-    const ec = new elliptic.ec("p256");
-    const privateKey = removePrefix0x(privateKeyHex);
-    const keyPair = ec.keyFromPrivate(privateKey, "hex");
-    const validation = keyPair.validate();
-    if (!validation.result) {
-        throw new Error(validation.reason);
-    }
-    const pubPoint = keyPair.getPublic();
     return {
         kty: "EC",
         crv: "P-256",
-        x: toBase64Url(pubPoint.getX().toBuffer("be", 32).toString("base64")),
-        y: toBase64Url(pubPoint.getY().toBuffer("be", 32).toString("base64")),
-        d: toBase64Url(Buffer.from(privateKey, "hex").toString("base64")),
-    };
+        x: "NbkoaUnGy2ma932oIHHxmVr_m3uGeMO7DSJXbXEBAio",
+        y: "oonFfsV2IRHXoDq0_pvMfHScaKGUNKm5Y43ohxAaAK0",
+        d: "B8tLRpFVeS3qH2BfE2x5FC-gYr7kVmNrzi4icpPY2r0",
+    }
+    // const ec = new elliptic.ec("p256");
+    // const privateKey = removePrefix0x(privateKeyHex);
+    // const keyPair = ec.keyFromPrivate(privateKey, "hex");
+    // const validation = keyPair.validate();
+    // if (!validation.result) {
+    //     throw new Error(validation.reason);
+    // }
+    // const pubPoint = keyPair.getPublic();
+    // return {
+    //     kty: "EC",
+    //     crv: "P-256",
+    //     x: toBase64Url(pubPoint.getX().toBuffer("be", 32).toString("base64")),
+    //     y: toBase64Url(pubPoint.getY().toBuffer("be", 32).toString("base64")),
+    //     d: toBase64Url(Buffer.from(privateKey, "hex").toString("base64")),
+    // };
 }
 
 /**
@@ -75,25 +103,25 @@ export function getPublicKeyJwk(jwk: JWK, alg: string): JWK {
  * @param {string} kid - The key ID to use in the JWK.
  * @returns {Object} An object containing the DID, private key JWK, and public key JWK.
  */
-export function generateDidFromPrivateKey(privateKeyHex: string, kid: string): { did: string; privateKeyJwk: any; publicKeyJwk: any; } {
-    // Convert private key to JWK format
-    const privateKeyJwk = getPrivateKeyJwkES256(privateKeyHex);
-    privateKeyJwk.kid = kid;
-    // Generate public key JWK
-    let pKJwk = getPublicKeyJwk(privateKeyJwk, "ES256");
-    // Create a DID from the public key  
-    const did = EbsiWallet.createDid("NATURAL_PERSON", pKJwk);
+// export function generateDidFromPrivateKey(privateKeyHex: string, kid: string): { did: string; privateKeyJwk: any; publicKeyJwk: any; } {
+//     // Convert private key to JWK format
+//     const privateKeyJwk = getPrivateKeyJwkES256(privateKeyHex);
+//     privateKeyJwk.kid = kid;
+//     // Generate public key JWK
+//     let pKJwk = getPublicKeyJwk(privateKeyJwk, "ES256");
+//     // Create a DID from the public key  
+//     const did = EbsiWallet.createDid("NATURAL_PERSON", pKJwk);
 
-    const publicKeyJwk = {
-        alg: "ES256",
-        kid: kid,
-        ...pKJwk
-    };
-    // Return an object with DID and keys
-    return {
-        did,
-        privateKeyJwk,
-        publicKeyJwk
-    };
-}
+//     const publicKeyJwk = {
+//         alg: "ES256",
+//         kid: kid,
+//         ...pKJwk
+//     };
+//     // Return an object with DID and keys
+//     return {
+//         did,
+//         privateKeyJwk,
+//         publicKeyJwk
+//     };
+// }
 

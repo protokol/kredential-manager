@@ -1,8 +1,12 @@
-import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
-import { JwtSigner } from '../utils/jwt.util';
+// import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
+// import { JwtSigner } from '../utils/jwt.util';
 import { JwtHeader } from '../types/jwt-header.type';
 import { CredentialRequestPayload } from '..';
+import { JwtUtil } from './../../Signer';
+interface JWK {
+    kid?: string;
 
+}
 /**
  * Manages the composition of credential requests.
  */
@@ -12,9 +16,11 @@ export class CredentialRequestComposer {
     private payload?: CredentialRequestPayload;
     private cNonce?: string;
     private types?: string[];
+    private jwtUtil: JwtUtil;
 
-    constructor(privateKey: JWK) {
+    constructor(privateKey: JWK, jwtUtil: JwtUtil) {
         this.privateKey = privateKey;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -72,13 +78,18 @@ export class CredentialRequestComposer {
         }
 
         // Sign the JWT Proof
-        const signer = new JwtSigner(this.privateKey);
-        const signedJwtProof = await signer.sign(this.payload, {
+        // const signer = new JwtSigner(this.privateKey);
+        const signedJwtProof = await this.jwtUtil.sign(this.payload, {
             // Use the optional header if provided
             ...(this.header ? { header: this.header } : {}),
             typ: 'openid4vci-proof+jwt',
         });
-
+        // const signedJwtProof = await signer.sign(this.payload, {
+        //     // Use the optional header if provided
+        //     ...(this.header ? { header: this.header } : {}),
+        //     typ: 'openid4vci-proof+jwt',
+        // });
+        console.log('signedJwtProof', signedJwtProof)
         // Construct the request body
         const requestBody = JSON.stringify({
             types: this.types,

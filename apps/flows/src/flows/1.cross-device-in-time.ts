@@ -99,13 +99,13 @@ export const main = async (): Promise<void> => {
 
     const clientMetadata = isPKCEChallenge
         ? {
-              authorization_endpoint: "openid:",
-          }
+            authorization_endpoint: "openid:",
+        }
         : {
-              redirect_uris: [`${clientId}/code-cb`],
-              jwks_uri: `${clientId}/jwks`,
-              authorization_endpoint: `${clientId}/authorize`,
-          };
+            redirect_uris: [`${clientId}/code-cb`],
+            jwks_uri: `${clientId}/jwks`,
+            authorization_endpoint: `${clientId}/authorize`,
+        };
     const authorizationDetails = [
         {
             type: "openid_credential",

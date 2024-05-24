@@ -1,8 +1,8 @@
-import { JWK } from "jose";
 import { OpenIdConfiguration, OpenIdIssuer } from "../OpenIdProvider";
 import { AuthService } from "./services/authService";
 import { IssuerService } from "./services/issuerService";
-
+import { JWK } from "./../Keys";
+import { JwtUtil } from "../Signer/jwtUtil.interface";
 /**
  * Represents a holder wallet.
  */
@@ -19,11 +19,11 @@ export class Holder {
      * @param did The DID associated with the relying party.
      * @param issuerUrl The URL of the issuer (identity provider).
      */
-    constructor(privateKey: JWK, did: string, issuerUrl: string) {
+    constructor(privateKey: JWK, did: string, issuerUrl: string, signer: JwtUtil) {
         this.issuerUrl = issuerUrl;
         this.did = did;
-        this.auth = new AuthService(privateKey, did, issuerUrl);
-        this.issuer = new IssuerService();
+        this.auth = new AuthService(privateKey, did, signer);
+        this.issuer = new IssuerService(signer);
     }
 
     /**
@@ -52,8 +52,8 @@ export class Holder {
      * @param requestedCredentials An array of requested credentials.
      * @returns A promise that resolves to the result of the authentication process.
      */
-    async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[]): Promise<any> {
-        return this.auth.authenticateWithIssuer(openIdIssuer, openIdMetadata, requestedCredentials, this.did);
+    async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], codeVerifier: string, codeChallenge: string): Promise<any> {
+        return this.auth.authenticateWithIssuer(openIdIssuer, openIdMetadata, requestedCredentials, this.did, codeVerifier, codeChallenge);
     }
 
     /**

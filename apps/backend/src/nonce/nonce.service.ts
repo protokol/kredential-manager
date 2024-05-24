@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Nonce } from './entities/nonce.entity';
-import { randomBytes } from 'crypto';
 import { AuthNonce } from './interfaces/auth-nonce.interface';
 import { NonceStep } from './enum/step.enum';
 import { NonceStatus } from './enum/status.enum';
@@ -51,7 +50,7 @@ export class NonceService {
             where: { nonce: nonceValue },
         });
 
-        console.log('Saving c nonce: ', cNonce, nonceValue, nonce);
+        // console.log('Saving c nonce: ', cNonce, nonceValue, nonce);
 
         if (nonce) {
             nonce.step = NonceStep.TOKEN_REQUEST;

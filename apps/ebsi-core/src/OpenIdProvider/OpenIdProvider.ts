@@ -1,31 +1,30 @@
 import { OpenIdConfiguration } from "./interfaces/openid-provider-configuration";
 import { OpenIdIssuer } from "./interfaces/openid-provider-issuer";
 import { AuthorizeRequestSigned } from "./interfaces/authorize-request.interface";
-import { JWK, JWTPayload, decodeJwt, decodeProtectedHeader } from 'jose';
 import { IdTokenRequestComposer } from "./helpers/2.OP.id-token-request.composer";
 import { AuthorizationResponseComposer } from "./helpers/4.OP.auth-response.composer";
 import { TokenResponseComposer } from "./helpers/6.OP.token-response.composer";
 import { parseDuration } from "./utils/parse-duration.utility";
 import { JwtHeader } from "./interfaces/id-token-request.interface";
-import { IdTokenResponse } from "./types/id-token-response.type";
-import { createHash, randomBytes } from "node:crypto";
 import { CredentialResponseComposer } from "./helpers/8.OP.credential-response.composer";
-import { IdTokenResponseRequest } from "./interfaces/id-token-response.interface";
 import { IdTokenResponseDecoded } from "./interfaces/id-token-response-decoded.interface";
 import { AuthorizationDetail, CredentialRequestPayload } from "./interfaces";
-
+import { generateRandomString } from "./utils/random-string.util";
+import { JwtUtil } from "./../Signer";
 export class OpenIdProvider {
     private issuer: OpenIdIssuer;
     private metadata: OpenIdConfiguration;
-    private privateKey: JWK;
+    private privateKey: any; //JWK;
+    private jwtUtil: JwtUtil;
 
-    constructor(issuer: OpenIdIssuer, metadata: OpenIdConfiguration, privateKey: JWK) {
+    constructor(issuer: OpenIdIssuer, metadata: OpenIdConfiguration, privateKey: any, jwtUtil: JwtUtil) {
         if (!privateKey.kid) {
             throw new Error('The private key must have a "kid" field.');
         }
         this.issuer = issuer;
         this.metadata = metadata;
         this.privateKey = privateKey;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -132,7 +131,7 @@ export class OpenIdProvider {
         // Verify the authorization request
         const { verifiedRequest, authDetails } = await this.verifyAuthorizeRequest(request);
 
-        const serverDefinedState = randomBytes(20).toString("base64url")
+        const serverDefinedState = generateRandomString(16);
 
         // console.log({ verifiedRequest })
         // Jwt Header
@@ -157,7 +156,7 @@ export class OpenIdProvider {
         }
 
         // Compose the redirect URL
-        const redirectUrl = await new IdTokenRequestComposer(this.privateKey)
+        const redirectUrl = await new IdTokenRequestComposer(this.privateKey, this.jwtUtil)
             .setHeader(header)
             .setPayload(payload)
             .compose()
@@ -167,7 +166,7 @@ export class OpenIdProvider {
     }
 
     async decodeIdTokenRequest(request: string): Promise<IdTokenResponseDecoded> {
-        const decoded = decodeJwt(request)
+        const decoded = await this.jwtUtil.decodeJwt(request)
         if (!decoded) {
             throw new Error('Invalid ID token request.');
         }
@@ -183,11 +182,11 @@ export class OpenIdProvider {
         if (request.proof.proof_type !== 'jwt') {
             throw new Error('Invalid proof token request.');
         }
-        const header = decodeProtectedHeader(request.proof.jwt)
+        const header = await this.jwtUtil.decodeProtectedHeader(request.proof.jwt) as { typ: string }
         if (header && header.typ !== 'openid4vci-proof+jwt') {
             throw new Error('Invalid proof token request.');
         }
-        const decoded = decodeJwt(request.proof.jwt)
+        const decoded = await this.jwtUtil.decodeJwt(request.proof.jwt)
         if (!decoded) {
             throw new Error('Invalid cred token request.');
         }
@@ -203,11 +202,11 @@ export class OpenIdProvider {
         return redirectUrl
     }
 
-    async verifyIdTokenResponse(request: IdTokenResponse, kid: string, alg: string, typ: string): Promise<boolean> {
-        //TODO Verify
-        console.log({ request, kid, alg, typ });
-        return true;
-    }
+    // async verifyIdTokenResponse(request: IdTokenResponse, kid: string, alg: string, typ: string): Promise<boolean> {
+    //     //TODO Verify
+    //     console.log({ request, kid, alg, typ });
+    //     return true;
+    // }
 
     async composeAuthorizationResponse(code: string, state: string): Promise<any> {
         const authResponseComposer = new AuthorizationResponseComposer(code, state);
@@ -243,13 +242,17 @@ export class OpenIdProvider {
    * @param {string} codeVerifier - The code verifier.
    * @returns {string} - The code challenge.
    */
-    generateCodeChallenge(codeVerifier: string) {
-        const hash = createHash("sha256")
-        hash.update(codeVerifier);
-        const digest = hash.digest();
-        const codeChallenge = digest.toString('base64url');
-        return codeChallenge;
-    }
+
+
+    // async generateCodeChallenge(codeVerifier: string) {
+    //     const encoder = new TextEncoder();
+    //     const encodedVerifier = encoder.encode(codeVerifier);
+    //     const crypto = new Crypto();
+    //     return await crypto.subtle.digest(
+    //         "SHA-256",
+    //         encodedVerifier,
+    //     );
+    // }
 
     /**
      * Validates a code challenge against a provided code verifier.
@@ -257,8 +260,9 @@ export class OpenIdProvider {
      * @param {string} codeVerifier - The code verifier from which the challenge was derived.
      * @returns {boolean} - Returns true if the code challenge is valid, otherwise false.
      */
-    validateCodeChallenge(codeChallenge: string, codeVerifier: string): boolean {
-        const generatedChallenge = this.generateCodeChallenge(codeVerifier);
-        return codeChallenge === generatedChallenge;
-    }
+    // async validateCodeChallenge(codeChallenge: string, codeVerifier: string): Promise<boolean> {
+    //     const generatedChallenge = await this.generateCodeChallenge(codeVerifier);
+    //     const base64UrlChallenge = Buffer.from(generatedChallenge).toString('base64url');
+    //     return codeChallenge === base64UrlChallenge;
+    // }
 }

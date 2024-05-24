@@ -1,8 +1,12 @@
-import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
-import { JwtSigner, jwtSign } from "../utils/jwt.util";
+// import { JWK } from 'jose'; 
+// import { JwtSigner, jwtSign } from "../utils/jwt.util";
 import { JwtHeader } from '../types/jwt-header.type';
 import { IdTokenResponse } from '../types/id-token-response.type';
+import { JwtUtil } from './../../Signer';
 
+interface JWK {
+    kid?: string;
+}
 /**
  * Constructs and customizes an ID token response.
  */
@@ -11,15 +15,17 @@ export class IdTokenResponseComposer {
     private payload?: IdTokenResponse;
     private privateKey: JWK;
     private state: string;
+    private jwtUtil: JwtUtil;
 
     /**
      * Initializes a new instance of the IdTokenResponseComposer with the private key used for signing the JWT and the state value.
      * @param privateKey - The private key in JWK format used for signing the JWT.
      * @param state - The state value to be included in the response.
      */
-    constructor(privateKey: JWK, state: string) {
+    constructor(privateKey: JWK, state: string, jwtUtil: JwtUtil) {
         this.privateKey = privateKey;
         this.state = state;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -53,8 +59,7 @@ export class IdTokenResponseComposer {
         }
 
         // Sign the JWT
-        const signer = new JwtSigner(this.privateKey);
-        const idToken = await signer.sign(this.payload);
+        const idToken = await this.jwtUtil.sign(this.payload, {});
 
         // Construct the request body
         const responseBody = {

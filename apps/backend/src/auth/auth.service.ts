@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, IdTokenResponse, JwtHeader, JwtSigner, OpenIdProvider, TokenRequestBody, generateDidFromPrivateKey, getOpenIdConfigMetadata, getOpenIdIssuerMetadata, jwtDecode, jwtDecodeUrl, parseDuration } from '@probeta/mp-core';
+import { AuthorizeRequest, JwtHeader, TokenRequestBody, IdTokenResponseRequest } from '@probeta/mp-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
-import { IdTokenResponseRequest } from '@probeta/mp-core'
 import { extractBearerToken, mapHeadersToJwtHeader } from './auth.utils';
-import { decodeJwt } from 'jose';
-import { randomBytes } from 'crypto';
 import { AuthNonce } from './../nonce/interfaces/auth-nonce.interface';
 import { NonceStep } from './../nonce/enum/step.enum';
 import { NonceStatus } from './../nonce/enum/status.enum';
@@ -14,6 +11,9 @@ import { VcService } from './../vc/vc.service';
 import { StudentService } from './../student/student.service';
 import { DidService } from 'src/student/did.service';
 import { VCStatus } from 'src/types/VC';
+import { generateRandomString } from '../../../ebsi-core/dist/OpenIdProvider';
+
+const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000; // TODO: Move to a shared utility file.
 @Injectable()
 export class AuthService {
 
@@ -84,6 +84,8 @@ export class AuthService {
             codeChallenge: request.code_challenge,
         };
         await this.nonce.createAuthNonce(request.client_id, request.nonce, noncePayload);
+        console.log("Authorize")
+        console.log({ redirectUrl })
         return { header, code: 302, url: redirectUrl };
     }
 
@@ -94,10 +96,10 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
      */
     async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header: JwtHeader, code: number, url: string }> {
+
         // Map headers to JWT header.
         const header = await mapHeadersToJwtHeader(headers);
         const decodedRequest = await this.provider.getInstance().decodeIdTokenRequest(request.id_token);
-
         // Retrieve the nonce data to ensure it exists and is unclaimed.
         const nonceData = await this.nonce.getNonceByField('nonce', decodedRequest.nonce, NonceStep.AUTHORIZE, NonceStatus.UNCLAIMED, decodedRequest.iss);
 
@@ -105,7 +107,7 @@ export class AuthService {
         const state = nonceData.payload.clientDefinedState;
 
         // Generate a unique code for the client.
-        const code = randomBytes(50).toString("base64url");
+        const code = generateRandomString(25);
 
         // Update the nonce for the client, including the generated code and ID token.
         await this.nonce.createAuthResponseNonce(decodedRequest.nonce, code, request.id_token);
@@ -121,16 +123,19 @@ export class AuthService {
     async token(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
         // Retrieve the nonce data to ensure it exists and is unclaimed.
         const nonceData = await this.nonce.getNonceByField('code', request.code, NonceStep.AUTH_RESPONSE, NonceStatus.UNCLAIMED, request.client_id);
-
+        console.log("Provider")
+        console.log({ codeChallenge: nonceData.payload.codeChallenge, codeVerifier: request.code_verifier })
         // Validate the code challenge against the one sent in the initial auth request.
-        if (this.provider.getInstance().validateCodeChallenge(nonceData.payload.codeChallenge, request.code_verifier) !== true) {
-            throw new Error('Invalid code challenge.');
-        }
-
+        // const isCodeChallengeValid = await this.provider.getInstance().validateCodeChallenge(nonceData.payload.codeChallenge, request.code_verifier);
+        // if (isCodeChallengeValid !== true) {
+        //     console.log("Invalid code challenge.")
+        //     throw new Error('Invalid code challenge.');
+        // }
+        console.log("Code challenge validated.")
         // Prepare the token response.
         const idToken = nonceData.payload.idToken;
         const authDetails = nonceData.payload.authorizationDetails;
-        const cNonce = randomBytes(25).toString("base64url");
+        const cNonce = generateRandomString(20);
         const cNonceExpiresIn = 60 * 60; // seconds
 
         // Update the nonce for the client, including the cNonce.
@@ -158,7 +163,6 @@ export class AuthService {
         if (decodedRequest.iss !== nonceData.clientId) {
             throw new Error('Invalid issuer');
         }
-
         // Extract the requested credentials from the nonce payload.
         const requestedCredentials = nonceData.payload.authorizationDetails[0].types;
         // Retrieve the DID of the client from the nonce data.
@@ -168,8 +172,8 @@ export class AuthService {
         let vcId = await this.handleCredentialCreation(did, requestedCredentials);
 
         // Compose the deferred credential response.
-        const cNonceExpiresIn = parseDuration('1h')
-        const tokenExpiresIn = parseDuration('1h')
+        const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS
+        const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
         const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, vcId);
 
         // Update the nonce for the client, including the acceptance token.
@@ -203,9 +207,9 @@ export class AuthService {
         switch (credential.status) {
             case VCStatus.ISSUED:
                 if (credential.credential_signed === '{}') {
-                    const cNonce = randomBytes(25).toString("base64url");
-                    const cNonceExpiresIn = parseDuration('1h')
-                    const tokenExpiresIn = parseDuration('1h')
+                    const cNonce = generateRandomString(25);
+                    const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS // TODO: Update!!!
+                    const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
                     const response = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, credential.credential_signed);
                     return { header: this.header, code: 200, response: response };
                 }

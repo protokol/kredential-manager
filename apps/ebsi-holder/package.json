@@ -18,7 +18,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@probeta/mp-core": "*"
+    "@probeta/mp-core": "workspace:*",
+    "jose": "^5.3.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.0",

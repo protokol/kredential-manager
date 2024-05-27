@@ -11,15 +11,13 @@ interface JWK {
  * Manages the composition of credential requests.
  */
 export class CredentialRequestComposer {
-    private privateKey: JWK;
     private header?: JwtHeader;
     private payload?: CredentialRequestPayload;
     private cNonce?: string;
     private types?: string[];
     private jwtUtil: JwtUtil;
 
-    constructor(privateKey: JWK, jwtUtil: JwtUtil) {
-        this.privateKey = privateKey;
+    constructor(jwtUtil: JwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
@@ -81,7 +79,7 @@ export class CredentialRequestComposer {
         const signedJwtProof = await this.jwtUtil.sign(this.payload, {
             ...(this.header ? { header: this.header } : {}),
             typ: 'openid4vci-proof+jwt',
-        });
+        }, 'ES256');
 
         // Construct the request body
         const requestBody = JSON.stringify({

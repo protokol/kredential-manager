@@ -133,7 +133,6 @@ export class OpenIdProvider {
 
         const serverDefinedState = generateRandomString(16);
 
-        // console.log({ verifiedRequest })
         // Jwt Header
         const header: JwtHeader = {
             typ: 'JWT',
@@ -156,7 +155,7 @@ export class OpenIdProvider {
         }
 
         // Compose the redirect URL
-        const redirectUrl = await new IdTokenRequestComposer(this.privateKey, this.jwtUtil)
+        const redirectUrl = await new IdTokenRequestComposer(this.jwtUtil)
             .setHeader(header)
             .setPayload(payload)
             .compose()
@@ -194,6 +193,7 @@ export class OpenIdProvider {
             ...decoded,
             nonce: decoded.nonce as string
         } as CredentialRequestPayload
+
         return decodedRequest;
     }
 
@@ -201,12 +201,6 @@ export class OpenIdProvider {
         const redirectUrl = await this.composeAuthorizationResponse(code, state);
         return redirectUrl
     }
-
-    // async verifyIdTokenResponse(request: IdTokenResponse, kid: string, alg: string, typ: string): Promise<boolean> {
-    //     //TODO Verify
-    //     console.log({ request, kid, alg, typ });
-    //     return true;
-    // }
 
     async composeAuthorizationResponse(code: string, state: string): Promise<any> {
         const authResponseComposer = new AuthorizationResponseComposer(code, state);
@@ -242,27 +236,4 @@ export class OpenIdProvider {
    * @param {string} codeVerifier - The code verifier.
    * @returns {string} - The code challenge.
    */
-
-
-    // async generateCodeChallenge(codeVerifier: string) {
-    //     const encoder = new TextEncoder();
-    //     const encodedVerifier = encoder.encode(codeVerifier);
-    //     const crypto = new Crypto();
-    //     return await crypto.subtle.digest(
-    //         "SHA-256",
-    //         encodedVerifier,
-    //     );
-    // }
-
-    /**
-     * Validates a code challenge against a provided code verifier.
-     * @param {string} codeChallenge - The code challenge to validate.
-     * @param {string} codeVerifier - The code verifier from which the challenge was derived.
-     * @returns {boolean} - Returns true if the code challenge is valid, otherwise false.
-     */
-    // async validateCodeChallenge(codeChallenge: string, codeVerifier: string): Promise<boolean> {
-    //     const generatedChallenge = await this.generateCodeChallenge(codeVerifier);
-    //     const base64UrlChallenge = Buffer.from(generatedChallenge).toString('base64url');
-    //     return codeChallenge === base64UrlChallenge;
-    // }
 }

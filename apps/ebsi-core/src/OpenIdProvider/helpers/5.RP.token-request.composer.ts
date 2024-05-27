@@ -78,7 +78,7 @@ export class TokenRequestComposer {
 
         // Sign the JWT
         // const signer = new JwtSigner(this.privateKeyJWK);
-        const signedJwt = await this.jwtUtil.sign(this.payload, this.header);
+        const signedJwt = await this.jwtUtil.sign(this.payload, this.header, 'ES256');
 
         // URL-encode the signed JWT
         const clientAssertion = encodeURIComponent(signedJwt);

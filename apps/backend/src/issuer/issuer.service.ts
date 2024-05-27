@@ -71,19 +71,7 @@ export class IssuerService {
         };
 
         // Sign the credential
-        // const signer = new JwtSigner(this.privateKeyJwk);
-        // const signedCredential = await signer.sign(extendedUnsignedCredential);
-        const signedCredential = 'signedCredential';
-        return signedCredential;
-    }
-
-    /**
-     * Verify the JWT token for the current private keys.
-     * @param token The JWT token to validate.
-     * @returns A promise that resolves to a boolean indicating whether the token has expired.
-     */
-    async verifyJWT(token: string): Promise<boolean> {
-        return this.jwtUtil.verify(token);
+        return await this.jwtUtil.sign(extendedUnsignedCredential, {}, 'ES256');
     }
 
     /**

@@ -11,7 +11,6 @@ interface JWK {
  * Constructs and customizes an ID token request.
  */
 export class IdTokenRequestComposer {
-    private privateKeyJWK: JWK;
     private header?: JwtHeader;
     private payload?: IdTokenRequestPayload;
     private jwtUtil: JwtUtil;
@@ -20,8 +19,7 @@ export class IdTokenRequestComposer {
      * Initializes a new instance of the IdTokenRequestComposer with the private key used for signing the JWT.
      * @param privateKeyJWK - The private key in JWK format used for signing the JWT.
      */
-    constructor(privateKeyJWK: JWK, jwtUtil: JwtUtil) {
-        this.privateKeyJWK = privateKeyJWK;
+    constructor(jwtUtil: JwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
@@ -55,7 +53,7 @@ export class IdTokenRequestComposer {
             throw new Error('Payload must be set before composing the request.');
         }
         // Sign the JWT
-        const signedJwt = await this.jwtUtil.sign(this.payload, this.header);
+        const signedJwt = await this.jwtUtil.sign(this.payload, this.header, 'ES256');
 
         // URL-encode the signed JWT
         const encodedJwt = encodeURIComponent(signedJwt);

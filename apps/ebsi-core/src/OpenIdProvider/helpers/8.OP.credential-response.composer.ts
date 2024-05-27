@@ -82,7 +82,7 @@ export class CredentialResponseComposer {
         };
 
         // Sign the JWT token using the private key
-        const acceptanceToken = await this.jwtUtil.sign(payload, {});
+        const acceptanceToken = await this.jwtUtil.sign(payload, {}, 'ES256');
 
         // Return the composed credential response
         return {

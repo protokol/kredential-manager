@@ -64,7 +64,7 @@ export class TokenResponseComposer {
             }
         };
         // Sign the JWT
-        const accessToken = await this.jwtUtil.sign(payload, {});
+        const accessToken = await this.jwtUtil.sign(payload, {}, 'ES256');
 
         return {
             access_token: accessToken,

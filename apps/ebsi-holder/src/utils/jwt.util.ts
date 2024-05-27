@@ -14,27 +14,18 @@ export class HolderJwtSigner implements JwtUtil {
     }
 
     /**
- * Decodes a JWT.
- * @param token The JWT to decode.
- * @returns A promise that resolves to the decoded JWT.
- */
-    async decode(token: string): Promise<object> {
-        try {
-            const key = await importJWK(this.privateKey);
-            const { payload } = await jwtVerify(token, key);
-            return payload;
-        } catch (error) {
-            console.log('Decoding failed:', error);
-            return { error: (error as any).message };
-        }
-    }
-
-    async sign(payload: any, header = {}): Promise<string> {
+     * Signs a payload using the provided private key.
+     * @param payload The payload to sign.
+     * @param header The header to include in the JWT.
+     * @param algo The algorithm to use for signing.
+     * @returns A promise that resolves to the signed JWT.
+     */
+    async sign(payload: any, header = {}, algo: string = 'ES256'): Promise<string> {
         const key = await importJWK(this.privateKey);
         const jwt = new SignJWT(payload)
             .setProtectedHeader({
                 typ: 'jwt',
-                alg: 'ES256',
+                alg: algo,
                 kid: this.privateKey.kid,
                 ...header
             });
@@ -44,7 +35,14 @@ export class HolderJwtSigner implements JwtUtil {
         return signedJwt;
     }
 
-    // // Utility function to decode a JWT
+    /**
+     * Decodes a JWT using the provided JWK and issuer.
+     * @param token The JWT to decode.
+     * @param issuer The issuer of the JWT.
+     * @param privateKeyJWK The private key in JWK format.
+     * @param algo The algorithm to use for decoding.
+     * @returns A promise that resolves to the decoded JWT.
+     */
     async jwtDecode(token: string, issuer: string, privateKeyJWK: JWK, algo: string = 'ES256'): Promise<{ header: JWTHeaderParameters; payload: any }> {
         const key = await importJWK(privateKeyJWK, algo);
         try {
@@ -74,18 +72,22 @@ export class HolderJwtSigner implements JwtUtil {
         }
     }
 
+    /**
+ * Decodes a JWT using the provided URL, issuer, kid, and algorithm.
+ * @param token The JWT to decode.
+ * @param issuer The issuer of the JWT.
+ * @param url The URL to fetch the JWK from.
+ * @param kid The key ID of the JWK.
+ * @param algo The algorithm to use for decoding.
+ * @returns A promise that resolves to the decoded JWT.
+ */
     async decodeFromUrl(token: string, issuer: string, url: string, kid: string, algo: string): Promise<{ header: any; payload: any }> {
-        console.log('decodeFromUrl')
-        console.log('token', token)
-        console.log('issuer', issuer)
-        console.log('url', url)
         try {
             const key = await this.getJWKFormURLByKid(url, kid);
             if (!key) {
                 throw new Error('Failed to fetch JWK');
             }
             for (const jwk of key.keys) {
-                console.log({ jwk })
                 const { header, payload } = await this.jwtDecode(token, issuer, jwk, algo);
                 if (header && payload) return { header, payload };
             }
@@ -95,10 +97,20 @@ export class HolderJwtSigner implements JwtUtil {
         }
     }
 
+    /**
+     * Decodes a JWT.
+     * @param token The JWT to decode.
+     * @returns A promise that resolves to the decoded JWT.
+    */
     async decodeJwt(token: string): Promise<object> {
         return decodeJwt(token);
     }
 
+    /**
+     * Validates if the JWT token has expired.
+     * @param token The JWT token to validate.
+     * @returns A promise that resolves to a boolean indicating whether the token has expired.
+     */
     async decodeProtectedHeader(token: string): Promise<any> {
         return decodeProtectedHeader(token);
     }

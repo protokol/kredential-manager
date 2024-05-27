@@ -59,7 +59,7 @@ export class IdTokenResponseComposer {
         }
 
         // Sign the JWT
-        const idToken = await this.jwtUtil.sign(this.payload, {});
+        const idToken = await this.jwtUtil.sign(this.payload, {}, 'ES256');
 
         // Construct the request body
         const responseBody = {

@@ -26,6 +26,5 @@ export async function generateCodeChallenge(codeVerifier: string): Promise<strin
  */
 export async function validateCodeChallenge(codeChallenge: string, codeVerifier: string): Promise<boolean> {
     const generatedChallenge = await generateCodeChallenge(codeVerifier);
-    const base64UrlChallenge = Buffer.from(generatedChallenge).toString('base64url');
-    return codeChallenge === base64UrlChallenge;
+    return codeChallenge === generatedChallenge;
 }

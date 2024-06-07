@@ -12,7 +12,7 @@
     "build": "tsc",
     "start": "node --loader ts-node/esm src/index.ts",
     "dev": "node --loader ts-node/esm src/index.ts",
-    "dev:watch": "nodemon"
+    "start:dev": "nodemon"
   },
   "keywords": [],
   "author": "",

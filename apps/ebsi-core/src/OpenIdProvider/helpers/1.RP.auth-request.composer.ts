@@ -133,6 +133,10 @@ export class AuthRequestComposer {
         return `${this.issuerUrl}?${queryParams}`;
     }
 
+    getRequest(): AuthorizeRequest {
+        return this.request;
+    }
+
     /**
      * A static factory method to create an AuthRequestComposer instance with common settings for a holder.
      * @param response_type - The type of response expected from the authorization server.

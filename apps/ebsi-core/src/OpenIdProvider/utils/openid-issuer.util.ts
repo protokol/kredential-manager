@@ -18,7 +18,7 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 },
                 display: [
                     {
-                        name: 'Best university',
+                        name: 'University degree',
                         locale: 'en'
                     }
                 ],
@@ -35,7 +35,7 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 },
                 display: [
                     {
-                        name: 'Best university',
+                        name: 'Professional certification',
                         locale: 'en'
                     }
                 ],

@@ -79,7 +79,6 @@ export class OpenIdProvider {
                 break;
             }
         }
-
         if (!isCredentialFound) {
             throw new Error('Requested credentials are not supported by the issuer.');
         }
@@ -103,11 +102,6 @@ export class OpenIdProvider {
             throw new Error('The response_type must be "code".');
         }
 
-        const allowedRedirectURIs = ['openid:'];
-        if (!allowedRedirectURIs.includes(request.redirect_uri)) {
-            throw new Error('Redirect URI is not allowed.');
-        }
-
         if (!request.code_challenge || !request.code_challenge_method) {
             throw new Error('Code challenge and code challenge method are required.');
         }
@@ -119,11 +113,9 @@ export class OpenIdProvider {
         if (request.code_challenge.length < 43 || request.code_challenge.length > 128) {
             throw new Error('The code challenge must be between 43 and 128 characters in length.');
         }
-
         const authDetails = JSON.parse(typeof request.authorization_details === 'string' ? request.authorization_details : '[]');
 
         this.verifyAuthorizationDetails(authDetails)
-
         return { verifiedRequest: request, authDetails };
     }
 
@@ -153,13 +145,11 @@ export class OpenIdProvider {
             state: serverDefinedState,
             nonce: request.nonce ?? '' // nonce from the client's request
         }
-
         // Compose the redirect URL
         const redirectUrl = await new IdTokenRequestComposer(this.jwtUtil)
             .setHeader(header)
             .setPayload(payload)
             .compose()
-
         // Return header and url
         return { header, redirectUrl, authDetails, serverDefinedState };
     }
@@ -197,14 +187,14 @@ export class OpenIdProvider {
         return decodedRequest;
     }
 
-    async createAuthorizationRequest(code: string, state: string): Promise<string> {
-        const redirectUrl = await this.composeAuthorizationResponse(code, state);
+    async createAuthorizationRequest(code: string, state: string, redirectUri: string): Promise<string> {
+        const redirectUrl = await this.composeAuthorizationResponse(code, state, redirectUri);
         return redirectUrl
     }
 
-    async composeAuthorizationResponse(code: string, state: string): Promise<any> {
+    async composeAuthorizationResponse(code: string, state: string, redirectUri: string): Promise<any> {
         const authResponseComposer = new AuthorizationResponseComposer(code, state);
-        authResponseComposer.setRedirectUri('openid');
+        authResponseComposer.setRedirectUri(redirectUri);
         return await authResponseComposer.compose();
     }
 

@@ -211,16 +211,20 @@ export class AuthService {
             return { header: this.header, code: 500, response: 'Credential not found' };
         }
 
+        console.log({ status: credential.status })
         // Determine the response based on the credential's status.
         switch (credential.status) {
             case VCStatus.ISSUED:
-                if (credential.credential_signed === '{}') {
-                    const cNonce = generateRandomString(25);
-                    const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS // TODO: Update!!!
-                    const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
-                    const response = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, credential.credential_signed);
-                    return { header: this.header, code: 200, response: response };
-                }
+                console.log({ signed: credential.credential_signed })
+                // if (credential.credential_signed === '{}') {
+                const cNonce = generateRandomString(25);
+                const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS // TODO: Update!!!
+                const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
+                console.log({ credential })
+                const response = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, credential.credential_signed);
+                console.log({ response })
+                return { header: this.header, code: 200, response: response };
+                // }
                 return { header: this.header, code: 500, response: 'Credential not found' };
             case VCStatus.PENDING:
                 return { header: this.header, code: 202, response: 'Credential status: pending' };

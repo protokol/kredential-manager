@@ -44,7 +44,7 @@ export class BackendStack extends cdk.Stack {
 				REALM_NAME: "enterprise-wallet-realm",
 				CLIENT_ID: "enterprise-wallet-app",
 				REALM_PUBLIC_KEY:
-					"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwrsNhplvo6K5tEsDVDTgyMUibnmpXwEgWthyNaoAe0xKttXUQ2PlUL3I74FPsuVJ0emGIxNGnk0v7wbh61OdcSVidEB1LRw0c/IVeRKG7wY7ZTTInnuW+w8xXNiBEjPHlqNBVgkXB6WOXt1fQR/7Yc7lLcpq/5kdpFP84D5FydK+qymW65ahcbEomDkeLkvX6YpTcAJhlqLSTocysivPkiRtNXIqVysAWk9f6/5zqMvnngYojUbfb3oNglYCUklJ0A2S1D4Yfu43tpu2hNhNrcUK78EnSAdaiHJF4cDT0DvQDQHIut1/xcQGn2BD4OCFcsXIi9xf++aKevwIsg6ptQIDAQAB",
+					"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3+FYwHel13e7MPg4UlzQyZjw9uxjDHQKpu4CjDAiyOdGxfC3T5FILJ9xiTrP5TbVkZTj/4fva/G5i81JQfPpPs18MrE95kVNV1YkC1sE8CwKuPBBk+ApDjv43Qtf1gOgtKRCF1pMmhcJkX1KeSmfan9KYjUk5QmC8j6bx8egQ2fuh7zyLN093Famr/4PQpGeTDiq471D9OOHj21RRKFDRIDu2JSnaJnOuyAA9C5Rq0rXMimkhMOOcFCctjadjPj1/oygUARZa86ZX8V4Wrsy9M5hK3V+OTSyaAlkj2lDQKD45Wo1BkxAz8SuyDfHnhiwupDmwdbm2QhhC/nP1dIsnQIDAQAB",
 			},
 			secrets: {
 				DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "username"),

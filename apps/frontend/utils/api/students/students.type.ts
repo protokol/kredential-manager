@@ -13,6 +13,20 @@ export type TUpdateStatusParams = {
   status: VCStatus;
 };
 
+export type TAttachDidParams = {
+  did: string;
+  studentId: number;
+};
+
+export type TStudentParams = {
+  first_name: string;
+  last_name: string;
+  date_of_birth: string;
+  nationality: string;
+  enrollment_date: string;
+  email: string;
+};
+
 export const StatusOptions = [
   {
     value: VCStatus.PENDING,

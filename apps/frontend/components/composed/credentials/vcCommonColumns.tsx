@@ -20,7 +20,10 @@ import TitleCell from '@ui/table/cells/TitleCell';
 
 const vcCommonColumnHelper = createColumnHelper<TVCredential>();
 
-export const useVCCommonColumns = (onRefetch: () => void) => {
+export const useVCCommonColumns = (
+  onRefetch: () => void,
+  onChangeStatus: (did: string, id: string) => void
+) => {
   const { mutateAsync: updateRequest, isSuccess } = useUpdateRequest();
   const t = useTranslations();
   const { push } = useRouter();
@@ -88,11 +91,13 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
     vcCommonColumnHelper.accessor('displayName', {
       id: 'displayName',
       header: t('credentials.columns.name'),
-      cell: ({ getValue }) => {
-        const value = getValue();
-        if (!value) return null;
+      cell: ({ row }) => {
+        const first_name = row?.original?.did?.student?.first_name;
+        const last_name = row?.original?.did?.student?.last_name;
+        if (!first_name || !last_name) return null;
+        const fullName = `${first_name} ${last_name}`;
 
-        return value;
+        return fullName;
       },
       enableSorting: false
     }),
@@ -140,7 +145,8 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
       id: 'actions',
       header: t('credentials.columns.actions'),
       cell: ({ getValue, row }) => {
-        const status = row.original.status;
+        const status = row?.original?.status;
+        const did = row?.original?.did?.identifier;
         const actions = [
           {
             label: t('credentials.columns.view'),
@@ -151,12 +157,7 @@ export const useVCCommonColumns = (onRefetch: () => void) => {
           },
           {
             label: t('credentials.columns.approve'),
-            onClick: async () => {
-              await updateStatusHandler({
-                id: getValue(),
-                status: VCStatus.APPROVED
-              });
-            },
+            onClick: () => onChangeStatus(did, String(getValue())),
             disabled: status === VCStatus.APPROVED
           },
           {

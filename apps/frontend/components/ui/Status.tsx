@@ -7,18 +7,18 @@ const statusVariants = cva(
   {
     variants: {
       variant: {
-        approved: 'bg-green-700',
+        issued: 'bg-green-700',
         pending: 'bg-gold-default',
         rejected: 'bg-red-700'
       },
       defaultVariants: {
-        variant: 'approved'
+        variant: 'issued'
       }
     }
   }
 );
 
-export type Variant = 'pending' | 'rejected' | 'approved';
+export type Variant = 'pending' | 'rejected' | 'issued';
 
 type VariantTexts = {
   [key in Variant]: string;
@@ -27,7 +27,7 @@ type VariantTexts = {
 const variantTexts: VariantTexts = {
   pending: 'Pending',
   rejected: 'Rejected',
-  approved: 'Approved'
+  issued: 'Approved'
 };
 
 const Status = ({ variant }: VariantProps<typeof statusVariants>) => {

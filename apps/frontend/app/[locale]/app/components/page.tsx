@@ -286,7 +286,7 @@ const ComponentsPage = () => (
 
     <h2 className='text-2xl'>Status -----------------------------------</h2>
     <div className='flex gap-4'>
-      <Status variant='approved' />
+      <Status variant='issued' />
       <Status variant='pending' />
       <Status variant='rejected' />
     </div>

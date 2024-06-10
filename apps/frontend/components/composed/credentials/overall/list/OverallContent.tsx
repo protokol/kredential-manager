@@ -17,10 +17,14 @@ import useClientSideMultiSelectFilter from '@ui/table/hooks/useClientSideMultiSe
 import useServerSideTableData from '@ui/table/hooks/useServerSideTableData';
 
 import { useVCCommonColumns } from '@components/composed/credentials/vcCommonColumns';
+import HandleStudentsDialog from '@components/composed/dialogs/HandleStudentsDialog';
 
 const OverallContent = () => {
   const [filters, setFilters] = useState<string[]>([]);
   const { push } = useRouter();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDid, setSelectedDid] = useState<string | null>(null);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
   const {
     isLoading,
@@ -35,13 +39,27 @@ const OverallContent = () => {
   const { filteredList: filteredListByType, ...statusFilterConfig } =
     useClientSideMultiSelectFilter(data?.items, StatusOptions, 'status');
 
+  const openDialog = () => setIsDialogOpen(true);
+  const closeDialog = () => setIsDialogOpen(false);
+
+  const onRefetchApprove = () => {
+    refetch();
+    closeDialog();
+  };
+
   const onRefetch = () => {
     refetch();
   };
 
+  const onChangeStatus = (did: string, selectedRowId: string) => {
+    setSelectedDid(did);
+    setSelectedRowId(selectedRowId);
+    openDialog();
+  };
+
   const { selectedItems } = statusFilterConfig;
   const t = useTranslations();
-  const vcColumns = useVCCommonColumns(onRefetch);
+  const vcColumns = useVCCommonColumns(onRefetch, onChangeStatus);
 
   useEffect(() => {
     setFilters(selectedItems);
@@ -68,6 +86,13 @@ const OverallContent = () => {
         }}
         paginationConfig={paginationConfig}
         data={data?.items ?? []}
+      />
+      <HandleStudentsDialog
+        isOpen={isDialogOpen}
+        onRefetchApprove={onRefetchApprove}
+        selectedRowId={selectedRowId}
+        selectedDid={selectedDid}
+        onOpenChange={setIsDialogOpen}
       />
     </div>
   );

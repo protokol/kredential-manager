@@ -12,7 +12,6 @@ type Student = {
   first_name: string;
   last_name: string;
   nationality: string;
-  profile_picture: string;
   student_id: number;
 };
 
@@ -31,19 +30,33 @@ const CredentialInformation = (information: Information) => {
   return (
     <div>
       <Label text={t('credentials.detailed.first_name')} />
-      <Input disabled className='mb-4' value={information.student.first_name} />
-      <Label text={t('credentials.detailed.last_name')} />
-      <Input disabled className='mb-4' value={information.student.last_name} />
-      <Label text={t('credentials.detailed.date_of_birth')} />
       <Input
         disabled
         className='mb-4'
-        value={formatShortDate(information.student.date_of_birth)}
+        value={information?.student?.first_name}
       />
+      <Label text={t('credentials.detailed.last_name')} />
+      <Input
+        disabled
+        className='mb-4'
+        value={information?.student?.last_name}
+      />
+      {information?.student?.date_of_birth && (
+        <>
+          <Label text={t('credentials.detailed.date_of_birth')} />
+          <Input
+            disabled
+            className='mb-4'
+            value={
+              formatShortDate(information?.student?.date_of_birth) || 'N/A'
+            }
+          />
+        </>
+      )}
       <Label text={t('credentials.detailed.address')} />
       <Input disabled className='mb-4' value='N/A' />
       <Label text={t('credentials.detailed.ebsi_id')} />
-      <Input disabled className='mb-4' value={information.identifier} />
+      <Input disabled className='mb-4' value={information?.identifier} />
       <Label text={t('credentials.detailed.credential_type')} />
       <div className='flex h-8 w-fit items-center justify-center gap-2 rounded-lg border-transparent bg-sky-500 px-2.5 py-1 text-sky-100'>
         <AcademicCapIcon className='h-5 w-6 text-sky-100' />

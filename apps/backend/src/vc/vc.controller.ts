@@ -56,9 +56,6 @@ export class VcController {
         @Param("id") id: number,
         @Body() updatePayload: UpdateStatusDto,
     ): Promise<any> {
-        // TODO: Implement the SIGN process
-        // TODO: Save signed data to vc_data_signed
-
         if (updatePayload.status == VCStatus.ISSUED) {
             console.log("Issuing credential")
             const { code, response } = await this.vcService.issueVerifiableCredential(id);
@@ -68,14 +65,14 @@ export class VcController {
                 );
             }
             return { message: response };
+        } else {
+            const updateResult = await this.vcService.update(id, updatePayload);
+            if (updateResult.affected === 0) {
+                throw new BadRequestException(
+                    `Credential with ID "${id}" not found.`,
+                );
+            }
         }
-
-        // const updateResult = await this.vcService.update(id, updatePayload);
-        // if (updateResult.affected === 0) {
-        //     throw new BadRequestException(
-        //         `Credential with ID "${id}" not found.`,
-        //     );
-        // }
         return { message: "Status updated successfully." };
     }
 

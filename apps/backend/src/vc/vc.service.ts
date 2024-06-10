@@ -67,7 +67,7 @@ export class VcService {
     }
 
     async update(
-        id: string,
+        id: number,
         updatePayload: Partial<VerifiableCredential>,
     ): Promise<UpdateResult> {
         return this.vcRepository.update(id, updatePayload);

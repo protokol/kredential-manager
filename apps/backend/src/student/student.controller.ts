@@ -31,14 +31,14 @@ import { Public } from "nest-keycloak-connect";
 export class StudentController {
     constructor(private readonly studentService: StudentService) { }
 
-    @Public()
+    @Public() //TODO remove this
     @Post()
     @HttpCode(HttpStatus.OK)
     create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
         return this.studentService.create(createStudentDto);
     }
 
-    @Public()
+    @Public() //TODO remove this
     @Get()
     @HttpCode(HttpStatus.OK)
     async getAll(
@@ -68,7 +68,7 @@ export class StudentController {
         return this.studentService.update(+id, updateStudentDto);
     }
 
-    @Public()
+    @Public() //TODO remove this
     @Post(":id/dids")
     @HttpCode(HttpStatus.OK)
     async addDidToStudent(
@@ -88,5 +88,12 @@ export class StudentController {
         @Param("didId") didId: string,
     ): Promise<Student> {
         return this.studentService.removeDidFromStudent(+studentId, +didId);
+    }
+
+    @Public() //TODO remove this
+    @Delete(":id")
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async deleteStudent(@Param("id") id: string): Promise<void> {
+        await this.studentService.delete(+id);
     }
 }

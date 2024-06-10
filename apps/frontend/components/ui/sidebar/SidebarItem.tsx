@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import * as Dialog from '@radix-ui/react-dialog';
 import type { ButtonHTMLAttributes, FC, PropsWithChildren } from 'react';
@@ -97,6 +97,7 @@ type SidebarItemProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   name: string;
   href?: string;
   active?: boolean;
+  locked?: boolean;
   asDialog?: boolean;
   sidebarCollapsed?: boolean;
   open?: boolean;
@@ -107,6 +108,7 @@ const SidebarItem: FC<SidebarItemProps> = ({
   name,
   active,
   className,
+  locked,
   href,
   asDialog,
   asTrigger,
@@ -135,6 +137,29 @@ const SidebarItem: FC<SidebarItemProps> = ({
     },
     [asDialog]
   );
+
+  if (locked) {
+    return (
+      <WrapperComponent>
+        <button
+          className={cn(
+            classes,
+            'bg-transparent text-slate-300 hover:bg-slate-300 focus:ring-0'
+          )}
+          disabled
+        >
+          <div className='flex items-center gap-3'>
+            {Icon && <Icon className='size-6 flex-shrink-0' />}
+            <span className='truncate'>{name}</span>
+          </div>
+
+          <LockClosedIcon
+            className={cn('size-4 flex-shrink-0 stroke-2 text-slate-300')}
+          />
+        </button>
+      </WrapperComponent>
+    );
+  }
 
   if (href) {
     return (

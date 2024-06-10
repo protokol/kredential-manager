@@ -24,6 +24,7 @@ type TNavigationLink = {
   name: string;
   href: string;
   icon?: FC;
+  locked?: boolean;
   notifications?: string;
 };
 
@@ -32,7 +33,9 @@ export type TNavigationButtonWithSubItems = {
   icon: FC<{ className?: string }>;
   subItems: TNavigationLink[];
   match: string;
+  href?: string;
   sidebarCollapsed?: boolean;
+  locked?: boolean;
 };
 
 type TNavigationItem = (TNavigationLink | TNavigationButtonWithSubItems) & {
@@ -94,6 +97,7 @@ const NavigationItems: FC<NavigationItemsProps> = ({
         name: t('navigation.integrations'),
         match: routes.app.integrations.home,
         icon: AdjustmentsVerticalIcon,
+        locked: true,
         subItems: [
           {
             id: 'integrations-sources',
@@ -107,6 +111,7 @@ const NavigationItems: FC<NavigationItemsProps> = ({
         name: t('navigation.admin'),
         href: routes.app.admin.home,
         icon: Cog8ToothIcon,
+        locked: true,
         subItems: [
           {
             id: 'admin-users',
@@ -123,7 +128,7 @@ const NavigationItems: FC<NavigationItemsProps> = ({
     <div className='flex-grow space-y-1'>
       {navigationItems.map((item) => {
         const itemName = sidebarCollapsed ? '' : item.name;
-        if ('subItems' in item) {
+        if ('subItems' in item && !item.locked) {
           return (
             <SidebarWithSubItems
               key={item.id}
@@ -150,6 +155,7 @@ const NavigationItems: FC<NavigationItemsProps> = ({
         return (
           <SidebarItem
             key={item.id}
+            locked={item.locked}
             icon={item.icon}
             href={item.href}
             name={itemName}

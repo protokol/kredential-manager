@@ -149,4 +149,21 @@ export class StudentService {
         await this.studentsRepository.save(student);
         return student;
     }
+
+    async delete(studentId: number): Promise<void> {
+        const student = await this.studentsRepository.findOne({
+            where: { student_id: studentId },
+            relations: ["dids"],
+        });
+        for (const did of student.dids) {
+            did.student = null;
+            await this.removeDidFromStudent(student.student_id, did.id);
+        }
+        if (!student) {
+            throw new BadRequestException(
+                `Student with ID ${studentId} not found`,
+            );
+        }
+        await this.studentsRepository.remove(student);
+    }
 }

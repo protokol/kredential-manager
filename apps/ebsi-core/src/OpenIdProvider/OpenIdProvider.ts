@@ -170,10 +170,6 @@ export class OpenIdProvider {
         if (request.proof.proof_type !== 'jwt') {
             throw new Error('Invalid proof token request.');
         }
-        const test = await this.jwtUtil.decodeJwt(request.proof.jwt)
-        console.log({ test })
-
-        console.log('---------------------')
         const { header } = await this.jwtUtil.decodeJwt(request.proof.jwt)
         if (header && header.typ !== 'openid4vci-proof+jwt') {
             throw new Error('Invalid proof token request.');

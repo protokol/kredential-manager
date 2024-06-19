@@ -33,7 +33,7 @@ export class AuthService {
 
         const clientDefinedState = generateRandomString(50)
         const cliendDefinedNonce = generateRandomString(25)
-        const redirectUri = 'openid:'
+        const redirectUri = 'openid://'
         try {
             const authRequest = AuthRequestComposer
                 .holder('code', clientId, redirectUri, { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')

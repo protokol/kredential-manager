@@ -69,7 +69,6 @@ export class IdTokenRequestComposer {
             request: encodedJwt
         }).toString();
         const redirectUri = this.payload.redirect_uri
-        // throw new Error('Not implemented')
         if (!redirectUri) {
             return `openid://${uriParams}`;
         }

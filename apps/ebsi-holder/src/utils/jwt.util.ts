@@ -1,6 +1,6 @@
 
 import { JWK, decodeJwt, SignJWT, jwtVerify, importJWK, JWTHeaderParameters, decodeProtectedHeader } from 'jose';
-import { JwtUtil } from '@probeta/mp-core';
+import { JWT, JwtUtil } from '@probeta/mp-core';
 
 interface JWKS {
     keys: JWK[];
@@ -102,7 +102,7 @@ export class HolderJwtSigner implements JwtUtil {
      * @param token The JWT to decode.
      * @returns A promise that resolves to the decoded JWT.
     */
-    async decodeJwt(token: string): Promise<object> {
+    async decodeJwt(token: string): Promise<JWT> {
         return decodeJwt(token);
     }
 

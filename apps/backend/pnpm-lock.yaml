@@ -37,7 +37,7 @@ importers:
         version: 10.0.2(@nestjs/common@10.3.7(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/core@10.3.7(@nestjs/common@10.3.7(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/platform-express@10.3.7)(reflect-metadata@0.1.14)(rxjs@7.8.1))(reflect-metadata@0.1.14)(rxjs@7.8.1)(typeorm@0.3.20(pg@8.11.5)(ts-node@10.9.2(@types/node@20.12.5)(typescript@5.4.4)))
       '@probeta/mp-core':
         specifier: ^0.0.20
-        version: 0.0.20(typescript@5.4.4)
+        version: link:../ebsi-core
       ajv:
         specifier: ^8.12.0
         version: 8.12.0
@@ -658,9 +658,6 @@ packages:
     resolution: {integrity: sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@probeta/mp-core@0.0.20':
-    resolution: {integrity: sha512-3C7wZWb4oVV/6ZeSGiIip0HK3705kyf3lWvaAaIFWIUBkOGuhJnliIBnsRKUOZ0AGEB7a0GNfmCiEKo675OmyA==}
-
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
 
@@ -1187,8 +1184,8 @@ packages:
     resolution: {integrity: sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==}
     engines: {node: '>=6.0'}
 
-  chromedriver@125.0.3:
-    resolution: {integrity: sha512-Qzuk5Wian2o3EVGjtbz6V/jv+pT/AV9246HbG6kUljZXXjsKZLZxqJC+kHR3qEh/wdv4EJD0YwAOWV72v9hogw==}
+  chromedriver@126.0.2:
+    resolution: {integrity: sha512-61R0w7C+uJVCykabdqWsvitne2rg3MTI8xOKJosk+YbKdyLeGHYiCCeU82ZsUY+v9qnN1p48THcthgKubxPRWQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -4190,13 +4187,6 @@ snapshots:
 
   '@pkgr/core@0.1.1': {}
 
-  '@probeta/mp-core@0.0.20(typescript@5.4.4)':
-    dependencies:
-      tslib: 2.6.2
-      typescript-transformer-esm: 1.1.0(typescript@5.4.4)
-    transitivePeerDependencies:
-      - typescript
-
   '@sinclair/typebox@0.27.8': {}
 
   '@sinonjs/commons@3.0.1':
@@ -4838,7 +4828,7 @@ snapshots:
 
   chrome-trace-event@1.0.3: {}
 
-  chromedriver@125.0.3:
+  chromedriver@126.0.2:
     dependencies:
       '@testim/chrome-version': 1.1.4
       axios: 1.7.2
@@ -6260,7 +6250,7 @@ snapshots:
     dependencies:
       jwk-to-pem: 2.0.5
     optionalDependencies:
-      chromedriver: 125.0.3
+      chromedriver: 126.0.2
     transitivePeerDependencies:
       - debug
       - supports-color

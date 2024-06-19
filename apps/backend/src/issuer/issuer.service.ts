@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JWK } from '@probeta/mp-core';
+import { JWK, JWT } from '@probeta/mp-core';
 import { EnterpriseJwtUtil } from './jwt.util';
 @Injectable()
 export class IssuerService {
@@ -79,7 +79,7 @@ export class IssuerService {
      * @param token The JWT token to validate.
      * @returns A promise that resolves to a boolean indicating whether the token has expired.
      */
-    async decodeJWT(token: string): Promise<object> {
+    async decodeJWT(token: string): Promise<JWT> {
         return this.jwtUtil.decodeJwt(token);
     }
 

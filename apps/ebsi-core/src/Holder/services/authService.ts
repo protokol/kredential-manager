@@ -31,6 +31,7 @@ export class AuthService {
 
         console.log('Holder')
 
+
         const clientDefinedState = generateRandomString(50)
         const cliendDefinedNonce = generateRandomString(25)
 
@@ -59,15 +60,14 @@ export class AuthService {
             const signedRequest = parsedSignedRequest.request ?? ''
 
             const decodedRequest = await this.signer.decodeFromUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, this.privateKey.kid ?? '', 'ES256')
-            if (!decodedRequest) throw new Error('Could not decode signed request')
-
-            const { header: idTokenReqHeader, payload: idTokenReqPayload } = decodedRequest
-
+            const { payload: idTokenReqPayload } = decodedRequest
+            if (typeof idTokenReqPayload === 'string') {
+                throw new Error('Expected JWTPayload but received string');
+            }
             if (idTokenReqPayload.iss !== openIdIssuer.credential_issuer) throw new Error('Issuer does not match')
             if (idTokenReqPayload.aud !== clientId) throw new Error('Audience does not match')
-            if (idTokenReqPayload.exp < Math.floor(Date.now() / 1000)) throw new Error('Token expired')
+            if (idTokenReqPayload && idTokenReqPayload.exp && idTokenReqPayload.exp < Math.floor(Date.now() / 1000)) throw new Error('Token expired')
             if (idTokenReqPayload.nonce !== cliendDefinedNonce) throw new Error('Nonce does not match')
-            // log({ parsedSignedRequest })
             const serverDefinedState = parsedSignedRequest.state ?? ''
 
             // 3.) ID Token Response
@@ -91,7 +91,8 @@ export class AuthService {
             const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
             if (authorizationResponse.status !== 302) throw new Error('Invalid status code')
-            const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.split('?')[1])
+
+            const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.replace('openid:', ''))
             if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
 
             const tokenRequestBody = await new TokenRequestComposer(

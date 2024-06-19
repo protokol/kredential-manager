@@ -5,7 +5,7 @@ import { IdTokenRequestComposer } from "./helpers/2.OP.id-token-request.composer
 import { AuthorizationResponseComposer } from "./helpers/4.OP.auth-response.composer";
 import { TokenResponseComposer } from "./helpers/6.OP.token-response.composer";
 import { parseDuration } from "./utils/parse-duration.utility";
-import { JwtHeader } from "./interfaces/id-token-request.interface";
+import { JwtHeader } from "./interfaces/JwtHeader.interface";
 import { CredentialResponseComposer } from "./helpers/8.OP.credential-response.composer";
 import { IdTokenResponseDecoded } from "./interfaces/id-token-response-decoded.interface";
 import { AuthorizationDetail, CredentialRequestPayload } from "./interfaces";
@@ -155,7 +155,7 @@ export class OpenIdProvider {
     }
 
     async decodeIdTokenRequest(request: string): Promise<IdTokenResponseDecoded> {
-        const decoded = await this.jwtUtil.decodeJwt(request)
+        const { payload: decoded } = await this.jwtUtil.decodeJwt(request)
         if (!decoded) {
             throw new Error('Invalid ID token request.');
         }
@@ -167,21 +167,31 @@ export class OpenIdProvider {
     }
 
     async decodeCredentialRequest(request: any): Promise<CredentialRequestPayload> {
-        //TODO RESOLVER validation
         if (request.proof.proof_type !== 'jwt') {
             throw new Error('Invalid proof token request.');
         }
-        const header = await this.jwtUtil.decodeProtectedHeader(request.proof.jwt) as { typ: string }
+        const test = await this.jwtUtil.decodeJwt(request.proof.jwt)
+        console.log({ test })
+
+        console.log('---------------------')
+        const { header } = await this.jwtUtil.decodeJwt(request.proof.jwt)
         if (header && header.typ !== 'openid4vci-proof+jwt') {
             throw new Error('Invalid proof token request.');
         }
-        const decoded = await this.jwtUtil.decodeJwt(request.proof.jwt)
-        if (!decoded) {
-            throw new Error('Invalid cred token request.');
+        if (!header.kid) {
+            throw new Error('Invalid proof token request.');
         }
+        if (!header.iat || !header.exp) {
+            throw new Error('Invalid proof token request.');
+        }
+        const { payload } = await this.jwtUtil.decodeJwt(request.proof.jwt)
+        if (!payload) {
+            throw new Error('Invalid token request.');
+        }
+
         const decodedRequest = {
-            ...decoded,
-            nonce: decoded.nonce as string
+            ...payload,
+            nonce: payload.nonce as string
         } as CredentialRequestPayload
 
         return decodedRequest;

@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@probeta/mp-core':
-        specifier: workspace:*
+        specifier: ^0.0.21
         version: link:../ebsi-core
       jose:
         specifier: ^5.3.0

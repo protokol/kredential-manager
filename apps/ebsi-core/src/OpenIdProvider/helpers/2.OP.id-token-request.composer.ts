@@ -1,6 +1,6 @@
 // import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
 // import { JwtSigner, jwtSign } from "../utils/jwt.util";
-import { JwtHeader } from '../types/jwt-header.type';
+import { JwtHeader } from './../interfaces';
 import { IdTokenRequestPayload } from '../interfaces/id-token-request-payload.interface';
 import { JwtUtil } from './../../Signer';
 
@@ -68,10 +68,7 @@ export class IdTokenRequestComposer {
             redirect_uri: this.payload.redirect_uri,
             request: encodedJwt
         }).toString();
-        console.log({ payload: this.payload, uriParams })
         const redirectUri = this.payload.redirect_uri
-
-        console.log({ redirectUri })
         // throw new Error('Not implemented')
         if (!redirectUri) {
             return `openid://${uriParams}`;
@@ -79,20 +76,6 @@ export class IdTokenRequestComposer {
         if (redirectUri.endsWith(':')) {
             return `${redirectUri}//${uriParams}`;
         }
-
-        console.log("CCC")
         return `${redirectUri}${uriParams}`;
-        return `https://taru.iam.upr.si/test/redirect_parser.php?${uriParams}`;
-        // return `192.168.1.106${uriParams}`
-        return 'exp://192.168.1.106:8081/--/'
-        return 'exp://192.168.1.106:8081/--/path/to/content'
-        return 'exp://192.168.1.152:8081/yyy'
-        return 'exp://127.0.0.1:8081/--/test'
-        return 'pholder://IT WORKS!'
-        return 'test://www.google.com'
-        return 'test:%3A%2F%2F--%2F%3Fclient_id%3Dtest%26response_type%3Did_token%26state%3Dtest%26scope%3Dopenid%26redirect_uri%3Dtest%26request%3DeyJ0eXA'
-        return `http://${uriParams}`;
-        // return `myapp://--/${uriParams}`;
-        // return `openid://${uriParams}`;
     }
 }

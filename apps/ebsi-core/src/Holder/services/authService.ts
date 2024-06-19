@@ -31,13 +31,12 @@ export class AuthService {
 
         console.log('Holder')
 
-
         const clientDefinedState = generateRandomString(50)
         const cliendDefinedNonce = generateRandomString(25)
-
+        const redirectUri = 'openid:'
         try {
             const authRequest = AuthRequestComposer
-                .holder('code', clientId, 'openid:', { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')
+                .holder('code', clientId, redirectUri, { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')
                 .setIssuerUrl(openIdIssuer.authorization_endpoint)
                 .addAuthDetails([
                     {
@@ -91,8 +90,7 @@ export class AuthService {
             const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
             if (authorizationResponse.status !== 302) throw new Error('Invalid status code')
-
-            const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.replace('openid:', ''))
+            const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.replace(redirectUri, ''))
             if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
 
             const tokenRequestBody = await new TokenRequestComposer(

@@ -59,6 +59,15 @@ export class IssuerService {
     }
 
     /**
+     * Decode the JWT token for the current private keys.
+     * @param token The JWT token to validate.
+     * @returns A promise that resolves to a boolean indicating whether the token has expired.
+     */
+    async decodeJWT(token: string): Promise<JWT> {
+        return this.jwtUtil.decodeJwt(token);
+    }
+
+    /**
      * Issue a credential.
      * @param payload The payload to issue the credential with.
      * @returns A promise that resolves to the signed credential.
@@ -69,46 +78,7 @@ export class IssuerService {
             issuer: this.did,
             issuanceDate: new Date().toISOString(),
         };
-
         // Sign the credential
         return await this.jwtUtil.sign(extendedUnsignedCredential, {}, 'ES256');
-    }
-
-    /**
-     * Decode the JWT token for the current private keys.
-     * @param token The JWT token to validate.
-     * @returns A promise that resolves to a boolean indicating whether the token has expired.
-     */
-    async decodeJWT(token: string): Promise<JWT> {
-        return this.jwtUtil.decodeJwt(token);
-    }
-
-    /**
-     * Validates if the JWT token has expired.
-     * @param token The JWT token to validate.
-     * @returns A promise that resolves to a boolean indicating whether the token has expired.
-     */
-    async isTokenExpired(token: string): Promise<boolean> {
-        try {
-            const { payload } = await this.decodeJWT(token) as any;
-            const currentTime = Math.floor(Date.now() / 1000);
-            if (payload.exp && currentTime > payload.exp) {
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error('Error verifying token for expiration:', error);
-            return true;
-        }
-    }
-
-    /**
-    * Validates if the expiration.
-    * @param token The JWT token to validate.
-    * @returns A promise that resolves to a boolean indicating whether the token has expired.
-    */
-    async isJwtTokenExpired(decodedToken: { exp: number }): Promise<boolean> {
-        const currentTime = Math.floor(Date.now() / 1000);
-        return decodedToken.exp < currentTime;
     }
 }

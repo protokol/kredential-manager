@@ -226,10 +226,4 @@ export class OpenIdProvider {
             throw new Error('Unsupported request object signing algorithm');
         }
     }
-
-    /**
-   * Generates a code challenge from a code verifier.
-   * @param {string} codeVerifier - The code verifier.
-   * @returns {string} - The code challenge.
-   */
 }

@@ -1,5 +1,5 @@
 
-import { JWT, JwtHeader, JwtUtil } from '@probeta/mp-core';
+import { JWT, JwtUtil } from '@probeta/mp-core';
 import { JWK, SignJWT, jwtVerify, importJWK, JWTHeaderParameters, decodeProtectedHeader, } from 'jose';
 
 interface JWKS {
@@ -40,32 +40,24 @@ export class EnterpriseJwtUtil implements JwtUtil {
     /**
      * Decodes a JWT using the provided JWK and issuer.
      * @param token The JWT to decode.
-     * @param issuer The issuer of the JWT.
-     * @param privateKeyJWK The private key in JWK format.
-     * @param algo The algorithm to use for decoding.
      * @returns A promise that resolves to the decoded JWT.
      */
-    async decodeJwt(token: string, issuer?: string, algo: string = 'ES256'): Promise<JWT> {
+    async decodeJwt(token: string): Promise<JWT> {
         try {
-            const verifyOptions = {
-                algorithms: [algo],
-                issuer: issuer
-            }
-            const { payload, protectedHeader } = await jwtVerify(token, this.key, verifyOptions);
-            const currentTime = Math.floor(Date.now() / 1000);
-            if (payload.exp && currentTime > payload.exp) {
-                throw new Error('Token has expired');
-            }
-            return { header: protectedHeader as JwtHeader, payload: payload };
+            const { payload, header } = await this.decodeJwt(token);
+            return { header, payload: payload };
         } catch (error) {
             throw new Error('Failed to decode token');
         }
     }
 
 
+    /**
+     * @param jwksUrl The URL of the JWKS endpoint. 
+     * @param kid The Key ID (kid) of the specific key within the JWKS to be used. 
+     */
     private async getJWKFormURLByKid(jwksUrl: string, kid: string): Promise<JWKS | null> {
         try {
-            // Fetch the JWKS from the provided URL
             const response = await fetch(jwksUrl);
             if (!response.ok) {
                 throw new Error(`Failed to fetch JWKS: ${response.statusText}`);
@@ -86,14 +78,23 @@ export class EnterpriseJwtUtil implements JwtUtil {
      * @param algo The algorithm to use for decoding.
      * @returns A promise that resolves to the decoded JWT.
      */
-    async decodeFromUrl(token: string, issuer: string, url: string, kid: string, algo: string): Promise<JWT> {
+    async verifyFromUrl(token: string, issuer: string, url: string, kid: string, algo: string): Promise<JWT> {
         try {
             const key = await this.getJWKFormURLByKid(url, kid);
             if (!key) {
                 throw new Error('Failed to fetch JWK');
             }
+            const verifyOptions = {
+                algorithms: [algo],
+                issuer: issuer
+            }
             for (const jwk of key.keys) {
-                const { header, payload } = await this.decodeJwt(token, issuer, algo);
+                const publicKey = await importJWK(jwk);
+                const { payload, protectedHeader: header } = await jwtVerify(token, publicKey, verifyOptions);
+                const currentTime = Math.floor(Date.now() / 1000);
+                if (payload.exp && currentTime > payload.exp) {
+                    throw new Error('Token has expired');
+                }
                 if (header && payload) return { header, payload };
             }
             throw new Error('Failed to decode token');
@@ -102,21 +103,6 @@ export class EnterpriseJwtUtil implements JwtUtil {
         }
     }
 
-    /**
-     * Verifies the signing of a JWT using the provided JWK.
-     * @param token The JWT to verify.
-     * @param jwk The JSON Web Key used for verifying the token.
-     * @returns A promise that resolves to a boolean indicating whether the signing is valid.
-     */
-    async verifyJWT(token: string): Promise<boolean> {
-        try {
-            await jwtVerify(token, this.key);
-            return true;
-        } catch (error) {
-            console.error('Verification failed:', error);
-            return false;
-        }
-    }
 
     /**
      * Decodes a protected header.

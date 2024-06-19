@@ -58,7 +58,7 @@ export class AuthService {
             const parsedSignedRequest = parseAuthorizeRequestSigned(location);
             const signedRequest = parsedSignedRequest.request ?? ''
 
-            const decodedRequest = await this.signer.decodeFromUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, this.privateKey.kid ?? '', 'ES256')
+            const decodedRequest = await this.signer.verifyFromUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, this.privateKey.kid ?? '', 'ES256')
             const { payload: idTokenReqPayload } = decodedRequest
             if (typeof idTokenReqPayload === 'string') {
                 throw new Error('Expected JWTPayload but received string');

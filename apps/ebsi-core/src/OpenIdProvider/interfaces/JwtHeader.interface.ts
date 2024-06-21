@@ -1,5 +1,5 @@
 export interface JwtHeader {
-    alg: string;
+    alg?: string | undefined;
     typ?: string | undefined;
     cty?: string | undefined;
     kid?: string | undefined;

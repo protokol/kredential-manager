@@ -1,24 +1,26 @@
 import { generateCodeChallenge } from './utils/codeChallenge';
 import { HolderJwtSigner } from './utils/jwt.util';
-import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK } from './utils/mocks';
+import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK, MOCK_DID_KEY_PUBLIC_KEY_JWK } from './utils/mocks';
 import { Holder, generateRandomString } from '@probeta/mp-core';
 
-const issuerUrl = 'https://api.eu-dev.protokol.sh';
+// const issuerUrl = 'https://api.eu-dev.protokol.sh';
+const issuerUrl = 'http://localhost:3000';
 
 const main = async () => {
   console.log('-----------------------------------');
   console.log('---------Holder wallet 0.2---------');
   console.log('-----------------------------------');
 
+
   const did = MOCK_DID_KEY;
-  const singer = new HolderJwtSigner(MOCK_DID_KEY_PRIVATE_KEY_JWK);
-  const hw = new Holder(MOCK_DID_KEY_PRIVATE_KEY_JWK, did, issuerUrl, singer);
+  const signer = new HolderJwtSigner(MOCK_DID_KEY_PRIVATE_KEY_JWK, did);
+  const hw = new Holder(MOCK_DID_KEY_PRIVATE_KEY_JWK, did, issuerUrl, signer);
 
   // Discover issuer and configuration metadata
   const openIdIssuer = await hw.discoverIssuerMetadata();
   const openIdMetadata = await hw.discoverConfigurationMetadata();
-  console.log({ openIdIssuer })
-  console.log({ openIdMetadata })
+  // console.log({ openIdIssuer })
+  // console.log({ openIdMetadata })
   // Authenticate with the issuer
   const requestedCredentials = [
     'VerifiableCredential',

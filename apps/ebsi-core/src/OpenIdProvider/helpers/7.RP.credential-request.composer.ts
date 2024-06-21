@@ -72,7 +72,8 @@ export class CredentialRequestComposer {
 
         // Sign the JWT Proof
         const signedJwtProof = await this.jwtUtil.sign(this.payload, {
-            ...(this.header ? { header: this.header } : {}),
+            // ...(this.header ? { header: this.header } : {}),
+            ...this.header,
             typ: 'openid4vci-proof+jwt',
         }, 'ES256');
 

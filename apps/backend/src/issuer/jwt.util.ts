@@ -1,6 +1,7 @@
 
 import { JWT, JwtUtil } from '@probeta/mp-core';
-import { JWK, SignJWT, jwtVerify, importJWK, JWTHeaderParameters, decodeProtectedHeader, } from 'jose';
+import { verify } from 'crypto';
+import { JWK, SignJWT, jwtVerify, importJWK, decodeProtectedHeader, decodeJwt } from 'jose';
 
 interface JWKS {
     keys: JWK[];
@@ -8,11 +9,9 @@ interface JWKS {
 
 export class EnterpriseJwtUtil implements JwtUtil {
     private privateKey: any;
-    private key: any;
 
     constructor(privateKey: any) {
         this.privateKey = privateKey;
-        this.key = importJWK(this.privateKey);
     }
 
     /**
@@ -44,13 +43,13 @@ export class EnterpriseJwtUtil implements JwtUtil {
      */
     async decodeJwt(token: string): Promise<JWT> {
         try {
-            const { payload, header } = await this.decodeJwt(token);
-            return { header, payload: payload };
+            const header = decodeProtectedHeader(token);
+            const payload = decodeJwt(token);
+            return { header, payload };
         } catch (error) {
             throw new Error('Failed to decode token');
         }
     }
-
 
     /**
      * @param jwksUrl The URL of the JWKS endpoint. 
@@ -70,6 +69,35 @@ export class EnterpriseJwtUtil implements JwtUtil {
     }
 
     /**
+     * Verifies a JWT using the provided JWK, issuer, and algorithm.
+     * @param token The JWT to verify.
+     * @param jwk The JSON Web Key (JWK) used for verification.
+     * @param issuer The issuer of the JWT.
+     * @param algo The algorithm to use for verification.
+     * @returns A promise that resolves to the verified JWT.
+     */
+    async verifyJwt(token: string, jwk: any, issuer: string, algo: string): Promise<JWT> {
+        const verifyOptions = {
+            algorithms: [algo],
+            issuer: issuer
+        };
+        const publicKey = await importJWK(jwk);
+        try {
+            const { payload, protectedHeader: header } = await jwtVerify(token, publicKey, verifyOptions);
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (payload.exp && currentTime > payload.exp) {
+                throw new Error('Token has expired');
+            }
+            if (header && payload) {
+                return { header, payload };
+            }
+        } catch (error) {
+            console.error('Error verifying JWT:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Decodes a JWT using the provided URL, issuer, kid, and algorithm.
      * @param token The JWT to decode.
      * @param issuer The issuer of the JWT.
@@ -78,24 +106,18 @@ export class EnterpriseJwtUtil implements JwtUtil {
      * @param algo The algorithm to use for decoding.
      * @returns A promise that resolves to the decoded JWT.
      */
-    async verifyFromUrl(token: string, issuer: string, url: string, kid: string, algo: string): Promise<JWT> {
+    async verifyJwtFromUrl(token: string, issuer: string, url: string, kid: string, algo: string): Promise<JWT> {
         try {
             const key = await this.getJWKFormURLByKid(url, kid);
             if (!key) {
                 throw new Error('Failed to fetch JWK');
             }
-            const verifyOptions = {
-                algorithms: [algo],
-                issuer: issuer
-            }
             for (const jwk of key.keys) {
-                const publicKey = await importJWK(jwk);
-                const { payload, protectedHeader: header } = await jwtVerify(token, publicKey, verifyOptions);
-                const currentTime = Math.floor(Date.now() / 1000);
-                if (payload.exp && currentTime > payload.exp) {
-                    throw new Error('Token has expired');
+                try {
+                    return await this.verifyJwt(token, jwk, issuer, algo);
+                } catch (error) {
+                    console.error(`Verification with key failed: ${error.message}`);
                 }
-                if (header && payload) return { header, payload };
             }
             throw new Error('Failed to decode token');
         } catch (error) {

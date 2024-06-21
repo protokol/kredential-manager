@@ -23,7 +23,7 @@ export class Holder {
         this.issuerUrl = issuerUrl;
         this.did = did;
         this.auth = new AuthService(privateKey, did, signer);
-        this.issuer = new IssuerService(signer);
+        this.issuer = new IssuerService(did, signer);
     }
 
     /**

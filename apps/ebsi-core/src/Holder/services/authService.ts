@@ -29,8 +29,6 @@ export class AuthService {
      */
     async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string, codeVerifier: string, codeChallenge: string): Promise<any> {
 
-        console.log('Holder')
-
         const clientDefinedState = generateRandomString(50)
         const cliendDefinedNonce = generateRandomString(25)
         const redirectUri = 'openid://'
@@ -53,12 +51,13 @@ export class AuthService {
 
             if (authResult.status !== 302) throw new Error('Invalid status code')
 
+            console.log({ A: authRequest.createGetRequestUrl() })
             // // Extract ID Token from the authorization response
             const { location } = parseRedirectHeaders(authResult.headers)
             const parsedSignedRequest = parseAuthorizeRequestSigned(location);
             const signedRequest = parsedSignedRequest.request ?? ''
 
-            const decodedRequest = await this.signer.verifyFromUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, this.privateKey.kid ?? '', 'ES256')
+            const decodedRequest = await this.signer.verifyJwtFromUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, this.privateKey.kid ?? '', 'ES256')
             const { payload: idTokenReqPayload } = decodedRequest
             if (typeof idTokenReqPayload === 'string') {
                 throw new Error('Expected JWTPayload but received string');
@@ -86,7 +85,6 @@ export class AuthService {
                     nonce: idTokenReqPayload.nonce
                 } as IdTokenResponse)
                 .compose();
-
             const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
             if (authorizationResponse.status !== 302) throw new Error('Invalid status code')

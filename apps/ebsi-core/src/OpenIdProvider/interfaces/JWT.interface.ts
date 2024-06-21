@@ -1,8 +1,8 @@
-import { JwtHeader } from "./JwtHeader.interface";
-import { JwtPayload } from "./JwtPayload.interface";
+import { JHeader } from "./JHeader.interface";
+import { JPayload } from "./JPayload.interface";
 
 export interface JWT {
-    header: JwtHeader;
-    payload: JwtPayload;
+    header: JHeader;
+    payload: JPayload;
     signature?: string;
 }

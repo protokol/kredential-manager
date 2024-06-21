@@ -9,7 +9,6 @@ export class OpenIDProviderService {
     private jwtUtil: EnterpriseJwtUtil;
 
     constructor() {
-        console.log('CONSTRUCT OPENID PROVIDER')
         const HOST = process.env.ISSUER_BASE_URL || 'localhost:3000';
         const privateKeyID = process.env.ISSUER_PRIVATE_KEY_ID;
         const issuerMetadata = getOpenIdIssuerMetadata(HOST);
@@ -29,7 +28,6 @@ export class OpenIDProviderService {
     }
 
     getInstance() {
-        console.log('GET INSTANCE')
         return this.provider;
     }
 }

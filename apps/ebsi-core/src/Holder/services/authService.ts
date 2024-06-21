@@ -2,7 +2,7 @@ import { parseAuthorizeRequestSigned } from "../utils/parseAuthorizationRequest"
 import { parseRedirectHeaders } from "../utils/parseRedirectHeaders";
 import { parseAuthorizationResponse } from "../utils/parseAuthorizationResponse";
 import { HttpClient } from '../utils/httpClient';
-import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer } from '../../OpenIdProvider';
+import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer } from '../../OpenIdProvider';
 import { generateRandomString } from './../../OpenIdProvider/utils/random-string.util';
 import { JWK } from "./../../Keys";
 import { JwtUtil } from "./../../Signer";
@@ -69,7 +69,7 @@ export class AuthService {
             const serverDefinedState = parsedSignedRequest.state ?? ''
 
             // 3.) ID Token Response
-            const header: JwtHeader = {
+            const header: JHeader = {
                 typ: 'JWT',
                 alg: 'ES256',
                 kid: this.privateKey.kid ?? ''

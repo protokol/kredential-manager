@@ -5,7 +5,7 @@ import { IdTokenRequestComposer } from "./helpers/2.OP.id-token-request.composer
 import { AuthorizationResponseComposer } from "./helpers/4.OP.auth-response.composer";
 import { TokenResponseComposer } from "./helpers/6.OP.token-response.composer";
 import { parseDuration } from "./utils/parse-duration.utility";
-import { JwtHeader } from "./interfaces/JwtHeader.interface";
+import { JHeader } from "./interfaces/JHeader.interface";
 import { CredentialResponseComposer } from "./helpers/8.OP.credential-response.composer";
 import { AuthorizationDetail, CredentialRequestPayload, JWT } from "./interfaces";
 import { generateRandomString } from "./utils/random-string.util";
@@ -118,14 +118,14 @@ export class OpenIdProvider {
         return { verifiedRequest: request, authDetails };
     }
 
-    async handleAuthorizationRequest(request: AuthorizeRequestSigned): Promise<({ header: JwtHeader, redirectUrl: string, authDetails: AuthorizationDetail[], serverDefinedState: string })> {
+    async handleAuthorizationRequest(request: AuthorizeRequestSigned): Promise<({ header: JHeader, redirectUrl: string, authDetails: AuthorizationDetail[], serverDefinedState: string })> {
         // Verify the authorization request
         const { verifiedRequest, authDetails } = await this.verifyAuthorizeRequest(request);
 
         const serverDefinedState = generateRandomString(16);
 
         // Jwt Header
-        const header: JwtHeader = {
+        const header: JHeader = {
             typ: 'JWT',
             alg: 'ES256',
             kid: this.privateKey.kid ?? ''

@@ -1,10 +1,10 @@
-export interface JWTPayload {
+export interface JwtPayload {
     iss?: string
     sub?: string
     aud?: string | string[]
     jti?: string
-    nbf?: number
-    exp?: number
-    iat?: number
-    nonce?: string
+    nbf?: number | undefined
+    exp?: number | undefined
+    iat?: number | undefined
+    nonce?: string | undefined
 }

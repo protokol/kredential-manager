@@ -1,6 +1,4 @@
-// import { JWK } from 'jose'; 
-// import { JwtSigner, jwtSign } from "../utils/jwt.util";
-import { JwtHeader } from '../types/jwt-header.type';
+import { JwtHeader } from '../interfaces';
 import { IdTokenResponse } from '../types/id-token-response.type';
 import { JwtUtil } from './../../Signer';
 

@@ -82,7 +82,7 @@ import { DidService } from "./student/did.service";
             provide: APP_GUARD,
             useClass: RoleGuard,
         },
-        // ResolverService,
+        ResolverService,
         NonceService,
         OpenIDProviderService,
         IssuerService,

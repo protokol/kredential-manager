@@ -1,12 +1,7 @@
-// import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
-// import { JwtSigner } from '../utils/jwt.util';
-import { JwtHeader } from '../types/jwt-header.type';
+
+import { JwtHeader } from '../interfaces';
 import { CredentialRequestPayload } from '..';
 import { JwtUtil } from './../../Signer';
-interface JWK {
-    kid?: string;
-
-}
 /**
  * Manages the composition of credential requests.
  */
@@ -77,7 +72,7 @@ export class CredentialRequestComposer {
 
         // Sign the JWT Proof
         const signedJwtProof = await this.jwtUtil.sign(this.payload, {
-            ...(this.header ? { header: this.header } : {}),
+            ...this.header,
             typ: 'openid4vci-proof+jwt',
         }, 'ES256');
 

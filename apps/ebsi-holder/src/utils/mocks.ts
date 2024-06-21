@@ -1,12 +1,21 @@
-export const MOCK_DID_KEY = "did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kbns7ZWNqwNNXRVtDg4wQYHxn2NGgqcTG5ehNhytKPrBdEw2mpy65bAdPKxFAZPbSTkLi6rPrkGjCXXTKz4hDvPBiWXHmR1CUgdJuXPjRn9S1ooLvYzKbv5P5zxMzzkEGiqJ"
+export const MOCK_DID_KEY = "did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbsqjbZPkPLK6SjrGKquTqYaDuzF4u8yd4uqb396uThfXQcLEv27HkA9Fqq3o7wwY7iEtpaUp1BMpD3uFHM7PJ27HPKJfKLosmMDjVFh9baiMLNrMqoe5HYBW66pRRTRMu6k"
 
 export const MOCK_DID_KEY_PRIVATE_KEY_JWK = { // TODO REGENERATE
-    crv: 'P-256',
     kty: 'EC',
-    x: 'OzQvNoWr_2wLXNyTa50ag7rJcsd8k1kOmplL4u9nZwE',
-    y: 'D5BllqU5L49CtStMkjhENUwrE9gxyqPd8Lyyfwuv9rk',
-    d: '51mQxyVIxo2iGIsB5mXvTEESeSYNzS_EEHVDsyIM8s8',
+    crv: 'P-256',
+    x: 'v-HWwjfXum3vQqFGtIcqxdS0mNJ8PxTviG3H2Z_iNbM',
+    y: 'M7Sa0BZeXv0hKaxFwoIL5t3cO69UG5cbQRBpADciChE',
+    d: 'HjUN2btYYoHULAtJDoij_9GXZRrjDs-sJL6SmqXpEGY',
     kid: MOCK_DID_KEY // KID is the DID when using did:key
+}
+
+export const MOCK_DID_KEY_PUBLIC_KEY_JWK = {
+    alg: 'ES256',
+    kid: 'test',
+    kty: 'EC',
+    crv: 'P-256',
+    x: 'v-HWwjfXum3vQqFGtIcqxdS0mNJ8PxTviG3H2Z_iNbM',
+    y: 'M7Sa0BZeXv0hKaxFwoIL5t3cO69UG5cbQRBpADciChE'
 }
 export const MOCK_REQUESTED_TYPES = [
     "VerifiableCredential",

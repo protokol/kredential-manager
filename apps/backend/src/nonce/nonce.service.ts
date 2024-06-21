@@ -50,8 +50,6 @@ export class NonceService {
             where: { nonce: nonceValue },
         });
 
-        // console.log('Saving c nonce: ', cNonce, nonceValue, nonce);
-
         if (nonce) {
             nonce.step = NonceStep.TOKEN_REQUEST;
             nonce.status = NonceStatus.UNCLAIMED;

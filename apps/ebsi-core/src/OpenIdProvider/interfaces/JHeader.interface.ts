@@ -1,4 +1,4 @@
-export interface JwtHeader {
+export interface JHeader {
     alg?: string | undefined;
     typ?: string | undefined;
     cty?: string | undefined;

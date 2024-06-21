@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, JwtHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString } from '@probeta/mp-core';
+import { AuthorizeRequest, JHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString } from '@probeta/mp-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
@@ -71,7 +71,7 @@ export class AuthService {
      * @param request The authorization request object containing necessary details.
      * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
      */
-    async authorize(request: AuthorizeRequest): Promise<{ header?: JwtHeader, code: number, url?: string }> {
+    async authorize(request: AuthorizeRequest): Promise<{ header?: JHeader, code: number, url?: string }> {
         try {
             const { header, redirectUrl, authDetails, serverDefinedState } = await this.provider.getInstance().handleAuthorizationRequest(request);
             // // Create a nonce for the client.
@@ -95,7 +95,7 @@ export class AuthService {
      * @param headers Headers record to map to JWT header.
      * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
      */
-    async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header?: JwtHeader, code: number, url?: string }> {
+    async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header?: JHeader, code: number, url?: string }> {
         try {
             const { payload, header } = await this.provider.getInstance().decodeIdTokenRequest(request.id_token);
 

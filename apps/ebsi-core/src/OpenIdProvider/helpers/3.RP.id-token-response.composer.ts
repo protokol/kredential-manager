@@ -1,4 +1,4 @@
-import { JwtHeader } from '../interfaces';
+import { JHeader } from '../interfaces';
 import { IdTokenResponse } from '../types/id-token-response.type';
 import { JwtUtil } from './../../Signer';
 
@@ -9,7 +9,7 @@ interface JWK {
  * Constructs and customizes an ID token response.
  */
 export class IdTokenResponseComposer {
-    private header?: JwtHeader;
+    private header?: JHeader;
     private payload?: IdTokenResponse;
     private privateKey: JWK;
     private state: string;
@@ -41,7 +41,7 @@ export class IdTokenResponseComposer {
      * @param header - The JWT header to be used for signing the JWT.
      * @returns This instance for method chaining.
      */
-    setHeader(header: JwtHeader): this {
+    setHeader(header: JHeader): this {
         this.header = header;
         return this;
     }

@@ -1,4 +1,4 @@
-export interface JwtPayload {
+export interface JPayload {
     iss?: string
     sub?: string
     aud?: string | string[]

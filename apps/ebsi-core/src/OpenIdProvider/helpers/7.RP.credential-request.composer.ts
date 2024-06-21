@@ -1,12 +1,12 @@
 
-import { JwtHeader } from '../interfaces';
+import { JHeader } from '../interfaces';
 import { CredentialRequestPayload } from '..';
 import { JwtUtil } from './../../Signer';
 /**
  * Manages the composition of credential requests.
  */
 export class CredentialRequestComposer {
-    private header?: JwtHeader;
+    private header?: JHeader;
     private payload?: CredentialRequestPayload;
     private cNonce?: string;
     private types?: string[];
@@ -32,7 +32,7 @@ export class CredentialRequestComposer {
      * @param header The JWT header to be included in the request.
      * @returns The composer instance for method chaining.
      */
-    setHeader(header: JwtHeader): this {
+    setHeader(header: JHeader): this {
         this.header = header;
         return this;
     }

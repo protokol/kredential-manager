@@ -1,5 +1,5 @@
 
-import { JWT, JwtHeader, JwtUtil } from '@probeta/mp-core';
+import { JWT, JHeader, JwtUtil } from '@probeta/mp-core';
 import { JWK, SignJWT, jwtVerify, importJWK, decodeJwt, decodeProtectedHeader, } from 'jose';
 
 interface JWKS {

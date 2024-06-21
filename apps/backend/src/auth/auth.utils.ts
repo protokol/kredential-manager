@@ -1,7 +1,7 @@
-import { JwtHeader } from "@probeta/mp-core";
+import { JHeader } from "@probeta/mp-core";
 
-export async function mapHeadersToJwtHeader(headers: Record<string, string | string[]>): Promise<JwtHeader> {
-    const jwtHeader: JwtHeader = { typ: '', alg: '', kid: '' };
+export async function mapHeadersToJwtHeader(headers: Record<string, string | string[]>): Promise<JHeader> {
+    const jwtHeader: JHeader = { typ: '', alg: '', kid: '' };
 
     if (typeof headers['kid'] === 'string') {
         jwtHeader.kid = headers['kid'];

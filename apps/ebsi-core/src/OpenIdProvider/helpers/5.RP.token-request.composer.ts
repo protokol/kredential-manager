@@ -1,4 +1,4 @@
-import { JwtHeader, TokenRequestBody } from '../interfaces';
+import { JHeader, TokenRequestBody } from '../interfaces';
 import { TokenRequest } from '../interfaces/token-request.interface';
 import { JwtUtil } from 'src';
 
@@ -10,7 +10,7 @@ interface JWK {
  */
 export class TokenRequestComposer {
     private privateKeyJWK: JWK;
-    private header?: JwtHeader;
+    private header?: JHeader;
     private grantType: string;
     // private clientId: string;
     private code: string;
@@ -48,7 +48,7 @@ export class TokenRequestComposer {
      * @param header - The JWT header to be used for signing the JWT.
      * @returns This instance for method chaining.
      */
-    setHeader(header: JwtHeader): this {
+    setHeader(header: JHeader): this {
         this.header = header;
         return this;
     }

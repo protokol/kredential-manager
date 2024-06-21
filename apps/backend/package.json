@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.1.0",
-    "@cef-ebsi/key-did-resolver": "^2.0.0",
+    "@cef-ebsi/key-did-resolver": "^2.0.1",
     "@faker-js/faker": "^8.4.1",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.1.1",
@@ -45,6 +45,7 @@
     "ajv-formats": "^2.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "did-resolver": "^4.1.0",
     "jose": "^4.15.5",
     "json-schema": "^0.4.0",
     "json-schema-to-typescript": "^13.1.2",

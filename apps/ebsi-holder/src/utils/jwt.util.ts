@@ -1,6 +1,6 @@
 
 import { JWT, JwtHeader, JwtUtil } from '@probeta/mp-core';
-import { JWK, SignJWT, jwtVerify, importJWK, JWTHeaderParameters, decodeProtectedHeader, } from 'jose';
+import { JWK, SignJWT, jwtVerify, importJWK, decodeJwt, decodeProtectedHeader, } from 'jose';
 
 interface JWKS {
     keys: JWK[];
@@ -9,10 +9,12 @@ interface JWKS {
 export class HolderJwtSigner implements JwtUtil {
     private privateKey: any;
     private key: any;
+    private did: string
 
-    constructor(privateKey: any) {
+    constructor(privateKey: any, did: string) {
         this.privateKey = privateKey;
         this.key = importJWK(this.privateKey);
+        this.did = did;
     }
 
     /**
@@ -28,7 +30,7 @@ export class HolderJwtSigner implements JwtUtil {
             .setProtectedHeader({
                 typ: 'jwt',
                 alg: algo,
-                kid: this.privateKey.kid,
+                kid: this.did,
                 ...header
             });
 
@@ -44,8 +46,9 @@ export class HolderJwtSigner implements JwtUtil {
      */
     async decodeJwt(token: string): Promise<JWT> {
         try {
-            const { payload, header } = await this.decodeJwt(token);
-            return { header, payload: payload };
+            const header = decodeProtectedHeader(token);
+            const payload = decodeJwt(token);
+            return { header, payload };
         } catch (error) {
             throw new Error('Failed to decode token');
         }
@@ -77,7 +80,7 @@ export class HolderJwtSigner implements JwtUtil {
      * @param algo The algorithm to use for decoding.
      * @returns A promise that resolves to the decoded JWT.
      */
-    async verifyFromUrl(token: string, issuer: string, url: string, kid: string, algo: string): Promise<JWT> {
+    async verifyJwtFromUrl(token: string, issuer: string, url: string, kid: string, algo: string): Promise<JWT> {
         try {
             const key = await this.getJWKFormURLByKid(url, kid);
             if (!key) {
@@ -109,5 +112,22 @@ export class HolderJwtSigner implements JwtUtil {
     */
     async decodeProtectedHeader(token: string): Promise<any> {
         return decodeProtectedHeader(token);
+    }
+
+    async verifyJwt(token: string, jwk: any, issuer: string, algo: string): Promise<any> {
+        const publicKey = await importJWK(jwk);
+        try {
+            const { payload, protectedHeader: header } = await jwtVerify(token, publicKey);
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (payload.exp && currentTime > payload.exp) {
+                throw new Error('Token has expired');
+            }
+            if (header && payload) {
+                return { header, payload };
+            }
+        } catch (error) {
+            console.error('Error verifying JWT:', error);
+            throw error;
+        }
     }
 }

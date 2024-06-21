@@ -4,6 +4,7 @@ import { EnterpriseJwtUtil } from './jwt.util';
 @Injectable()
 export class IssuerService {
     private did: string;
+    private issuer: string;
     private privateKeyJwk: JWK;
     private publicKeyJwk: JWK;
     private jwtUtil: EnterpriseJwtUtil;
@@ -27,6 +28,7 @@ export class IssuerService {
                 x: 'NbkoaUnGy2ma932oIHHxmVr_m3uGeMO7DSJXbXEBAio',
                 y: 'oonFfsV2IRHXoDq0_pvMfHScaKGUNKm5Y43ohxAaAK0'
             }
+            this.issuer = 'http://localhost:3000';
             this.did = did;
             this.privateKeyJwk = privateKeyJwk;
             this.publicKeyJwk = publicKeyJwk;
@@ -65,6 +67,25 @@ export class IssuerService {
      */
     async decodeJWT(token: string): Promise<JWT> {
         return this.jwtUtil.decodeJwt(token);
+    }
+
+    /**
+     * Verify the JWT token for given private keys.
+     * @param token The JWT token to validate.
+     * @param jwk The JWK to validate the token with.
+     * @param issuer The issuer of the token.
+     **/
+    async verifyJWT(token: string, jwk: JWK, issuer: string, algo: string): Promise<JWT> {
+        return this.jwtUtil.verifyJwt(token, jwk, issuer, algo);
+    }
+
+    /**
+     * Verify the JWT token for given private keys.
+     * @param token The JWT token to validate.
+     * @param issuer The issuer of the token.
+     **/
+    async verifyBearerToken(token: string): Promise<JWT> {
+        return this.jwtUtil.verifyJwt(token, this.publicKeyJwk, this.issuer, 'ES256');
     }
 
     /**

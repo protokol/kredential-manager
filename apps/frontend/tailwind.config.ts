@@ -103,6 +103,9 @@ const config: Config = {
       maxHeight: {
         '60vh': '60vh'
       },
+      maxWidth: {
+        '69vw': '69vw'
+      },
       transitionDuration: {
         4000: '4000ms',
         5000: '5000ms',

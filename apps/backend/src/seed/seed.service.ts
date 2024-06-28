@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Program } from "../program/entities/program.entity";
 import { Enrollment } from "../enrollment/entities/enrollment.entity";
 import { Student } from "../student/entities/student.entity";
-import { VerifiableCredential } from "../vc/entities/VerifiableCredential";
+import { VerifiableCredential } from "../vc/entities/VerifiableCredential.entity";
 import { Repository } from "typeorm";
 import { seedData } from "src/scripts/seed";
 import { Did } from "src/student/entities/did.entity";
@@ -29,7 +29,7 @@ export class SeedService {
         private courseRepository: Repository<Course>,
         @InjectRepository(Diploma)
         private diplomaRepository: Repository<Diploma>,
-    ) {}
+    ) { }
 
     public async seedAllTables(): Promise<string> {
         try {

@@ -3,7 +3,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Student } from "./entities/student.entity";
 import { CreateStudentDto } from "./dto/create-student";
 import { Did } from "./entities/did.entity";
-import dataSource from "src/db/dataSource";
 import { Pagination } from "src/types/pagination/PaginationParams";
 import { Sorting } from "src/types/pagination/SortingParams";
 import { Filtering } from "src/types/pagination/FilteringParams";

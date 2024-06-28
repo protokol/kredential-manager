@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { SeedController } from "./seed.controller";
 import { SeedService } from "./seed.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
+import { VerifiableCredential } from "src/vc/entities/VerifiableCredential.entity";
 import { Did } from "src/student/entities/did.entity";
 import { Program } from "src/program/entities/program.entity";
 import { Enrollment } from "src/enrollment/entities/enrollment.entity";
@@ -26,4 +26,4 @@ import { Diploma } from "src/diploma/entities/diploma.entity";
     controllers: [SeedController],
     providers: [SeedService],
 })
-export class SeedModule {}
+export class SeedModule { }

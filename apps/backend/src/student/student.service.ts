@@ -3,7 +3,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Student } from "./entities/student.entity";
 import { CreateStudentDto } from "./dto/create-student";
 import { Did } from "./entities/did.entity";
-import dataSource from "src/db/dataSource";
 import { Pagination } from "src/types/pagination/PaginationParams";
 import { Sorting } from "src/types/pagination/SortingParams";
 import { Filtering } from "src/types/pagination/FilteringParams";
@@ -11,6 +10,7 @@ import { getOrder, getWhere } from "src/helpers/Order";
 import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
 import { Repository } from "typeorm";
 import { DidService } from "./did.service";
+import dataSource from "./../../db/typeorm.config";
 
 @Injectable()
 export class StudentService {
@@ -108,7 +108,6 @@ export class StudentService {
 
         const existingUnattachedDid = await this.didService.findByDid(identifier);
 
-        console.log({ existingUnattachedDid })
         if (!existingUnattachedDid) {
             throw new BadRequestException(
                 `DID ${identifier} not found`,

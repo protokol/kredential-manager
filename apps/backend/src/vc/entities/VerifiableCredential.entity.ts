@@ -5,10 +5,7 @@ import {
     Column,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
-    OneToOne,
-    JoinColumn,
     Relation,
-    OneToMany,
     ManyToOne,
 } from "typeorm";
 
@@ -19,17 +16,6 @@ export class VerifiableCredential {
 
     @ManyToOne(() => Did, (did) => did.verifiableCredentials, {})
     did: Relation<Did>;
-
-
-
-    // @Column({ type: "text", nullable: true })
-    // displayName: string;
-
-    // @Column({ type: "text", nullable: true })
-    // mail: string;
-
-    // @Column({ type: "date", nullable: true })
-    // dateOfBirth: Date;
 
     @Column({ type: "jsonb", default: {}, nullable: true })
     requested_credentials: Record<string, any>;

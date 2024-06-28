@@ -1,12 +1,11 @@
 import { faker } from "@faker-js/faker";
-import dataSource from "../db/dataSource";
 import { Student } from "../student/entities/student.entity";
 import { Program } from "../program/entities/program.entity";
 import { Course } from "../course/entities/course.entity";
 import { Diploma } from "../diploma/entities/diploma.entity";
 import { Enrollment } from "../enrollment/entities/enrollment.entity";
 import { Did } from "../student/entities/did.entity";
-import { VerifiableCredential } from "../vc/entities/VerifiableCredential";
+import { VerifiableCredential } from "../vc/entities/VerifiableCredential.entity";
 import { generateVerifiableDiploma } from "./verifiable-diploma";
 
 export async function seedData(
@@ -124,8 +123,8 @@ export async function seedData(
     console.log("Data has been seeded.");
 }
 
-dataSource
-    .initialize() // Must be called!!!!!!
+// dataSource
+// .initialize() // Must be called!!!!!!
 
 
 //     .then(async (connection) => {

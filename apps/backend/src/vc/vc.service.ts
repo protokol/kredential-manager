@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
-import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
+import { VerifiableCredential } from "src/vc/entities/VerifiableCredential.entity";
 import { DeepPartial, Repository, UpdateResult } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Did } from "src/student/entities/did.entity";

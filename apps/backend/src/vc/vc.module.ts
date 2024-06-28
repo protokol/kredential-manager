@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { VcService } from "./vc.service";
 import { VcController } from "./vc.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
+import { VerifiableCredential } from "src/vc/entities/VerifiableCredential.entity";
 import { Did } from "src/student/entities/did.entity";
 import { IssuerService } from "src/issuer/issuer.service";
 

@@ -10,7 +10,7 @@ import {
     HttpStatus,
     BadRequestException,
 } from "@nestjs/common";
-import { VerifiableCredential } from "./../vc/entities/VerifiableCredential";
+import { VerifiableCredential } from "./entities/VerifiableCredential.entity";
 import { VerifiableEducationalID } from "./../types/schema/VerifiableEducationID202311";
 import { EBSIVerifiableAccredidationEducationDiplomaCredentialSubjectSchema } from "src/types/schema/VerifiableDiploma202211";
 import { VCRole, VCStatus } from "./../types/VC";

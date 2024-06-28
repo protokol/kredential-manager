@@ -2,13 +2,13 @@ import { Module } from "@nestjs/common";
 import { SeedController } from "./seed.controller";
 import { SeedService } from "./seed.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { VerifiableCredential } from "src/vc/entities/VerifiableCredential.entity";
-import { Did } from "src/student/entities/did.entity";
-import { Program } from "src/program/entities/program.entity";
-import { Enrollment } from "src/enrollment/entities/enrollment.entity";
-import { Student } from "src/student/entities/student.entity";
-import { Course } from "src/course/entities/course.entity";
-import { Diploma } from "src/diploma/entities/diploma.entity";
+import { VerifiableCredential } from "@entities/verifiableCredential.entity";
+import { Did } from "@entities/did.entity";
+import { Program } from "src/entities/program.entity";
+import { Enrollment } from "@entities/enrollment.entity";
+import { Student } from "@entities/student.entity";
+import { Course } from "@entities/course.entity";
+import { Diploma } from "@entities/diploma.entity";
 
 @Module({
     imports: [

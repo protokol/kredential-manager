@@ -20,15 +20,13 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typeorm": "npm run build && npx typeorm -d dist/db/dataSource.js",
-    "typeorm:generate": "npx typeorm migration:generate -d dist/db/dataSource.js",
-    "typeorm:migrate": "npx typeorm migration:run -d dist/db/dataSource.js",
-    "typeorm:revert": "npx typeorm migration:revert -d dist/db/dataSource.js",
-    "typeorm:drop": "npx typeorm schema:drop -d dist/db/dataSource.js",
-    "typeorm:sync": "npx typeorm schema:sync -d dist/db/dataSource.js",
-    "typeorm:show": "npm run typeorm -- migration:show",
-    "types": "npx ts-node src/scripts/generate-types.ts",
-    "seed": "npx ts-node src/scripts/seed.ts"
+    "build:migrations": "npx tsc -p db/tsconfig.config.json",
+    "typeorm": "typeorm-ts-node-esm",
+    "migration:run": "npm run typeorm migration:run -- -d ./db/typeorm.config.ts",
+    "migration:generate": "npm run typeorm -- -d ./db/typeorm.config.ts migration:generate ./db/migrations/$npm_config_name",
+    "migration:create": "npm run typeorm -- migration:create ./db/migrations/$npm_config_name",
+    "migration:revert": "npm run typeorm -- -d ./db/typeorm.config.ts migration:revert",
+    "migration:show": "npm run typeorm -- migration:show -d ./db/typeorm.config.ts"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.1.0",
@@ -79,7 +77,7 @@
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.3",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "ts-patch": "^3.1.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.3"

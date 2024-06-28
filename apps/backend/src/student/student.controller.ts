@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { StudentService } from "./student.service";
 import { CreateStudentDto } from "./dto/create-student";
-import { Student } from "./entities/student.entity";
+import { Student } from "../entities/student.entity";
 import { AttachDidDto } from "./dto/attach-did";
 import {
     Pagination,

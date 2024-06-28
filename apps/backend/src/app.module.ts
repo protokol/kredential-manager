@@ -2,11 +2,10 @@ import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { dataSourceOptions } from "./db/dataSource";
 import { VcModule } from "./vc/vc.module";
 import { VcController } from "./vc/vc.controller";
 import { VcService } from "./vc/vc.service";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { OpenIDProviderService } from "./openId/openId.service";
 import {
     KeycloakConnectModule,
@@ -29,13 +28,23 @@ import { AuthController } from "./auth/auth.controller";
 import { IssuerService } from "./issuer/issuer.service";
 import { AuthService } from "./auth/auth.service";
 import { NonceService } from "./nonce/nonce.service";
-import { Nonce } from "./nonce/entities/nonce.entity";
 import { DidService } from "./student/did.service";
+import { AppConfig, DatabaseConfig } from "./config";
+import { Nonce } from "@entities/nonce.entity";
 
 @Module({
     imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        TypeOrmModule.forRoot(dataSourceOptions),
+        ConfigModule.forRoot({
+            isGlobal: true, cache: true,
+            load: [AppConfig, DatabaseConfig],
+        }),
+        TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: (configService: ConfigService) => ({
+                ...configService.get('database'),
+            }),
+            inject: [ConfigService],
+        }),
         TypeOrmModule.forFeature([Nonce]),
 
         // Keycloak

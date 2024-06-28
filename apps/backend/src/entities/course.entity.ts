@@ -4,9 +4,10 @@ import {
     PrimaryGeneratedColumn,
     ManyToOne,
     OneToMany,
+    Relation,
 } from "typeorm";
-import { Program } from "./../../program/entities/program.entity";
-import { Enrollment } from "./../../enrollment/entities/enrollment.entity";
+import { Program } from "./program.entity";
+import { Enrollment } from "./enrollment.entity";
 
 @Entity()
 export class Course {
@@ -23,8 +24,8 @@ export class Course {
     credits: number;
 
     @ManyToOne(() => Program, (program) => program.courses)
-    program: Program;
+    program: Relation<Program>;
 
     @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
-    enrollments: Enrollment[];
+    enrollments: Relation<Enrollment[]>;
 }

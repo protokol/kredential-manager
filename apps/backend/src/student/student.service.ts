@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Student } from "./entities/student.entity";
+import { Student } from "../entities/student.entity";
 import { CreateStudentDto } from "./dto/create-student";
-import { Did } from "./entities/did.entity";
+import { Did } from "../entities/did.entity";
 import { Pagination } from "src/types/pagination/PaginationParams";
 import { Sorting } from "src/types/pagination/SortingParams";
 import { Filtering } from "src/types/pagination/FilteringParams";

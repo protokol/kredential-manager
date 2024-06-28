@@ -8,7 +8,7 @@ import {
     ManyToMany
 } from "typeorm";
 import { Student } from "./student.entity";
-import { VerifiableCredential } from "../../vc/entities/VerifiableCredential.entity";
+import { VerifiableCredential } from "./verifiableCredential.entity";
 
 @Entity()
 export class Did {

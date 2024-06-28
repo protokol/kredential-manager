@@ -1,14 +1,14 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Program } from "../program/entities/program.entity";
-import { Enrollment } from "../enrollment/entities/enrollment.entity";
-import { Student } from "../student/entities/student.entity";
-import { VerifiableCredential } from "../vc/entities/VerifiableCredential.entity";
+import { Program } from "../entities/program.entity";
+import { Enrollment } from "../entities/enrollment.entity";
+import { Student } from "../entities/student.entity";
+import { VerifiableCredential } from "../entities/verifiableCredential.entity";
 import { Repository } from "typeorm";
 import { seedData } from "src/scripts/seed";
-import { Did } from "src/student/entities/did.entity";
-import { Course } from "src/course/entities/course.entity";
-import { Diploma } from "src/diploma/entities/diploma.entity";
+import { Did } from "@entities/did.entity";
+import { Course } from "@entities/course.entity";
+import { Diploma } from "@entities/diploma.entity";
 
 @Injectable()
 export class SeedService {

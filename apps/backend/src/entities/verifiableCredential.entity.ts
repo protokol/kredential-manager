@@ -1,5 +1,5 @@
-import { Did } from "../../student/entities/did.entity";
-import { VCRole, VCStatus, VCSupportedTypes } from "../../types/VC";
+import { Did } from "./did.entity";
+import { VCRole, VCStatus, VCSupportedTypes } from "../types/VC";
 import {
     Entity,
     Column,

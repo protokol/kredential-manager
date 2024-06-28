@@ -24,6 +24,11 @@
                 "transform": "typescript-transformer-esm",
                 "after": true
             }
-        ]
+        ],
+        "paths": {
+            "@entities/*": [
+                "src/entities/*"
+            ]
+        }
     }
 }

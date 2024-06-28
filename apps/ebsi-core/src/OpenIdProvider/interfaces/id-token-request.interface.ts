@@ -1,9 +1,3 @@
-export interface JwtHeader {
-    typ: string;
-    alg: string;
-    kid: string;
-}
-
 export interface IdTokenPayload {
     client_id: string;
     response_type: string;

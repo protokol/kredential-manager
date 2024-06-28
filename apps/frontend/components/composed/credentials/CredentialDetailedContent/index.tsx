@@ -104,8 +104,12 @@ const CredentialDetailedContent = ({
   return (
     <div>
       <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-3'>
-          {credentialData && <span>{credentialData.did.identifier}</span>}
+        <div className='flex w-full w-full items-center justify-between'>
+          {credentialData && (
+            <span className='max-w-69vw overflow-hidden text-ellipsis'>
+              {credentialData.did.identifier}
+            </span>
+          )}
           <Status variant={credentialData?.status} />
         </div>
         {credentialData?.status === VCStatus.PENDING && (

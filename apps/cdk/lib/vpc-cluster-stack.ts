@@ -35,6 +35,7 @@ export class VpcClusterStack extends cdk.Stack {
 		});
 
 		const apiDomainName = getDomainNameWithPrefix("api");
+		// cdk.Annotations.of(this).addError(apiDomainName);
 		this.apiCertificate = new Certificate(this, "APICertificate", {
 			domainName: apiDomainName,
 			validation: CertificateValidation.fromDns(publicZone),

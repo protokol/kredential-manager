@@ -12,6 +12,6 @@ export function getPublicHostedZoneName(): string {
 
 export function getDomainNameWithPrefix(prefix: string): string {
 	return process.env.STAGE_NAME
-		? `${prefix}.${process.env.STAGE_NAME}.${getPublicHostedZoneId()}`
+		? `${prefix}.${process.env.STAGE_NAME}.${getPublicHostedZoneName()}`
 		: `${prefix}.${getPublicHostedZoneName()}`;
 }

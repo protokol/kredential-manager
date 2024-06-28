@@ -57,7 +57,6 @@ export class VcController {
         @Body() updatePayload: UpdateStatusDto,
     ): Promise<any> {
         if (updatePayload.status == VCStatus.ISSUED) {
-            console.log("Issuing credential")
             const { code, response } = await this.vcService.issueVerifiableCredential(id);
             if (code !== 200) {
                 throw new BadRequestException(
@@ -95,7 +94,6 @@ export class VcController {
         sort?: Sorting,
         @FilteringParams(["status"]) filter?: Filtering,
     ): Promise<PaginatedResource<Partial<VerifiableCredential>>> {
-        console.log({ paginationParams, sort, filter });
         return await this.vcService.findAll(paginationParams, sort, filter);
     }
 

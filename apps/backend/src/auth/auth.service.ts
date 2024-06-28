@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, JwtHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString } from '@probeta/mp-core';
+import { AuthorizeRequest, JHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString } from '@probeta/mp-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
-import { extractBearerToken, mapHeadersToJwtHeader } from './auth.utils';
+import { extractBearerToken } from './auth.utils';
 import { AuthNonce } from './../nonce/interfaces/auth-nonce.interface';
 import { NonceStep } from './../nonce/enum/step.enum';
 import { NonceStatus } from './../nonce/enum/status.enum';
 import { VcService } from './../vc/vc.service';
-import { StudentService } from './../student/student.service';
 import { DidService } from 'src/student/did.service';
 import { VCStatus } from 'src/types/VC';
 import { validateCodeChallenge } from './../issuer/hash.util';
+import { ResolverService } from 'src/resolver/resolver.service';
 
 const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000; // TODO: Move to a shared utility file.
 @Injectable()
@@ -36,8 +36,8 @@ export class AuthService {
         private issuer: IssuerService,
         private nonce: NonceService,
         private vcService: VcService,
-        private studentService: StudentService,
-        private didService: DidService
+        private didService: DidService,
+        private resolverService: ResolverService
     ) { }
 
     /**
@@ -71,14 +71,9 @@ export class AuthService {
      * @param request The authorization request object containing necessary details.
      * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
      */
-    async authorize(request: AuthorizeRequest): Promise<{ header: JwtHeader, code: number, url: string }> {
-        console.log("!Authorize")
-        console.log({ request })
-        // Verify the authorization request and return the header, redirect URL, requested credentials, and server-defined state.
+    async authorize(request: AuthorizeRequest): Promise<{ header?: JHeader, code: number, url?: string }> {
         try {
             const { header, redirectUrl, authDetails, serverDefinedState } = await this.provider.getInstance().handleAuthorizationRequest(request);
-            // console.log('------')
-            // console.log({ header, redirectUrl })
             // // Create a nonce for the client.
             const noncePayload: AuthNonce = {
                 authorizationDetails: authDetails,
@@ -88,13 +83,10 @@ export class AuthService {
                 codeChallenge: request.code_challenge,
             };
             await this.nonce.createAuthNonce(request.client_id, request.nonce, noncePayload);
-            console.log({ header, redirectUrl })
             return { header, code: 302, url: redirectUrl };
         } catch (error) {
-            console.log({ error })
+            return { code: 400 };
         }
-        return
-
     }
 
     /**
@@ -103,29 +95,36 @@ export class AuthService {
      * @param headers Headers record to map to JWT header.
      * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
      */
-    async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header: JwtHeader, code: number, url: string }> {
+    async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header?: JHeader, code: number, url?: string }> {
+        try {
+            const { payload, header } = await this.provider.getInstance().decodeIdTokenRequest(request.id_token);
 
-        console.log("Direct Post")
-        // Map headers to JWT header.
-        const header = await mapHeadersToJwtHeader(headers);
-        const decodedRequest = await this.provider.getInstance().decodeIdTokenRequest(request.id_token);
-
-        // Retrieve the nonce data to ensure it exists and is unclaimed.
-        const nonceData = await this.nonce.getNonceByField('nonce', decodedRequest.nonce, NonceStep.AUTHORIZE, NonceStatus.UNCLAIMED, decodedRequest.iss);
-        console.log({ nonceData })
-        // Extract the client-defined state from the authorization response.
-        const state = nonceData.payload.clientDefinedState;
-        const redirectUri = nonceData.payload.redirectUri ?? 'openid://';
-
-
-        // Generate a unique code for the client.
-        const code = generateRandomString(25);
-
-        // Update the nonce for the client, including the generated code and ID token.
-        await this.nonce.createAuthResponseNonce(decodedRequest.nonce, code, request.id_token);
-        const redirectUrl = await this.provider.getInstance().createAuthorizationRequest(code, state, redirectUri);
-        console.log({ redirectUrl })
-        return { header, code: 302, url: redirectUrl };
+            // Extract the issuer from the payload or header.
+            let issuer = ''
+            if (payload.iss && payload.iss.startsWith("did:")) {
+                issuer = payload.iss;
+            } else if (header.kid && header.kid.startsWith("did:")) {
+                issuer = header.kid.trim().split("#")[0];
+            }
+            const resolvedPublicKeysFromDid = await this.resolverService.resolveDID(issuer)
+            if (!resolvedPublicKeysFromDid) {
+                throw new Error('Failed to resolve DID');
+            }
+            // Verify the request.
+            await this.issuer.verifyJWT(request.id_token, resolvedPublicKeysFromDid, issuer, header.alg)
+            const nonceData = await this.nonce.getNonceByField('nonce', payload.nonce, NonceStep.AUTHORIZE, NonceStatus.UNCLAIMED, issuer);
+            // Extract the client-defined state from the authorization response.
+            const state = nonceData.payload.clientDefinedState;
+            const redirectUri = nonceData.payload.redirectUri ?? 'openid://';
+            // Generate a unique code for the client.
+            const code = generateRandomString(25);
+            // Update the nonce for the client, including the generated code and ID token.
+            await this.nonce.createAuthResponseNonce(payload.nonce, code, request.id_token);
+            const redirectUrl = await this.provider.getInstance().createAuthorizationRequest(code, state, redirectUri);
+            return { header, code: 302, url: redirectUrl };
+        } catch (error) {
+            return { code: 400 };
+        }
     }
 
     /**
@@ -134,7 +133,6 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
     async token(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
-        console.log({ request })
         // Retrieve the nonce data to ensure it exists and is unclaimed.
         const nonceData = await this.nonce.getNonceByField('code', request.code, NonceStep.AUTH_RESPONSE, NonceStatus.UNCLAIMED, request.client_id);
         // Validate the code challenge against the one sent in the initial auth request.
@@ -160,34 +158,35 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
     async credentail(request: any): Promise<{ header: any, code: number, response: any }> {
-        // Decode the request payload to retrieve the nonce and other details.
-        const decodedRequest = await this.provider.getInstance().decodeCredentialRequest(request);
-        const cNonce = decodedRequest.nonce;
+        try {
+            // Decode the request payload to retrieve the nonce and other details.
+            const decodedRequest = await this.provider.getInstance().decodeCredentialRequest(request);
+            const cNonce = decodedRequest.nonce;
+            // Retrieve the nonce data associated with the cNonce to ensure it exists and is unclaimed.
+            const nonceData = await this.nonce.getNonceByField('cNonce', cNonce, NonceStep.TOKEN_REQUEST, NonceStatus.UNCLAIMED, request.client_id);
+            // Validate the issuer of the request against the stored nonce data.
+            if (decodedRequest.iss !== nonceData.clientId) {
+                throw new Error('Invalid issuer');
+            }
+            // Extract the requested credentials from the nonce payload.
+            const requestedCredentials = nonceData.payload.authorizationDetails[0].types;
+            // Retrieve the DID of the client from the nonce data.
+            const did = nonceData.clientId;
 
-        // Retrieve the nonce data associated with the cNonce to ensure it exists and is unclaimed.
-        const nonceData = await this.nonce.getNonceByField('cNonce', cNonce, NonceStep.TOKEN_REQUEST, NonceStatus.UNCLAIMED, request.client_id);
+            // Create the verifiable credential.
+            let vcId = await this.handleCredentialCreation(did, requestedCredentials);
 
-        // Validate the issuer of the request against the stored nonce data.
-        if (decodedRequest.iss !== nonceData.clientId) {
-            throw new Error('Invalid issuer');
+            // Compose the deferred credential response.
+            const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS
+            const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
+            const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, vcId);
+
+            // Update the nonce for the client, including the acceptance token.
+            await this.nonce.createDeferredResoponse(nonceData.nonce, response.acceptance_token);
+            return { header: this.header, code: 200, response };
+        } catch (error) {
+            return { header: this.header, code: 400, response: 'Invalid request' };
         }
-        // Extract the requested credentials from the nonce payload.
-        const requestedCredentials = nonceData.payload.authorizationDetails[0].types;
-        // Retrieve the DID of the client from the nonce data.
-        const did = nonceData.clientId;
-
-        // Create the verifiable credential.
-        let vcId = await this.handleCredentialCreation(did, requestedCredentials);
-
-        // Compose the deferred credential response.
-        const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS
-        const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
-        const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, vcId);
-
-        // Update the nonce for the client, including the acceptance token.
-        await this.nonce.createDeferredResoponse(nonceData.nonce, response.acceptance_token);
-
-        return { header: this.header, code: 200, response };
     }
 
     /**
@@ -199,33 +198,25 @@ export class AuthService {
         // Extract the bearer token from the request headers.
         const acceptanceToken = extractBearerToken(request.headers);
         // Decode the acceptance token to validate its contents.
-        const decodedAcceptanceToken = await this.issuer.decodeJWT(acceptanceToken) as any;
-        console.log({ decodedAcceptanceToken })
+        const { header, payload } = await this.issuer.verifyBearerToken(acceptanceToken);
+        const bearerPayload = payload as unknown as { vcId: number };
         // Validate the decoded acceptance token.
-        if (!decodedAcceptanceToken || !decodedAcceptanceToken.vcId) {
+        if (!payload || !bearerPayload.vcId) {
             return { header: this.header, code: 400, response: 'Invalid acceptance token' };
         }
         // Retrieve the credential by its ID.
-        const credential = await this.vcService.findOne(decodedAcceptanceToken.vcId);
+        const credential = await this.vcService.findOne(bearerPayload.vcId);
         if (!credential) {
             return { header: this.header, code: 500, response: 'Credential not found' };
         }
-
-        console.log({ status: credential.status })
         // Determine the response based on the credential's status.
         switch (credential.status) {
             case VCStatus.ISSUED:
-                console.log({ signed: credential.credential_signed })
-                // if (credential.credential_signed === '{}') {
                 const cNonce = generateRandomString(25);
                 const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS // TODO: Update!!!
                 const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
-                console.log({ credential })
                 const response = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, credential.credential_signed);
-                console.log({ response })
                 return { header: this.header, code: 200, response: response };
-                // }
-                return { header: this.header, code: 500, response: 'Credential not found' };
             case VCStatus.PENDING:
                 return { header: this.header, code: 202, response: 'Credential status: pending' };
             case VCStatus.REJECTED:

@@ -134,7 +134,6 @@ export class VcService {
     }
 
     async issueVerifiableCredential(id: number): Promise<{ code: number, response: string }> {
-        console.log({ id })
         const vc = await this.vcRepository.findOne({
             where: { id: id },
             relations: ["did", "did.student"],
@@ -144,8 +143,6 @@ export class VcService {
                 code: 400, response: `VC with ID ${id} not found.`
             }
         }
-        console.log({ vc })
-
         if (!vc.did.student) {
             return {
                 code: 400, response: `Student not found for VC with ID ${id}.`

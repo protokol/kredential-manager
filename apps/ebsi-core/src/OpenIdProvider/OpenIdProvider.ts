@@ -5,10 +5,9 @@ import { IdTokenRequestComposer } from "./helpers/2.OP.id-token-request.composer
 import { AuthorizationResponseComposer } from "./helpers/4.OP.auth-response.composer";
 import { TokenResponseComposer } from "./helpers/6.OP.token-response.composer";
 import { parseDuration } from "./utils/parse-duration.utility";
-import { JwtHeader } from "./interfaces/id-token-request.interface";
+import { JHeader } from "./interfaces/JHeader.interface";
 import { CredentialResponseComposer } from "./helpers/8.OP.credential-response.composer";
-import { IdTokenResponseDecoded } from "./interfaces/id-token-response-decoded.interface";
-import { AuthorizationDetail, CredentialRequestPayload } from "./interfaces";
+import { AuthorizationDetail, CredentialRequestPayload, JWT } from "./interfaces";
 import { generateRandomString } from "./utils/random-string.util";
 import { JwtUtil } from "./../Signer";
 export class OpenIdProvider {
@@ -119,14 +118,14 @@ export class OpenIdProvider {
         return { verifiedRequest: request, authDetails };
     }
 
-    async handleAuthorizationRequest(request: AuthorizeRequestSigned): Promise<({ header: JwtHeader, redirectUrl: string, authDetails: AuthorizationDetail[], serverDefinedState: string })> {
+    async handleAuthorizationRequest(request: AuthorizeRequestSigned): Promise<({ header: JHeader, redirectUrl: string, authDetails: AuthorizationDetail[], serverDefinedState: string })> {
         // Verify the authorization request
         const { verifiedRequest, authDetails } = await this.verifyAuthorizeRequest(request);
 
         const serverDefinedState = generateRandomString(16);
 
         // Jwt Header
-        const header: JwtHeader = {
+        const header: JHeader = {
             typ: 'JWT',
             alg: 'ES256',
             kid: this.privateKey.kid ?? ''
@@ -154,37 +153,38 @@ export class OpenIdProvider {
         return { header, redirectUrl, authDetails, serverDefinedState };
     }
 
-    async decodeIdTokenRequest(request: string): Promise<IdTokenResponseDecoded> {
-        const decoded = await this.jwtUtil.decodeJwt(request)
-        if (!decoded) {
-            throw new Error('Invalid ID token request.');
+    async decodeIdTokenRequest(request: string): Promise<JWT> {
+        try {
+            const { payload, header } = await this.jwtUtil.decodeJwt(request);
+            return { header, payload: payload };
+        } catch (error) {
+            throw new Error('Failed to decode token');
         }
-        const decodedRequest = {
-            ...decoded,
-            nonce: decoded.nonce as string
-        } as IdTokenResponseDecoded
-        return decodedRequest;
     }
 
     async decodeCredentialRequest(request: any): Promise<CredentialRequestPayload> {
-        //TODO RESOLVER validation
         if (request.proof.proof_type !== 'jwt') {
             throw new Error('Invalid proof token request.');
         }
-        const header = await this.jwtUtil.decodeProtectedHeader(request.proof.jwt) as { typ: string }
+        const { header, payload } = await this.jwtUtil.decodeJwt(request.proof.jwt)
+
         if (header && header.typ !== 'openid4vci-proof+jwt') {
             throw new Error('Invalid proof token request.');
         }
-        const decoded = await this.jwtUtil.decodeJwt(request.proof.jwt)
-        if (!decoded) {
-            throw new Error('Invalid cred token request.');
+        if (!header.kid) {
+            throw new Error('Invalid kid.');
         }
-        const decodedRequest = {
-            ...decoded,
-            nonce: decoded.nonce as string
+        if (!payload.iat || !payload.exp) {
+            throw new Error('Invalid exp.');
+        }
+        if (!payload) {
+            throw new Error('Invalid token request.');
+        }
+        return {
+            ...payload,
+            nonce: payload.nonce as string
         } as CredentialRequestPayload
 
-        return decodedRequest;
     }
 
     async createAuthorizationRequest(code: string, state: string, redirectUri: string): Promise<string> {
@@ -220,10 +220,4 @@ export class OpenIdProvider {
             throw new Error('Unsupported request object signing algorithm');
         }
     }
-
-    /**
-   * Generates a code challenge from a code verifier.
-   * @param {string} codeVerifier - The code verifier.
-   * @returns {string} - The code challenge.
-   */
 }

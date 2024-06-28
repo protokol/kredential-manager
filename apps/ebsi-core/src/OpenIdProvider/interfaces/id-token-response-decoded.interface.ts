@@ -1,5 +1,4 @@
-import { JWTPayload } from "./JWTPayload.interface";
-
-export interface IdTokenResponseDecoded extends JWTPayload {
+import { JPayload } from "./JPayload.interface";
+export interface IdTokenResponseDecoded extends JPayload {
     nonce: string;
 }

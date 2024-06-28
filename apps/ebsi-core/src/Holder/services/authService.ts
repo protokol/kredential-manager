@@ -2,7 +2,7 @@ import { parseAuthorizeRequestSigned } from "../utils/parseAuthorizationRequest"
 import { parseRedirectHeaders } from "../utils/parseRedirectHeaders";
 import { parseAuthorizationResponse } from "../utils/parseAuthorizationResponse";
 import { HttpClient } from '../utils/httpClient';
-import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JwtHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer } from '../../OpenIdProvider';
+import { AuthRequestComposer, IdTokenResponse, IdTokenResponseComposer, JHeader, OpenIdConfiguration, OpenIdIssuer, TokenRequest, TokenRequestComposer } from '../../OpenIdProvider';
 import { generateRandomString } from './../../OpenIdProvider/utils/random-string.util';
 import { JWK } from "./../../Keys";
 import { JwtUtil } from "./../../Signer";
@@ -29,14 +29,12 @@ export class AuthService {
      */
     async authenticateWithIssuer(openIdIssuer: OpenIdIssuer, openIdMetadata: OpenIdConfiguration, requestedCredentials: string[], clientId: string, codeVerifier: string, codeChallenge: string): Promise<any> {
 
-        console.log('Holder')
-
         const clientDefinedState = generateRandomString(50)
         const cliendDefinedNonce = generateRandomString(25)
-
+        const redirectUri = 'openid://'
         try {
             const authRequest = AuthRequestComposer
-                .holder('code', clientId, 'openid:', { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')
+                .holder('code', clientId, redirectUri, { authorization_endpoint: 'openid:' }, codeChallenge, 'S256')
                 .setIssuerUrl(openIdIssuer.authorization_endpoint)
                 .addAuthDetails([
                     {
@@ -53,25 +51,25 @@ export class AuthService {
 
             if (authResult.status !== 302) throw new Error('Invalid status code')
 
+            console.log({ A: authRequest.createGetRequestUrl() })
             // // Extract ID Token from the authorization response
             const { location } = parseRedirectHeaders(authResult.headers)
             const parsedSignedRequest = parseAuthorizeRequestSigned(location);
             const signedRequest = parsedSignedRequest.request ?? ''
 
-            const decodedRequest = await this.signer.decodeFromUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, this.privateKey.kid ?? '', 'ES256')
-            if (!decodedRequest) throw new Error('Could not decode signed request')
-
-            const { header: idTokenReqHeader, payload: idTokenReqPayload } = decodedRequest
-
+            const decodedRequest = await this.signer.verifyJwtFromUrl(signedRequest, openIdMetadata.issuer, openIdMetadata.jwks_uri, this.privateKey.kid ?? '', 'ES256')
+            const { payload: idTokenReqPayload } = decodedRequest
+            if (typeof idTokenReqPayload === 'string') {
+                throw new Error('Expected JWTPayload but received string');
+            }
             if (idTokenReqPayload.iss !== openIdIssuer.credential_issuer) throw new Error('Issuer does not match')
             if (idTokenReqPayload.aud !== clientId) throw new Error('Audience does not match')
-            if (idTokenReqPayload.exp < Math.floor(Date.now() / 1000)) throw new Error('Token expired')
+            if (idTokenReqPayload && idTokenReqPayload.exp && idTokenReqPayload.exp < Math.floor(Date.now() / 1000)) throw new Error('Token expired')
             if (idTokenReqPayload.nonce !== cliendDefinedNonce) throw new Error('Nonce does not match')
-            // log({ parsedSignedRequest })
             const serverDefinedState = parsedSignedRequest.state ?? ''
 
             // 3.) ID Token Response
-            const header: JwtHeader = {
+            const header: JHeader = {
                 typ: 'JWT',
                 alg: 'ES256',
                 kid: this.privateKey.kid ?? ''
@@ -87,11 +85,10 @@ export class AuthService {
                     nonce: idTokenReqPayload.nonce
                 } as IdTokenResponse)
                 .compose();
-
             const authorizationResponse = await this.httpClient.post(openIdMetadata.redirect_uris[0], idTokenResponseBody, { headers: { "Content-Type": 'application/x-www-form-urlencoded', ...header } });
             const { location: idLocation } = parseRedirectHeaders(authorizationResponse.headers)
             if (authorizationResponse.status !== 302) throw new Error('Invalid status code')
-            const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.split('?')[1])
+            const parsedAuthorizationResponse = parseAuthorizationResponse(idLocation.replace(redirectUri, ''))
             if (parsedAuthorizationResponse.state !== clientDefinedState) throw new Error('State does not match')
 
             const tokenRequestBody = await new TokenRequestComposer(

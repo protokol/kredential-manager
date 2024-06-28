@@ -73,14 +73,13 @@ export class CredentialResponseComposer {
     async deferred(vcId: number): Promise<CredentialDeferredResponse> {
         // Create the payload for the JWT token
         const payload: BearerToken = {
-            iss: this.privateKey.iss as string,
+            iss: this.issuer,
             aud: this.privateKey.aud as string[],
             sub: this.privateKey.sub as string,
             exp: Math.floor(Date.now() / 1000) + this.tokenExpiresIn,
             iat: Math.floor(Date.now() / 1000),
             vcId: vcId,
         };
-
         // Sign the JWT token using the private key
         const acceptanceToken = await this.jwtUtil.sign(payload, {}, 'ES256');
 

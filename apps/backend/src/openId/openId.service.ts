@@ -1,9 +1,69 @@
 import { Injectable } from '@nestjs/common';
-import { JwtUtil } from '@probeta/mp-core';
-import { OpenIdProvider, getOpenIdConfigMetadata, getOpenIdIssuerMetadata } from '@probeta/mp-core';
+import { OpenIdIssuer, OpenIdProvider, getOpenIdConfigMetadata } from '@probeta/mp-core';
 import { EnterpriseJwtUtil } from '../issuer/jwt.util';
 
+export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
 
+    return {
+        credential_issuer: `${baseUrl}`,
+        authorization_endpoint: `${baseUrl}/authorize`,
+        credential_endpoint: `${baseUrl}/credential`,
+        deferred_credential_endpoint: `${baseUrl}/credential_deferred`,
+        credentials_supported: [
+            {
+                format: 'jwt',
+                types: ['VerifiableCredential', 'UniversityDegreeCredential'],
+                trust_framework: {
+                    name: 'Best university',
+                    type: 'university',
+                    uri: 'https://www.best-university.ever'
+                },
+                display: [
+                    {
+                        name: 'University degree',
+                        locale: 'en'
+                    }
+                ],
+                issuance_criteria: "Graduation from an accredited institution",
+                supported_evidence_types: ["Transcript", "Diploma"]
+            },
+            {
+                format: 'jwt',
+                types: ['VerifiableCredential', 'ProfessionalCertification'],
+                trust_framework: {
+                    name: 'Best university',
+                    type: 'university',
+                    uri: 'https://www.best-university.ever'
+                },
+                display: [
+                    {
+                        name: 'Professional certification',
+                        locale: 'en'
+                    }
+                ],
+                issuance_criteria: "Completion of a certified professional course",
+                supported_evidence_types: ["Certificate of Completion", "Portfolio"]
+            },
+            {
+                format: 'jwt_vc',
+                types: [
+                    'VerifiableCredential',
+                    'VerifiableAttestation',
+                    'CTWalletSameAuthorisedInTime'
+                ],
+                trust_framework: {
+                    name: 'Best university',
+                    type: 'university',
+                    uri: 'https://www.best-university.ever'
+                },
+                display: [
+                ],
+                issuance_criteria: "",
+                supported_evidence_types: []
+            },
+        ]
+    };
+}
 @Injectable()
 export class OpenIDProviderService {
     private provider: OpenIdProvider;
@@ -23,32 +83,11 @@ export class OpenIDProviderService {
             d: 'B8tLRpFVeS3qH2BfE2x5FC-gYr7kVmNrzi4icpPY2r0',
             kid: process.env.ISSUER_PRIVATE_KEY_ID
         }
-        const publicKeyJwk = {
-            alg: 'ES256',
-            kid: process.env.ISSUER_PRIVATE_KEY_ID,
-            kty: 'EC',
-            crv: 'P-256',
-            x: 'NbkoaUnGy2ma932oIHHxmVr_m3uGeMO7DSJXbXEBAio',
-            y: 'oonFfsV2IRHXoDq0_pvMfHScaKGUNKm5Y43ohxAaAK0'
-        }
-        // const did = 'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbpaGopKzQGeeT4LCe43YSbhPXuW2mjLTuhkgd13k6DB1dLjWVsdTrCAo61hEp4gEYV8tQpLUN27DrZz1GFBs95xN9DeFRe42sdYzGPAFGuQE2QtQYYFghjwk8rNvcZKKRXa'
-        // const privateKeyJwk = {
-        //     kty: 'EC',
-        //     crv: 'P-256',
-        //     x: 'LRaCkqu0wAKW5Cujqh-I8qfu_oa2cHeaECk5UopjM30',
-        //     y: 'YxOFMMQDiZgmQU7KQZ-_UbFlU7I4ac734v220P3YprM',
-        //     d: 'ccprsAc4whgJN3hja1Pco99je9BIHVPviG7YacDyWjA'
-        // }
-        // const publicKeyJwk = {
-        //     kty: 'EC',
-        //     crv: 'P-256',
-        //     x: 'LRaCkqu0wAKW5Cujqh-I8qfu_oa2cHeaECk5UopjM30',
-        //     y: 'YxOFMMQDiZgmQU7KQZ-_UbFlU7I4ac734v220P3YprM'
-        // }
-
 
         this.jwtUtil = new EnterpriseJwtUtil(privateKeyJwk);
         this.provider = new OpenIdProvider(issuerMetadata, configMetadata, privateKeyJwk, this.jwtUtil);
+
+        console.log({ issuerMetadata })
     }
 
     getInstance() {

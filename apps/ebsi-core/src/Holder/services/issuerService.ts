@@ -1,14 +1,15 @@
 import { JwtUtil } from "./../../Signer";
 import { CredentialRequestComposer, OpenIdConfiguration, OpenIdIssuer } from "../../OpenIdProvider";
 import { HttpClient } from "../utils/httpClient";
-import { MOCK_DID_KEY, MOCK_DID_KEY_PRIVATE_KEY_JWK } from "../utils/mocks";
 
 export class IssuerService {
     private httpClient: HttpClient;
     private signer: JwtUtil;
-    constructor(signer: JwtUtil) {
+    private did: string;
+    constructor(did: string, signer: JwtUtil) {
         this.httpClient = new HttpClient();
         this.signer = signer;
+        this.did = did;
     }
 
     /**
@@ -53,7 +54,7 @@ export class IssuerService {
             const credentialRequest = await new CredentialRequestComposer(this.signer)
                 .setPayload({
                     aud: issuerMetadata.credential_issuer,
-                    iss: MOCK_DID_KEY,
+                    iss: this.did,
                     iat: Math.floor(Date.now() / 1000),
                     exp: Math.floor(Date.now() / 1000) + 60,
                     nonce: cNonce,
@@ -61,7 +62,7 @@ export class IssuerService {
                 .setHeader({
                     typ: "JWT",
                     alg: "ES256",
-                    kid: MOCK_DID_KEY_PRIVATE_KEY_JWK.kid ?? ''
+                    kid: this.did
                 })
                 .setTypes(requestedCredentials)
                 .setCNonce(cNonce)

@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
-import { VerifiableCredential } from "src/vc/entities/VerifiableCredential";
+import { VerifiableCredential } from "@entities/verifiableCredential.entity";
 import { DeepPartial, Repository, UpdateResult } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Did } from "src/student/entities/did.entity";
+import { Did } from "@entities/did.entity";
 import { Pagination } from "src/types/pagination/PaginationParams";
 import { Sorting } from "src/types/pagination/SortingParams";
 import { Filtering } from "src/types/pagination/FilteringParams";

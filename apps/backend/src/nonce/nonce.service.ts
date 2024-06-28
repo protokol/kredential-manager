@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Nonce } from './entities/nonce.entity';
 import { AuthNonce } from './interfaces/auth-nonce.interface';
 import { NonceStep } from './enum/step.enum';
 import { NonceStatus } from './enum/status.enum';
+import { Nonce } from '@entities/nonce.entity';
 
 
 @Injectable()

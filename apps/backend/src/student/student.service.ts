@@ -10,7 +10,7 @@ import { getOrder, getWhere } from "src/helpers/Order";
 import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
 import { Repository } from "typeorm";
 import { DidService } from "./did.service";
-import dataSource from "./../../db/typeorm.config";
+import { dataSource } from "../db/typeorm.config";
 
 @Injectable()
 export class StudentService {

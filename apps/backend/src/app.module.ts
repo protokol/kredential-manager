@@ -31,9 +31,11 @@ import { NonceService } from "./nonce/nonce.service";
 import { DidService } from "./student/did.service";
 import { AppConfig, DatabaseConfig } from "./config";
 import { Nonce } from "@entities/nonce.entity";
-
+import { dataSourceOptions } from "./db/typeorm.config";
 @Module({
     imports: [
+
+
         ConfigModule.forRoot({
             isGlobal: true, cache: true,
             load: [AppConfig, DatabaseConfig],

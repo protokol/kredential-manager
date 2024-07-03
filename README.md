@@ -1,3 +1,5 @@
+<img src="./docs/images/kredential_logo.png" width="70%">
+
 # Kredential Manager (EBSI Enterprise Wallet)
 
 Kredential Manager is a reference implementation of the EBSI Enterprise Wallet as part of the EBSI Vector project developed and maintained by Protokol B.V.
@@ -17,7 +19,7 @@ The image below shows a high level view of the major parts of the Kredential Man
 In the reference implementation this data has to be entered manually through a form. In the pilot implementation phase data would ideally come from an external system and there would be no need for manual data input. 
 Current implementation is running on AWS infrastructure. CDK scripts to simplify deployment to AWS are also included as part of this implementation.
 
-<img src="./docs/architecture.png" width="70%">
+<img src="./docs/images/architecture.png" width="70%">
 
 ### Project Structure
 

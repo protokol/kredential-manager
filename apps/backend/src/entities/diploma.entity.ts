@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, Relation } from "typeorm";
-import { Student } from "./../../student/entities/student.entity";
-import { Program } from "./../../program/entities/program.entity";
+import { Student } from "./student.entity";
+import { Program } from "./program.entity";
 
 @Entity()
 export class Diploma {

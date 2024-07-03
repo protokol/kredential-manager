@@ -28,6 +28,7 @@ export class AuthRequestComposer {
             client_id: clientId,
             redirect_uri: redirectUri,
             scope,
+            state: '',
         };
     }
 

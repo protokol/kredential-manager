@@ -9,7 +9,7 @@ export interface AuthorizeRequest {
     redirect_uri: string;
     scope: ScopeType;
     issuer_state?: string;
-    state?: string;
+    state: string;
     authorization_details?: AuthorizationDetail[];
     nonce?: string;
     code_challenge?: string;

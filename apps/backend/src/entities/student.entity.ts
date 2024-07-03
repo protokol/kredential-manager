@@ -1,6 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
-import { Enrollment } from "../../enrollment/entities/enrollment.entity";
-import { Diploma } from "../../diploma/entities/diploma.entity";
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Relation } from "typeorm";
+import { Diploma } from "./diploma.entity";
+import { Enrollment } from "./enrollment.entity";
 import { Did } from "./did.entity";
 
 @Entity()
@@ -27,14 +27,14 @@ export class Student {
     email: string;
 
     @OneToMany(() => Enrollment, (enrollment) => enrollment.student)
-    enrollments: Enrollment[];
+    enrollments: Relation<Enrollment[]>;
 
     @OneToMany(() => Diploma, (diploma) => diploma.student)
-    diplomas: Diploma[];
+    diplomas: Relation<Diploma[]>;
 
     @Column({ nullable: true })
     profile_picture: string;
 
     @OneToMany(() => Did, (did) => did.student)
-    dids: Did[];
+    dids: Relation<Did[]>;
 }

@@ -1,90 +1,67 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+<img src="./docs/images/kredential_logo.png" width="70%">
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Kredential Manager (EBSI Enterprise Wallet)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Kredential Manager is a reference implementation of the EBSI Enterprise Wallet as part of the EBSI Vector project developed and maintained by Protokol B.V.
 
-## Description
+It is primarily intended to be used by organizations wanting to issue verifiable credentials in accordance with EBSI guidelines. The frontend of this implementation is flavoured towards the so-called "diploma use case" (student/university relationship) as an example, but the underlying issuance mechanisms are universal and could easily be adapted for other use cases as well.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## User flow - issuance of a verifiable credential (diploma use case)
+- Using a holder wallet (like Kredential wallet by Protokol B.V.) a student can request a verifiable credential from the university they attend
+- Using the Kredential Manager an administrator at the university sees a request for a verifiable credential has been submitted. They have an option to approve or deny the request.
+- After that the holder wallet user will be able to either receive the verifiable credential or is notified the request has been denied
 
-## Installation
+## Architectural overview & design
+The image below shows a high level view of the major parts of the Kredential Manager basic parts. Most (Backend, Identity and access management, Database) are separate Docker images. It also connects to a couple od "outside" services:
+- EBSI layer mainly used for the verification of publicly available DID documents.
+- An external system providing data needed to populate requested verifiable credential schemas. 
+ 
+In the reference implementation this data has to be entered manually through a form. In the pilot implementation phase data would ideally come from an external system and there would be no need for manual data input. 
+Current implementation is running on AWS infrastructure. CDK scripts to simplify deployment to AWS are also included as part of this implementation.
 
-```bash
-$ pnpm install
+<img src="./docs/images/architecture.png" width="70%">
+
+### Project Structure
+
+```text
+.
+├── apps
+│   ├── backend
+│   ├── cdk
+│   ├── ebsi-core
+│   ├── ebsi-holder
+│   ├── ebsi-json-rpc
+│   ├── ebsi-sdk
+│   ├── flows
+│   └── frontend
+└── docs
 ```
 
-## Running the app
+### Apps Folder
+Currently, contains working directories for:
+- `cdk` - AWS CDK for deploying infrastructure (if needed). AWS CDK is IaC (Infrastructure as Code) framework for AWS making it easy to deploy same infrastructure to various environments.
+- `backend` - Backend application. Currently using [Nest.js](https://nestjs.com/).
+- `frontend` - Frontend application. Currently using [Next.js](https://nextjs.org/) and [tailwindcss](https://tailwindcss.com/).
 
-```bash
-# development
-$ pnpm run start
+### CI/CD
 
-# watch mode
-$ pnpm run start:dev
+For CI/CD we are currently using GitHub Actions.
 
-# production mode
-$ pnpm run start:prod
-```
+## Installation guide
 
-## Test
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Migrations
-
-```bash
-# Shows the list of migrations [X] 1 User1706693352673
-$ pnpm typeorm:show 
-
-# Creates the migration with custom name
-$ pnpm typeorm:generate src/migrations/{migration-name}
-
-# Runs the migrations
-$ pnpm typeorm:migrate
-
-# Reverts the migration
-$ pnpm typeorm:revert
-
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
--   Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
--   Website - [https://nestjs.com](https://nestjs.com/)
--   Twitter - [@nestframework](https://twitter.com/nestframework)
+### Prerequisites
+The organisation running this system needs to be onboarded to EBSI first. That means it needs to have a DID created and the DID document needs to be registered to EBSI. Details on this can be found here:
+//TODO 
 
 ## License
+This project is licensed under a dual license model. For use with the EBSI Vector Pilot project, it is available under the GNU Affero General Public License v3.0 (AGPL-3.0). For all other uses, a commercial license is required. Please refer to the [AGPL-3.0 license text](https://www.gnu.org/licenses/agpl-3.0.en.html#license-text) for more details on the terms and conditions. For commercial licensing inquiries, please contact us at info@protokol.com.
 
-Nest is [MIT licensed](LICENSE).
+# Contact Us For Support And Custom Development
+
+info@protokol.com
+
+
+---
+
+
+

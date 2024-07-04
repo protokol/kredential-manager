@@ -8,10 +8,10 @@ import { AuthNonce } from './../nonce/interfaces/auth-nonce.interface';
 import { NonceStep } from './../nonce/enum/step.enum';
 import { NonceStatus } from './../nonce/enum/status.enum';
 import { VcService } from './../vc/vc.service';
-import { DidService } from 'src/student/did.service';
-import { VCStatus } from 'src/types/VC';
+import { DidService } from './../student/did.service';
+import { VCStatus } from './../types/VC';
 import { validateCodeChallenge } from './../issuer/hash.util';
-import { ResolverService } from 'src/resolver/resolver.service';
+import { ResolverService } from './../resolver/resolver.service';
 
 const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000; // TODO: Move to a shared utility file.
 @Injectable()

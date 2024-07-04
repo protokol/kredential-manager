@@ -110,6 +110,8 @@ export class AuthController {
     ) {
         try {
             const { code, response } = await this.auth.credentilDeferred(req);
+            console.log({ response })
+            console.log({ code })
             return res.status(code).json(response);
         } catch (error) {
             return res.status(400).json({ message: error.message });

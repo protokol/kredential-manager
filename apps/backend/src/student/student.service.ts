@@ -83,46 +83,43 @@ export class StudentService {
         return this.studentsRepository.save(updatedStudent);
     }
 
-    async attachDidToStudent(
-        studentId: number,
-        identifier: string,
-    ): Promise<Student> {
+    async attachDidToStudent(studentId: number, identifier: string): Promise<Student> {
         const student = await this.studentsRepository.findOne({
             where: { student_id: studentId },
             relations: ["dids"],
         });
-        if (!student) {
-            throw new BadRequestException(
-                `Student with ID ${studentId} not found`,
-            );
-        }
 
-        const existingDid = student.dids.find(
-            (did) => did.identifier === identifier,
-        );
-        if (existingDid) {
-            throw new BadRequestException(
-                `DID ${identifier} is already attached to student with ID ${studentId}`,
-            );
+        if (!student) {
+            throw new BadRequestException(`Student with ID ${studentId} not found`);
         }
 
         const existingUnattachedDid = await this.didService.findByDid(identifier);
 
         if (!existingUnattachedDid) {
-            throw new BadRequestException(
-                `DID ${identifier} not found`,
-            );
+            throw new BadRequestException(`DID ${identifier} not found`);
         }
 
-        await dataSource.transaction(async (transactionalEntityManager) => {
+        // Start transaction
+        const queryRunner = this.studentsRepository.manager.connection.createQueryRunner();
+        await queryRunner.startTransaction();
+
+        try {
             existingUnattachedDid.student = student;
-            await transactionalEntityManager.save(existingUnattachedDid);
-        });
-        const updatedStudent = await this.studentsRepository.findOne({
-            where: { student_id: studentId },
-            relations: ["dids"],
-        });
-        return updatedStudent;
+            await queryRunner.manager.save(existingUnattachedDid);
+
+            const updatedStudent = await this.studentsRepository.findOne({
+                where: { student_id: studentId },
+                relations: ["dids"],
+            });
+
+            await queryRunner.commitTransaction();
+            return updatedStudent;
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
+        }
     }
 
     async removeDidFromStudent(

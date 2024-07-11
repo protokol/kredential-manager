@@ -37,6 +37,9 @@ const ComponentsPage = () => (
         <Button size='icon-default'>
           <PlusIcon className='h-3.5 w-3.5' />
         </Button>
+        <Button size='icon-default'>
+          <PlusIcon className='h-3.5 w-3.5' />
+        </Button>
         <Button size='icon-default' disabled>
           <PlusIcon className='h-3.5 w-3.5' />
         </Button>

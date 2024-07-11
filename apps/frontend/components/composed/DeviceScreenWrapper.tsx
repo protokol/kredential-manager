@@ -6,7 +6,7 @@ import Link from 'next/link';
 import React from 'react';
 import type { FC, PropsWithChildren } from 'react';
 
-import logo from '@public/BigLogo.png';
+import logo from '@public/enterprise_logo.svg';
 
 import useIsMobile from '@utils/hooks/useIsMobile';
 

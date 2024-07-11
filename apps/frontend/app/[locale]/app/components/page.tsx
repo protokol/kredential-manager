@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
-import logo from '@public/Logo.png';
+import logo from '@public/enterprise_logo.svg';
 
 import { toastError, toastInfo, toastSuccess } from '@utils/toast';
 

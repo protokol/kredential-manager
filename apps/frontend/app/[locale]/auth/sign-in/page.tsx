@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import logo from '@public/BigLogo.png';
+import logo from '@public/enterprise_logo.svg';
 
 import SignInForm from '@components/composed/auth/SignInForm';
 import FullHeightCenterLayout from '@components/composed/layout/FullHeightCenterLayout';

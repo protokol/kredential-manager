@@ -1,11 +1,12 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { FC } from 'react';
+import { useMemo } from 'react';
 
-import logo from '@public/Logo.png';
+import logo from '@public/enterprise_logo.svg';
+import credentialLogo from '@public/kredential_logo.png';
 
 import { cn } from '@utils/cn';
 import { routes } from '@utils/routes';
@@ -22,7 +23,11 @@ const DesktopSidebar: FC<DesktopSidebarProps> = ({
   sidebarCollapsed,
   toggleSidebar
 }) => {
-  const t = useTranslations();
+  const sidebarLogo = useMemo(
+    () => (sidebarCollapsed ? logo : credentialLogo),
+    [sidebarCollapsed]
+  );
+
   return (
     <nav
       className={cn(
@@ -42,8 +47,7 @@ const DesktopSidebar: FC<DesktopSidebarProps> = ({
             }
           )}
         >
-          <Image className='h-5 w-auto' src={logo} alt='logo' />
-          {!sidebarCollapsed && <span>{t('navigation.title')}</span>}
+          <Image className='h-6 w-auto' src={sidebarLogo} alt='logo' />
         </div>
       </Link>
       <NavigationItems

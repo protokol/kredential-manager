@@ -11,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-sky-900 border-transparent border-1.5 text-white enabled:hover:bg-sky-950 focus-visible:bg-sky-950 active:bg-sky-900 active:border-sky-950 disabled:text-slate-600 disabled:bg-slate-200 focus-visible:ring-slate-950',
+          'bg-sky-900 border-transparent border-1.5 text-white enabled:hover:bg-sky-900 focus-visible:bg-sky-950 active:bg-sky-900 active:border-sky-950 disabled:text-slate-600 disabled:bg-slate-200 focus-visible:ring-slate-950',
         secondary:
           'bg-white border-1.5 text-sky-950 border-slate-400 enabled:hover:border-sky-900 enabled:hover:text-sky-950 disabled:text-slate-600 active:bg-white active:border-sky-950 disabled:bg-slate-200 disabled:border-none focus-visible:ring-slate-200',
         green:

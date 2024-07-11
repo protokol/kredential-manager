@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
-import logo from '@public/Logo.png';
+import logo from '@public/enterprise_logo.svg';
 
 import { toastError, toastInfo, toastSuccess } from '@utils/toast';
 
@@ -34,6 +34,9 @@ const ComponentsPage = () => (
         <Button disabled>Primary</Button>
       </div>
       <div className='flex gap-2'>
+        <Button size='icon-default'>
+          <PlusIcon className='h-3.5 w-3.5' />
+        </Button>
         <Button size='icon-default'>
           <PlusIcon className='h-3.5 w-3.5' />
         </Button>

@@ -13,7 +13,8 @@ export const routes = {
       }
     },
     students: {
-      home: '/app/students'
+      home: '/app/students',
+      view: (id: string) => `/app/students/${id}`
     },
     integrations: {
       home: '/app/integrations',

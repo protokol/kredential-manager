@@ -106,14 +106,14 @@ const CredentialDetailedContent = ({
       <div className='flex items-center justify-between'>
         <div className='flex w-full w-full items-center justify-between'>
           {credentialData && (
-            <span className='max-w-69vw overflow-hidden text-ellipsis'>
+            <div className='max-w-64 overflow-hidden text-ellipsis'>
               {credentialData.did.identifier}
-            </span>
+            </div>
           )}
           <Status variant={credentialData?.status} />
         </div>
         {credentialData?.status === VCStatus.PENDING && (
-          <div className='flex gap-3'>
+          <div className='ml-4 flex gap-3'>
             <Button variant='red' onClick={onReject} className='min-w-24'>
               {t('credentials.detailed.reject')}
             </Button>

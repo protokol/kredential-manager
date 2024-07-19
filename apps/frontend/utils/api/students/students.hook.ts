@@ -1,6 +1,7 @@
 import {
   attachStudentToDid,
   createStudent,
+  getStudentById,
   getStudents,
   updateVCStatus
 } from './students.api';
@@ -9,8 +10,7 @@ import type {
   TAttachDidParams,
   TGetVCListParams,
   TStudentParams,
-  TUpdateStatusParams,
-  TVCredential
+  TUpdateStatusParams
 } from './students.type';
 import type {
   UseMutationOptions,
@@ -20,16 +20,26 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const vcQueryKeys = {
   getStudents: 'getStudents',
-  getVCCount: 'getVCCount'
+  getStudentById: 'getStudentById'
 };
 
 export const useGetStudents = (
   params?: TGetVCListParams,
-  config?: UseQueryOptions<PaginatedResource<TVCredential>>
+  config?: UseQueryOptions<PaginatedResource<TStudentParams>>
 ) =>
-  useQuery<PaginatedResource<TVCredential>>({
+  useQuery<PaginatedResource<TStudentParams>>({
     queryFn: () => getStudents(params),
     queryKey: [vcQueryKeys.getStudents, { ...params }],
+    ...config
+  });
+
+export const useGetStudentById = (
+  params: string,
+  config?: UseQueryOptions<TStudentParams>
+) =>
+  useQuery<TStudentParams>({
+    queryFn: () => getStudentById(params),
+    queryKey: [vcQueryKeys.getStudentById, params],
     ...config
   });
 

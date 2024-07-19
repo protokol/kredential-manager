@@ -15,6 +15,9 @@ export const getStudents = async (params?: TGetVCListParams) =>
     .get<PaginatedResource<any>>('/students', { params })
     .then((res) => res.data);
 
+export const getStudentById = async (id: string) =>
+  request.get<TStudentParams>(`/students/${id}`).then((res) => res.data);
+
 export const updateVCStatus = async (payload: TUpdateStatusParams) => {
   const { id, status } = payload;
   return request

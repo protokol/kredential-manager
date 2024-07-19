@@ -98,5 +98,12 @@
       "diploma": "Diploma",
       "schema_json_info": "Here you can access a JSON Schema that illustrates the format of the credentials."
     }
+  },
+  "students": {
+    "columns": {
+      "name": "Name",
+      "date_of_birth": "Date of birth"
+    },
+    "search_by_name": "Search by students name"
   }
 }

@@ -96,8 +96,10 @@ export class VpcClusterStack extends cdk.Stack {
 			allowAllOutbound: false,
 		});
 		this.databaseSG.addIngressRule(Peer.ipv4(this.vpc.vpcCidrBlock), Port.tcp(5432));
-		// PUBLIC ACCESS!!!
-		this.databaseSG.addIngressRule(Peer.anyIpv4(), Port.tcp(5432));
+		// Allow access to the database from the internet if not in prod
+		if (!process.env.STAGE_NAME) {
+			this.databaseSG.addIngressRule(Peer.anyIpv4(), Port.tcp(5432));
+		}
 
 		// Backend Stack SGs
 		this.backendServiceSG = new SecurityGroup(this, "BackendServiceSG", {
@@ -107,6 +109,8 @@ export class VpcClusterStack extends cdk.Stack {
 			allowAllOutbound: true,
 		});
 		this.backendServiceSG.addIngressRule(Peer.anyIpv4(), Port.tcp(3000));
+		// Allow access to the database from the backend service
+		this.backendServiceSG.addIngressRule(this.databaseSG, Port.tcp(5432));
 
 		// Keycloak Stack SGs
 		this.keycloakServiceSG = new SecurityGroup(this, "KeycloakServiceSG", {

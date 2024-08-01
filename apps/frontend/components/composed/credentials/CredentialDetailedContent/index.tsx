@@ -104,9 +104,9 @@ const CredentialDetailedContent = ({
   return (
     <div>
       <div className='flex items-center justify-between'>
-        <div className='flex w-full w-full items-center justify-between'>
+        <div className='flex w-full items-center gap-4'>
           {credentialData && (
-            <div className='max-w-64 overflow-hidden text-ellipsis'>
+            <div className='ext-lg max-w-64 overflow-hidden text-ellipsis font-bold text-sky-950'>
               {credentialData.did.identifier}
             </div>
           )}

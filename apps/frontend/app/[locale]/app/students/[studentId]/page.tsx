@@ -18,7 +18,7 @@ const StudentDetailedPage: FC<StudentDetailedPageProps> = ({
   const t = useTranslations();
 
   return (
-    <ContentLayout title={t('credentials.credential')}>
+    <ContentLayout title={t('students.title')}>
       <StudentDetailedContent studentId={studentId} />
     </ContentLayout>
   );

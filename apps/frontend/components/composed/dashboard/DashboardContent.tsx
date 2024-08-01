@@ -17,7 +17,7 @@ import { routes } from '@utils/routes';
 
 import InfoCard from '@ui/InfoCard';
 import UpdateData from '@ui/UpdateData';
-import PaginatedTable from '@ui/table/PaginatedTable';
+import Table from '@ui/table/Table';
 import FilterMultiSelect from '@ui/table/filters/FilterMultiSelect';
 import useClientSideMultiSelectFilter from '@ui/table/hooks/useClientSideMultiSelectFilter';
 import useServerSideTableData from '@ui/table/hooks/useServerSideTableData';
@@ -37,12 +37,7 @@ const DashboardContent = () => {
   const openDialog = () => setIsDialogOpen(true);
   const closeDialog = () => setIsDialogOpen(false);
 
-  const {
-    isLoading,
-    data,
-    refetch,
-    tableConfig: { paginationConfig }
-  } = useServerSideTableData({
+  const { isLoading, data, refetch } = useServerSideTableData({
     useDataHook: (apiParams) =>
       useGetVC({ ...apiParams, filter: getStatusFilter(filters) })
   });
@@ -113,13 +108,12 @@ const DashboardContent = () => {
         />
         <UpdateData onRefetch={onRefetch} />
       </div>
-      <PaginatedTable
+      <Table
         isLoading={isLoading}
         columns={vcColumns}
         onRowClick={(rowData) => {
           push(routes.app.credentials.view(String(rowData.id)));
         }}
-        paginationConfig={paginationConfig}
         data={data?.items ?? []}
       />
       <HandleStudentsDialog

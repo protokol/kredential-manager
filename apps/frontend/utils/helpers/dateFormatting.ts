@@ -7,7 +7,8 @@ import { format } from 'date-fns';
  */
 export const formatDate = (date: Date) => format(date, 'MMM dd, yyyy');
 
-export const formatShortDate = (date: Date) => format(date, 'dd.MM.yyyy');
+export const formatShortDate = (date: Date | string) =>
+  format(date, 'dd.MM.yyyy');
 
 // Example: 16.05.2023, 15:35:25
 export const formatDateTime = (date: Date) =>

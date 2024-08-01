@@ -104,7 +104,9 @@ const config: Config = {
         '60vh': '60vh'
       },
       maxWidth: {
-        '69vw': '69vw'
+        '69vw': '69vw',
+        '82vw': '82vw',
+        'content-w': 'calc(100vw - 330px)'
       },
       transitionDuration: {
         4000: '4000ms',

@@ -100,9 +100,19 @@
     }
   },
   "students": {
+    "title": "Students",
+    "students_list": "Students list",
     "columns": {
       "name": "Name",
       "date_of_birth": "Date of birth"
+    },
+    "detailed": {
+      "full_name": "Full name",
+      "date_of_birth": "Date of birth",
+      "address": "Address",
+      "ebsi_id": "EBSI IDs",
+      "issued_credentials": "Issued credentials",
+      "diploma": "Diploma"
     },
     "search_by_name": "Search by students name"
   }

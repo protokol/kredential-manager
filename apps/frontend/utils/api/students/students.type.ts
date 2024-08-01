@@ -21,10 +21,12 @@ export type TAttachDidParams = {
 export type TStudentParams = {
   first_name: string;
   last_name: string;
-  date_of_birth: string;
+  date_of_birth: Date | string;
   nationality: string;
   enrollment_date: string;
   email: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dids?: any[];
 };
 
 export const StatusOptions = [

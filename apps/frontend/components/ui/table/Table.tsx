@@ -32,6 +32,7 @@ export type TableProps<TData extends object> = {
   name?: string;
   placeholder?: ReactNode;
   onRowClick?: (row: TData) => void;
+  activeOnRowClick?: boolean;
   sortConfig?: {
     sorting?: SortingState;
     setSorting?: OnChangeFn<SortingState>;
@@ -45,9 +46,11 @@ const TableComponent = <TData extends object>({
   isLoading,
   placeholder = 'No data to display',
   onRowClick,
+  activeOnRowClick = false,
   sortConfig
 }: TableProps<TData>) => {
   const { tableStorage, onTableStorageChange } = useTableStorage(name);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
   const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(
     tableStorage.columnOrder
@@ -255,6 +258,7 @@ const TableComponent = <TData extends object>({
                 key={row.id}
                 onClick={() => {
                   onRowClick?.(row.original);
+                  setSelectedRowId(row.id);
                 }}
                 className={cn({
                   group: Boolean(onRowClick)
@@ -277,7 +281,11 @@ const TableComponent = <TData extends object>({
                         'whitespace-nowrap bg-white group-hover:bg-slate-50',
                         {
                           'min-w-50 max-w-50 sticky w-50 truncate': isPinned,
-                          'cursor-pointer': Boolean(onRowClick)
+                          'cursor-pointer': Boolean(onRowClick),
+                          'bg-slate-300':
+                            selectedRowId === row.id && activeOnRowClick,
+                          'group-hover:bg-slate-300':
+                            selectedRowId === row.id && activeOnRowClick
                         }
                       )}
                     >

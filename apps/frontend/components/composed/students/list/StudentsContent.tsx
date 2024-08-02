@@ -39,7 +39,7 @@ const StudentsContent = () => {
   return (
     <div>
       <div className='mb-6 text-lg font-bold text-sky-950'>
-        {t('students.students_list')}
+        {t('students.title')}
       </div>
       <div className='my-6 flex justify-between'>
         <div className='min-w-64'>

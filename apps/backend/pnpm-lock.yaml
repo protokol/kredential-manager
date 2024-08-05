@@ -18,7 +18,7 @@ importers:
         specifier: ^8.4.1
         version: 8.4.1
       '@nestjs/common':
-        specifier: ^10.0.0
+        specifier: ^10.3.7
         version: 10.3.7(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.1.14)(rxjs@7.8.1)
       '@nestjs/config':
         specifier: ^3.1.1
@@ -1203,8 +1203,8 @@ packages:
     resolution: {integrity: sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==}
     engines: {node: '>=6.0'}
 
-  chromedriver@126.0.4:
-    resolution: {integrity: sha512-mIdJqdocfN/y9fl5BymIzM9WQLy64x078i5tS1jGFzbFAwXwXrj3zmA86Wf3R/hywPYpWqwXxFGBJHgqZTuGCA==}
+  chromedriver@127.0.1:
+    resolution: {integrity: sha512-j57OWXsxdhwK+faTWA2pi+8hf052qVjZjP0wXnjqY/QglHtlOXWhRj4s7/+ybJRNgs1zQ5csfOyV6sQQdH+Fnw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -4873,7 +4873,7 @@ snapshots:
 
   chrome-trace-event@1.0.3: {}
 
-  chromedriver@126.0.4:
+  chromedriver@127.0.1:
     dependencies:
       '@testim/chrome-version': 1.1.4
       axios: 1.7.2
@@ -6302,7 +6302,7 @@ snapshots:
     dependencies:
       jwk-to-pem: 2.0.5
     optionalDependencies:
-      chromedriver: 126.0.4
+      chromedriver: 127.0.1
     transitivePeerDependencies:
       - debug
       - supports-color

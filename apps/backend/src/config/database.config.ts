@@ -12,9 +12,10 @@ export default registerAs('database', () => ({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  // entities: [`dist/**/*.entity{.ts,.js}`],
   entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
-  synchronize: process.env.NODE_ENV === 'development',
+  synchronize: false, //process.env.NODE_ENV === 'development',
   logging: process.env.NODE_ENV === 'development',
-  migrations: [`${__dirname}/../../db/migrations/*{.ts,.js}`],
+  migrations: [`${__dirname}/db/migrations/*{.ts,.js}`],
   migrationsTableName: 'migrations',
 }));

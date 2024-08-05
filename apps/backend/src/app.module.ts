@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -32,6 +32,7 @@ import { DidService } from "./student/did.service";
 import { AppConfig, DatabaseConfig } from "./config";
 import { Nonce } from "@entities/nonce.entity";
 import { dataSourceOptions } from "./db/typeorm.config";
+import { LoggerMiddleware } from "./logger/LoggerMiddleware";
 @Module({
     imports: [
 
@@ -101,4 +102,11 @@ import { dataSourceOptions } from "./db/typeorm.config";
     ],
     exports: [],
 })
-export class AppModule { }
+
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer): void {
+        consumer.apply(LoggerMiddleware).forRoutes('*');
+    }
+}
+
+// export class AppModule { }

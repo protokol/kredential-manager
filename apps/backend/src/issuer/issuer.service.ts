@@ -28,7 +28,7 @@ export class IssuerService {
                 x: 'NbkoaUnGy2ma932oIHHxmVr_m3uGeMO7DSJXbXEBAio',
                 y: 'oonFfsV2IRHXoDq0_pvMfHScaKGUNKm5Y43ohxAaAK0'
             }
-            this.issuer = 'http://localhost:3000';
+            this.issuer = process.env.ISSUER_BASE_URL ?? '';
             this.did = did;
             this.privateKeyJwk = privateKeyJwk;
             this.publicKeyJwk = publicKeyJwk;

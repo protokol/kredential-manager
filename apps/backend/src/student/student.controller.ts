@@ -44,7 +44,7 @@ export class StudentController {
     async getAll(
         @PaginationParams() paginationParams: Pagination,
         @SortingParams(["first_name"]) sort?: Sorting,
-        @FilteringParams(["first_name"]) filter?: Filtering,
+        @FilteringParams(["first_name", "last_name"]) filter?: Filtering,
     ): Promise<PaginatedResource<Partial<Student>>> {
         return await this.studentService.findAll(
             paginationParams,

@@ -1,6 +1,5 @@
 import type {
   PaginatedResource,
-  TGetVCListParams,
   TUpdateStatusParams,
   TVCCountList,
   TVCredential
@@ -8,10 +7,13 @@ import type {
 
 import request from '@utils/configs/axios';
 
-export const getVC = async (params?: TGetVCListParams) =>
-  request
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getVC = async (params?: any) => {
+  params.sort = 'created_at:desc';
+  return request
     .get<PaginatedResource<TVCredential>>('/verifiable-credentials', { params })
     .then((res) => res.data);
+};
 
 export const getVCById = async (id: string) =>
   request

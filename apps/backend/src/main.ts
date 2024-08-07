@@ -6,8 +6,8 @@ import { ValidationPipe } from "@nestjs/common";
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     const config = new DocumentBuilder()
-        .setTitle("Enterprise Wallet")
-        .setDescription("API for Enterprise Wallet")
+        .setTitle("Kredential")
+        .setDescription("API for Kredential")
         .setVersion("0.2")
         .build();
     const document = SwaggerModule.createDocument(app, config);

@@ -6,7 +6,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from '@navigation';
 
 import { useGetVC } from '@utils/api/credentials/credentials.hook';
-import { StatusOptions } from '@utils/api/credentials/credentials.type';
+import {
+  StatusOptions,
+  VCStatus
+} from '@utils/api/credentials/credentials.type';
 import { getStatusFilter } from '@utils/api/credentials/credentials.utils';
 import { routes } from '@utils/routes';
 
@@ -16,15 +19,23 @@ import FilterMultiSelect from '@ui/table/filters/FilterMultiSelect';
 import useClientSideMultiSelectFilter from '@ui/table/hooks/useClientSideMultiSelectFilter';
 import useServerSideTableData from '@ui/table/hooks/useServerSideTableData';
 
+import useUpdateStatus from '@components/composed/credentials/useUpdateStatus';
 import { useVCCommonColumns } from '@components/composed/credentials/vcCommonColumns';
-import HandleStudentsDialog from '@components/composed/dialogs/HandleStudentsDialog';
+import ApproveCredentialDialog from '@components/composed/dialogs/ApproveCredentialDialog';
+import RejectCredentialDialog from '@components/composed/dialogs/RejectCredentialDialog';
 
 const OverallContent = () => {
   const [filters, setFilters] = useState<string[]>([]);
   const { push } = useRouter();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDid, setSelectedDid] = useState<string | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+
+  const {
+    isApproveDialogOpen,
+    isRejectDialogOpen,
+    setIsApproveDialogOpen,
+    setIsRejectDialogOpen
+  } = useUpdateStatus();
 
   const {
     isLoading,
@@ -39,27 +50,34 @@ const OverallContent = () => {
   const { filteredList: filteredListByType, ...statusFilterConfig } =
     useClientSideMultiSelectFilter(data?.items, StatusOptions, 'status');
 
-  const openDialog = () => setIsDialogOpen(true);
-  const closeDialog = () => setIsDialogOpen(false);
-
   const onRefetchApprove = () => {
     refetch();
-    closeDialog();
+    setIsApproveDialogOpen(false);
+  };
+
+  const onRefetchReject = () => {
+    refetch();
+    setIsRejectDialogOpen(false);
   };
 
   const onRefetch = () => {
     refetch();
   };
 
-  const onChangeStatus = (did: string, selectedRowId: string) => {
+  const onChangeStatus = (
+    did: string,
+    selectedRowId: string,
+    status: VCStatus.APPROVED | VCStatus.REJECTED
+  ) => {
     setSelectedDid(did);
     setSelectedRowId(selectedRowId);
-    openDialog();
+    if (status === VCStatus.APPROVED) setIsApproveDialogOpen(true);
+    if (status === VCStatus.REJECTED) setIsRejectDialogOpen(true);
   };
 
   const { selectedItems } = statusFilterConfig;
   const t = useTranslations();
-  const vcColumns = useVCCommonColumns(onRefetch, onChangeStatus);
+  const vcColumns = useVCCommonColumns(onChangeStatus);
 
   useEffect(() => {
     setFilters(selectedItems);
@@ -87,12 +105,19 @@ const OverallContent = () => {
         paginationConfig={paginationConfig}
         data={data?.items ?? []}
       />
-      <HandleStudentsDialog
-        isOpen={isDialogOpen}
+      <ApproveCredentialDialog
+        isOpen={isApproveDialogOpen}
         onRefetchApprove={onRefetchApprove}
         selectedRowId={selectedRowId}
         selectedDid={selectedDid}
-        onOpenChange={setIsDialogOpen}
+        onOpenChange={setIsApproveDialogOpen}
+      />
+
+      <RejectCredentialDialog
+        isOpen={isRejectDialogOpen}
+        onRefetchApprove={onRefetchReject}
+        selectedRowId={selectedRowId}
+        onOpenChange={setIsRejectDialogOpen}
       />
     </div>
   );

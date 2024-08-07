@@ -31,11 +31,11 @@ const config: Config = {
         200: '#BAE6FD',
         300: '#7DD3FC',
         400: '#38BDF8',
-        500: '#0EA5E9',
-        600: '#0284C7',
+        500: '#04AAFF',
+        600: '#04AAFF',
         700: '#0369A1',
         800: '#075985',
-        900: '#0C4A6E',
+        900: '#04AAFF',
         950: '#082F49'
       },
       green: {
@@ -94,17 +94,34 @@ const config: Config = {
       width: {
         18: '4.5rem', // 72px
         20: '5rem',
+        30: '7.5rem', // 120px
         50: '12.5rem', // 200px
         64: '16rem', // 256px
         '4/5': '80%',
+        128: '32rem', // 512px
+        192: '48rem', // 768px
         'content-w': 'calc(100% - 224px)',
         'radix-popover-trigger': 'var(--radix-popover-trigger-width)'
+      },
+      height: {
+        156: '39rem', // 624px,
+        172: '43rem', // 688px
+        176: '44rem', // 704px
+        184: '46rem', // 736px
+        192: '48rem', // 768px
+        196: '49rem', // 784px
+        228: '57rem' // 912px
+      },
+      minHeight: {
+        172: '43rem' // 688px
       },
       maxHeight: {
         '60vh': '60vh'
       },
       maxWidth: {
-        '69vw': '69vw'
+        '69vw': '69vw',
+        '82vw': '82vw',
+        'content-w': 'calc(100vw - 330px)'
       },
       transitionDuration: {
         4000: '4000ms',

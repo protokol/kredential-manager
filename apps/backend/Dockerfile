@@ -1,18 +1,20 @@
 # Base image
-FROM --platform=linux/amd64 node:20-alpine AS base
+FROM --platform=linux/amd64 node:22-alpine AS base
 WORKDIR /app
 
 # Install dependencies
-FROM --platform=linux/amd64 node:20-alpine AS deps
-RUN npm install -g pnpm
+FROM --platform=linux/amd64 node:22-alpine AS deps
+RUN npm install -g pnpm@9.4 
+RUN pnpm --version
 WORKDIR /app
 COPY package.json pnpm-lock.yaml  ./
 RUN pnpm install
 # RUN ls -la ./node_modules/@probeta
 
 # Rebuild the source code only when needed
-FROM --platform=linux/amd64 node:20-alpine AS builder
-RUN npm install -g pnpm
+FROM --platform=linux/amd64 node:22-alpine AS builder
+RUN npm install -g pnpm@9.4
+RUN pnpm --version
 WORKDIR /app
 RUN rm -rf node_modules/*
 COPY . .

@@ -3,17 +3,19 @@
 import CredentialAdvanced from './sections/CredentialAdvanced';
 import CredentialInformation from './sections/CredentialInformation';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useState } from 'react';
 
 import { useGetVCById } from '@utils/api/credentials/credentials.hook';
-import { useUpdateRequest } from '@utils/api/credentials/credentials.hook';
 import { VCStatus } from '@utils/api/credentials/credentials.type';
-import { toastError, toastInfo, toastSuccess } from '@utils/toast';
 
 import Button from '@ui/Button';
 import Spinner from '@ui/Spinner';
 import Status from '@ui/Status';
 import Accordion from '@ui/accordion/Accordion';
+
+import useUpdateStatus from '@components/composed/credentials/useUpdateStatus';
+import ApproveCredentialDialog from '@components/composed/dialogs/ApproveCredentialDialog';
+import RejectCredentialDialog from '@components/composed/dialogs/RejectCredentialDialog';
 
 const CredentialDetailedContent = ({
   credentialId
@@ -25,99 +27,76 @@ const CredentialDetailedContent = ({
     isLoading,
     refetch
   } = useGetVCById(credentialId);
-  const { mutateAsync: updateRequest, isSuccess } = useUpdateRequest();
   const t = useTranslations();
 
-  useEffect(() => {
-    if (isSuccess) {
-      refetch();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess]);
+  const [selectedDid, setSelectedDid] = useState<string | null>(null);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
-  const undoStatus = async ({ status }: { status: VCStatus }) => {
-    try {
-      const successUndo = await updateRequest({
-        id: Number(credentialId),
-        status
-      });
+  const {
+    isApproveDialogOpen,
+    isRejectDialogOpen,
+    setIsApproveDialogOpen,
+    setIsRejectDialogOpen
+  } = useUpdateStatus();
 
-      if (successUndo) {
-        toastInfo({
-          text: t('credentials.detailed.action_undone')
-        });
-      }
-    } catch (e) {
-      toastError({
-        text: t('credentials.error_message')
-      });
-    }
+  const onRefetchApprove = () => {
+    refetch();
+    setIsApproveDialogOpen(false);
   };
 
-  const updateStatusHandler = async ({ status }: { status: VCStatus }) => {
-    try {
-      const success = await updateRequest({
-        id: Number(credentialId),
-        status
-      });
-
-      if (success) {
-        if (status === VCStatus.APPROVED)
-          toastSuccess({
-            text: t('credentials.approved_success'),
-            duration: 10000,
-            action: () => {
-              undoStatus({ status: VCStatus.PENDING });
-            },
-            actionText: t('credentials.detailed.undo')
-          });
-
-        if (status === VCStatus.REJECTED)
-          toastError({
-            text: t('credentials.rejected_success'),
-            duration: 10000,
-            action: () => {
-              undoStatus({ status: VCStatus.PENDING });
-            },
-            actionText: t('credentials.detailed.undo')
-          });
-      }
-    } catch (e) {
-      toastError({
-        text: t('credentials.error_message')
-      });
-    }
+  const onRefetchReject = () => {
+    refetch();
+    setIsRejectDialogOpen(false);
   };
 
-  const onApprove = async () => {
-    await updateStatusHandler({
-      status: VCStatus.APPROVED
-    });
-  };
-
-  const onReject = async () => {
-    await updateStatusHandler({
-      status: VCStatus.REJECTED
-    });
+  const onChangeStatus = (
+    did: string,
+    selectedRowId: string,
+    status: VCStatus.APPROVED | VCStatus.REJECTED
+  ) => {
+    setSelectedDid(did);
+    setSelectedRowId(selectedRowId);
+    if (status === VCStatus.APPROVED) setIsApproveDialogOpen(true);
+    if (status === VCStatus.REJECTED) setIsRejectDialogOpen(true);
   };
 
   return (
     <div>
       <div className='flex items-center justify-between'>
-        <div className='flex w-full w-full items-center justify-between'>
+        <div className='flex w-full items-center gap-4'>
           {credentialData && (
-            <span className='max-w-69vw overflow-hidden text-ellipsis'>
+            <div className='ext-lg max-w-64 overflow-hidden text-ellipsis font-bold text-sky-950'>
               {credentialData.did.identifier}
-            </span>
+            </div>
           )}
           <Status variant={credentialData?.status} />
         </div>
         {credentialData?.status === VCStatus.PENDING && (
-          <div className='flex gap-3'>
-            <Button variant='red' onClick={onReject} className='min-w-24'>
+          <div className='ml-4 flex gap-3'>
+            <Button
+              variant='red'
+              onClick={() =>
+                onChangeStatus(
+                  credentialData.did.identifier,
+                  String(credentialData.id),
+                  VCStatus.REJECTED
+                )
+              }
+              className='min-w-24'
+            >
               {t('credentials.detailed.reject')}
             </Button>
-            <Button variant='green' onClick={onApprove} className='min-w-24'>
+            <Button
+              variant='green'
+              onClick={() =>
+                onChangeStatus(
+                  credentialData.did.identifier,
+                  String(credentialData.id),
+                  VCStatus.APPROVED
+                )
+              }
+              className='min-w-24'
+            >
               {t('credentials.detailed.approve')}
             </Button>
           </div>
@@ -145,6 +124,21 @@ const CredentialDetailedContent = ({
           ]}
         />
       )}
+
+      <ApproveCredentialDialog
+        isOpen={isApproveDialogOpen}
+        onRefetchApprove={onRefetchApprove}
+        selectedRowId={selectedRowId}
+        selectedDid={selectedDid}
+        onOpenChange={setIsApproveDialogOpen}
+      />
+
+      <RejectCredentialDialog
+        isOpen={isRejectDialogOpen}
+        onRefetchApprove={onRefetchReject}
+        selectedRowId={selectedRowId}
+        onOpenChange={setIsRejectDialogOpen}
+      />
     </div>
   );
 };

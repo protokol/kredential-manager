@@ -4,7 +4,7 @@ import {
     Public,
 } from 'nest-keycloak-connect';
 import { OpenIDProviderService } from '../openId/openId.service';
-import { IssuerService } from 'src/issuer/issuer.service';
+import { IssuerService } from './../issuer/issuer.service';
 import { AuthorizeRequest, IdTokenResponse, JWK, TokenRequestBody, parseDuration } from '@probeta/mp-core';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateAuthDto } from './dto/create-authorization.dto';
@@ -110,6 +110,8 @@ export class AuthController {
     ) {
         try {
             const { code, response } = await this.auth.credentilDeferred(req);
+            console.log({ response })
+            console.log({ code })
             return res.status(code).json(response);
         } catch (error) {
             return res.status(400).json({ message: error.message });

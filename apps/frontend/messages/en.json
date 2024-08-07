@@ -67,6 +67,24 @@
     "latest_credentials": "Latest credentials",
     "approved_success": "You have successfully approved a new credential!",
     "rejected_success": "You rejected a credential request.",
+    "reject": {
+      "title": " Are you sure you want to reject?",
+      "description": "It seems you're attempting to approve a credential request. Are you certain you wish to proceed with this action?",
+      "cancel": "Cancel",
+      "submit": "Yes, reject this request"
+    },
+    "approve": {
+      "title": "Are you sure you want to approve?",
+      "choose_a_student": "Choose a student",
+      "create_new_student": "Create new student",
+      "enter_your_first_name": "Enter your first name",
+      "enter_your_last_name": "Enter your last name",
+      "enter_your_nationality": "Enter your nationality",
+      "email_placeholder": "example@gmail.com",
+      "date_placeholder": "dd/mm/yyyy",
+      "cancel": "Cancel",
+      "submit": "Submit"
+    },
     "columns": {
       "name": "Name",
       "date_requested": "Date requested",
@@ -92,11 +110,31 @@
       "first_name": "First name",
       "last_name": "Last name",
       "date_of_birth": "Date of birth",
+      "nationality": "Nationality",
+      "email": "Email",
+      "enrollment_date": "Enrollment date",
       "address": "Address",
       "ebsi_id": "EBSI ID",
       "credential_type": "Credential Type",
       "diploma": "Diploma",
       "schema_json_info": "Here you can access a JSON Schema that illustrates the format of the credentials."
     }
+  },
+  "students": {
+    "title": "Students",
+    "students_list": "Students list",
+    "columns": {
+      "name": "Name",
+      "date_of_birth": "Date of birth"
+    },
+    "detailed": {
+      "full_name": "Full name",
+      "date_of_birth": "Date of birth",
+      "address": "Address",
+      "ebsi_id": "EBSI IDs",
+      "issued_credentials": "Issued credentials",
+      "diploma": "Diploma"
+    },
+    "search_by_name": "Search by students name"
   }
 }

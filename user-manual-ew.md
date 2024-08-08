@@ -22,24 +22,24 @@ Verifiable Credentials (VCs) are digital attestations issued by a trusted author
 
 ## Dashboard
 Dashboard is the first screen presented after the successful login and serves as a quick overview of current situation.
-<img src="./docs/images/dashboard.png" width="70%">
+<img src="./docs/images/dashboard.png" width="70%" alt="dashboard">
 
 ## Issuing a credential
 From the list of all requests with the status of "pending" select the one you wish to view, approve or reject. The "Quick actions" menu on the right has options for all available actions.
 
-<img src="./docs/images/pending.png" width="70%">
+<img src="./docs/images/pending.png" width="70%" alt="pending">
 
 Before approving a request student info needs to be entered. 
 > [!IMPORTANT]  
 > Please note this form is only available in this reference implementation on order to be able to test the functionality. In the "real world" implementations this data needs to come from an external system and there would be no need for manual data input. 
 
-<img src="./docs/images/student.png" width="70%">
+<img src="./docs/images/student.png" width="70%" alt="student">
 
 Once all the data is entered and verified the VC can be approved (or rejected). Once this is done its status will change to "Approved" or "Rejected" depending on the action that took place. 
 
-<img src="./docs/images/single-vc.png" width="70%">
+<img src="./docs/images/single-vc.png" width="70%" alt="single VC">
 
 ## Students
 This section is only available in the reference implementation for testing purposes. There should be no need for this in "real world" implementations as this data should come from external system(s).
 
-<img src="./docs/images/students.png" width="70%">
+<img src="./docs/images/students.png" width="70%" alt="students">

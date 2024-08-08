@@ -1,4 +1,4 @@
-<img src="./docs/images/kredential_logo.png" width="70%">
+<img src="./docs/images/kredential_logo.png" width="70%" alt="Kredential logo">
 
 # Kredential Manager (EBSI Enterprise Wallet)
 
@@ -13,13 +13,18 @@ It is primarily intended to be used by organizations wanting to issue verifiable
 
 ## Architectural overview & design
 The image below shows a high level view of the major parts of the Kredential Manager basic parts. Most (Backend, Identity and access management, Database) are separate Docker images. It also connects to a couple od "outside" services:
-- EBSI layer mainly used for the verification of publicly available DID documents.
-- An external system providing data needed to populate requested verifiable credential schemas. 
- 
-In the reference implementation this data has to be entered manually through a form. In the pilot implementation phase data would ideally come from an external system and there would be no need for manual data input. 
+- EBSI layer is mainly used for the verification of publicly available DID documents.
+- An external system providing data needed to populate requested verifiable credential schemas. In the reference implementation this data has to be entered manually through a form. In the pilot implementation phase data would ideally come from an external system and there would be no need for manual data input. 
+
+### Data storage
+It has to be noted that all personal data needed to issue a credential is only cached by the system until it is strictly needed for the process of issuance. Once the VC is sent to the holder all personal data is permanently deleted from the system. In case the holder needs a re-issuance of the VC they will have to repeat the request-issue process again.
+
 Current implementation is running on AWS infrastructure. CDK scripts to simplify deployment to AWS are also included as part of this implementation.
 
-<img src="./docs/images/architecture.png" width="70%">
+## Communication with holder wallets
+In order to request a credential holder wallets need a way to communicate with the enterprise wallet. Detailed API documentation is available [here](https://api.eu-dev.protokol.sh/api#OIDC) under the section OIDC
+
+<img src="./docs/images/architecture.png" width="70%" alt="architecture">
 
 ### Project Structure
 
@@ -54,7 +59,7 @@ The organisation running this system needs to be onboarded to EBSI first. That m
 //TODO 
 
 ## License
-This project is licensed under a dual license model. For use with the EBSI Vector Pilot project, it is available under the GNU Affero General Public License v3.0 (AGPL-3.0). For all other uses, a commercial license is required. Please refer to the [AGPL-3.0 license text](https://www.gnu.org/licenses/agpl-3.0.en.html#license-text) for more details on the terms and conditions. For commercial licensing inquiries, please contact us at info@protokol.com.
+The project and its applications can be licensed for use under a dual license model. For use within the EBSI VECTOR Pilot Project of the European Union and by the stakeholders therein, it is made available free of cost under the GNU Affero General Public License v3.0 ([AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.en.html#license-text)). For all other uses, a commercial license, granted on an as-is basis, is available. For the avoidance of doubt, a commercial license does not grant the licensee a license to any background IPR or prior creations. Please refer to the AGPL-3.0 license text for more details on the terms and conditions. For commercial licensing inquiries, please contact us at info@protokol.com.
 
 # Contact Us For Support And Custom Development
 

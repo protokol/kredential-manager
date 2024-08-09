@@ -48,6 +48,7 @@ export class AuthController {
         @Query() req: AuthorizeRequest,
         @Res() res: Response,
     ) {
+        console.log("HERE")
         try {
             const { code, url } = await this.auth.authorize(req);
             return res.redirect(code, url);
@@ -63,6 +64,8 @@ export class AuthController {
         @Res() res: Response,
         @Headers() headers: Record<string, string | string[]>
     ) {
+        console.log("DIRECT POST")
+        console.log({ req })
         try {
             const { code, url } = await this.auth.directPost(req, headers);
             return res.redirect(code, url);
@@ -82,6 +85,7 @@ export class AuthController {
             const { header, code, response } = await this.auth.token(req);
             return res.status(code).json(response);
         } catch (error) {
+            console.log({ error })
             return res.status(400).json({ message: error.message });
         }
     }
@@ -97,6 +101,7 @@ export class AuthController {
             const { code, response } = await this.auth.credentail(req);
             return res.status(code).json(response);
         } catch (error) {
+            console.log({ error })
             return res.status(400).json({ message: error.message });
         }
     }
@@ -114,6 +119,7 @@ export class AuthController {
             console.log({ code })
             return res.status(code).json(response);
         } catch (error) {
+            console.log({ error })
             return res.status(400).json({ message: error.message });
         }
     }

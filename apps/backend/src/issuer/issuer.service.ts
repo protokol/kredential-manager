@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JWK, JWT } from '@probeta/mp-core';
 import { EnterpriseJwtUtil } from './jwt.util';
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class IssuerService {
     private did: string;
@@ -89,17 +90,51 @@ export class IssuerService {
     }
 
     /**
+     * Generate a random JTI.
+     * @returns A random JTI.
+     */
+    private generateRandomJti(): string {
+        return uuidv4();
+    }
+    /**
      * Issue a credential.
      * @param payload The payload to issue the credential with.
      * @returns A promise that resolves to the signed credential.
      */
-    async issueCredential(payload: object): Promise<string> {
+
+    async issueCredential(payload: object, clientId: string, options?: {
+        expirationDate?: Date,
+        validFrom?: Date,
+        vcId?: string,
+        sub?: string,
+        iss?: string,
+        nbf?: number,
+        exp?: number,
+        iat?: number
+    }): Promise<string> {
+        const nowDate = new Date();
+        const nowUnix = Math.floor(Date.now() / 1000);
+        const vcId = `vc:ebsi:untitled#${options?.vcId ?? this.generateRandomJti()}`;
         const extendedUnsignedCredential = {
             ...payload,
-            issuer: this.did,
-            issuanceDate: new Date().toISOString(),
+            jti: vcId,
+            sub: clientId,
+            iss: this.did,
+            nbf: options?.nbf ?? nowUnix,
+            exp: options?.exp ?? nowUnix + 86400, // Default to 24 hours from now
+            iat: options?.iat ?? nowUnix,
+            vc: {
+                ...payload['vc'],
+                id: vcId, // Must be the same as the jti
+                issuer: this.did,
+                issuanceDate: nowDate.toISOString(),
+                issued: nowDate.toISOString(),
+                validFrom: options?.validFrom?.toISOString() || nowDate.toISOString(),
+                expirationDate: options?.expirationDate?.toISOString() || new Date(nowDate.getTime() + 86400000).toISOString(), // Default to 24 hours from now
+            }
         };
         // Sign the credential
         return await this.jwtUtil.sign(extendedUnsignedCredential, {}, 'ES256');
     }
+
 }

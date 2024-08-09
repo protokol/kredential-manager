@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@probeta/mp-core':
-        specifier: ^0.0.21
-        version: link:../ebsi-core
+        specifier: ^0.0.34
+        version: 0.0.34(typescript@5.4.5)
       jose:
         specifier: ^5.3.0
         version: 5.3.0
@@ -40,6 +40,12 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@probeta/mp-core@0.0.27':
+    resolution: {integrity: sha512-T+dxFf8hDoOEDtb1Lw3UpN/nhJXOMLkTwuVM+Q8d5Kd9nZMZfv2WRPaDib5FMG2Pzs/qC3pFUZZTJapW8KmlnQ==}
+
+  '@probeta/mp-core@0.0.34':
+    resolution: {integrity: sha512-p5iP4U86M8b1Xng/ZL2h9rlZ78WpRyKKs8wzl5Yw7feAtKxSx1DBHr0G4L8nP1pAAdxhmTfuY0kjJYx+MZ+/1Q==}
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
@@ -212,6 +218,15 @@ packages:
       '@swc/wasm':
         optional: true
 
+  tslib@2.6.3:
+    resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
+
+  typescript-transformer-esm@1.1.0:
+    resolution: {integrity: sha512-MHLIjH9Oa/NJycV1jEyw//3CsLoncqn4ZlURAwqO5TuRQK5rbVklKQJ8dbeBJKgYA6zV8Q7QrKA3Kt9+kk38DQ==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      typescript: ^4.9.0 || ^5.0.0
+
   typescript@5.4.5:
     resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
     engines: {node: '>=14.17'}
@@ -244,6 +259,21 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
+
+  '@probeta/mp-core@0.0.27(typescript@5.4.5)':
+    dependencies:
+      tslib: 2.6.3
+      typescript-transformer-esm: 1.1.0(typescript@5.4.5)
+    transitivePeerDependencies:
+      - typescript
+
+  '@probeta/mp-core@0.0.34(typescript@5.4.5)':
+    dependencies:
+      '@probeta/mp-core': 0.0.27(typescript@5.4.5)
+      tslib: 2.6.3
+      typescript-transformer-esm: 1.1.0(typescript@5.4.5)
+    transitivePeerDependencies:
+      - typescript
 
   '@tsconfig/node10@1.0.11': {}
 
@@ -398,6 +428,12 @@ snapshots:
       typescript: 5.4.5
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
+
+  tslib@2.6.3: {}
+
+  typescript-transformer-esm@1.1.0(typescript@5.4.5):
+    dependencies:
+      typescript: 5.4.5
 
   typescript@5.4.5: {}
 

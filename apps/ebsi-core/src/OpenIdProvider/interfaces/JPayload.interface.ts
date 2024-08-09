@@ -6,5 +6,6 @@ export interface JPayload {
     nbf?: number | undefined
     exp?: number | undefined
     iat?: number | undefined
+    state?: string | undefined
     nonce?: string | undefined
 }

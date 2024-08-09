@@ -61,6 +61,40 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 issuance_criteria: "",
                 supported_evidence_types: []
             },
+            {
+                format: 'jwt_vc',
+                types: [
+                    'VerifiableCredential',
+                    'VerifiableAttestation',
+                    'CTWalletSameAuthorisedDeferred'
+                ],
+                trust_framework: {
+                    name: 'Best university',
+                    type: 'university',
+                    uri: 'https://www.best-university.ever'
+                },
+                display: [
+                ],
+                issuance_criteria: "",
+                supported_evidence_types: []
+            },
+            {
+                format: 'jwt_vc',
+                types: [
+                    'VerifiableCredential',
+                    'VerifiableAttestation',
+                    'CTWalletSamePreAuthorisedInTime'
+                ],
+                trust_framework: {
+                    name: 'Best university',
+                    type: 'university',
+                    uri: 'https://www.best-university.ever'
+                },
+                display: [
+                ],
+                issuance_criteria: "",
+                supported_evidence_types: []
+            },
         ]
     };
 }
@@ -71,6 +105,7 @@ export class OpenIDProviderService {
 
     constructor() {
         const HOST = process.env.ISSUER_BASE_URL || 'localhost:3000';
+        console.log({ HOST })
         const privateKeyID = process.env.ISSUER_PRIVATE_KEY_ID;
         const issuerMetadata = getOpenIdIssuerMetadata(HOST);
         const configMetadata = getOpenIdConfigMetadata(HOST);

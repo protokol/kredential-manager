@@ -25,6 +25,7 @@ export class ResolverService {
     findPublicKeyById(didResolutionResult: DIDResolutionResult, verificationMethodId: string): JWK {
         const { didDocument } = didResolutionResult;
         const verificationMethod = didDocument.verificationMethod.find(method => method.id.length && method.id.startsWith(verificationMethodId));
+        console.log({ verificationMethod })
         if (!verificationMethod) {
             console.log("Verification method not found for the given ID.");
             return null;

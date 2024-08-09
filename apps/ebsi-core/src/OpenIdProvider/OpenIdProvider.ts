@@ -118,11 +118,13 @@ export class OpenIdProvider {
         return { verifiedRequest: request, authDetails };
     }
 
-    async handleAuthorizationRequest(request: AuthorizeRequestSigned): Promise<({ header: JHeader, redirectUrl: string, authDetails: AuthorizationDetail[], serverDefinedState: string })> {
+    async handleAuthorizationRequest(request: AuthorizeRequestSigned, redirectUri: string): Promise<({ header: JHeader, redirectUrl: string, authDetails: AuthorizationDetail[], serverDefinedState: string, serverDefinedNonce: string })> {
         // Verify the authorization request
         const { verifiedRequest, authDetails } = await this.verifyAuthorizeRequest(request);
 
         const serverDefinedState = generateRandomString(16);
+        const serverDefinedNonce = generateRandomString(25);
+
 
         // Jwt Header
         const header: JHeader = {
@@ -139,18 +141,20 @@ export class OpenIdProvider {
             response_type: 'id_token',
             response_mode: 'direct_post',
             client_id: verifiedRequest.client_id,
-            redirect_uri: verifiedRequest.redirect_uri,
+            redirect_uri: redirectUri,
             scope: 'openid',
             state: serverDefinedState,
-            nonce: request.nonce ?? '' // nonce from the client's request
+            nonce: serverDefinedNonce
         }
         // Compose the redirect URL
-        const redirectUrl = await new IdTokenRequestComposer(this.jwtUtil)
+        const redirectUrl = await new IdTokenRequestComposer(this.jwtUtil, request.redirect_uri)
             .setHeader(header)
             .setPayload(payload)
             .compose()
+
+        // console.log({ redirectUrl })
         // Return header and url
-        return { header, redirectUrl, authDetails, serverDefinedState };
+        return { header, redirectUrl, authDetails, serverDefinedState, serverDefinedNonce };
     }
 
     async decodeIdTokenRequest(request: string): Promise<JWT> {
@@ -174,8 +178,8 @@ export class OpenIdProvider {
         if (!header.kid) {
             throw new Error('Invalid kid.');
         }
-        if (!payload.iat || !payload.exp) {
-            throw new Error('Invalid exp.');
+        if (!payload.iat) {
+            throw new Error('Invalid iat.');
         }
         if (!payload) {
             throw new Error('Invalid token request.');

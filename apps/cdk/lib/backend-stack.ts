@@ -37,8 +37,12 @@ export class BackendStack extends cdk.Stack {
 			environment: {
 				DB_HOST: props.dbInstance.instanceEndpoint.hostname,
 				ISSUER_PRIVATE_KEY: "0xe79990c72548c68da2188b01e665ef4c411279260dcd2fc4107543b3220cf2cf",
-				ISSUER_PRIVATE_KEY_ID: "4cwn_BBI3Jk8RXsmP8nL6wDzTy864Khf4FIpSA_aeNI",
-				ISSUER_BASE_URL: "https://api.eu-dev.protokol.sh",
+				// ISSUER_PRIVATE_KEY_ID: "did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbpjcLy3gYehCgmmjCKEt6pafLdMdcXysUgySbPc4Bno4d7Ef6rk36EFDYnEo1m47SwvTS2S2yLiW1HEyLs3sCs1s7ZkVgknAr8e5YeuTWo23Etw3U83mmRAQji6nSuAAyiU#4cwn_BBI3Jk8RXsmP8nL6wDzTy864Khf4FIpSA_aeNI",
+				// ISSUER_PRIVATE_KEY_ID: "did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbpjcLy3gYehCgmmjCKEt6pafLdMdcXysUgySbPc4Bno4d7Ef6rk36EFDYnEo1m47SwvTS2S2yLiW1HEyLs3sCs1s7ZkVgknAr8e5YeuTWo23Etw3U83mmRAQji6nSuAAyiU",
+				ISSUER_PRIVATE_KEY_ID:
+					"did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbpjcLy3gYehCgmmjCKEt6pafLdMdcXysUgySbPc4Bno4d7Ef6rk36EFDYnEo1m47SwvTS2S2yLiW1HEyLs3sCs1s7ZkVgknAr8e5YeuTWo23Etw3U83mmRAQji6nSuAAyiU#z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbpjcLy3gYehCgmmjCKEt6pafLdMdcXysUgySbPc4Bno4d7Ef6rk36EFDYnEo1m47SwvTS2S2yLiW1HEyLs3sCs1s7ZkVgknAr8e5YeuTWo23Etw3U83mmRAQji6nSuAAyiU",
+				ISSUER_BASE_URL: "https://api.miha.eu-dev.protokol.sh",
+				// ISSUER_BASE_URL: "https://api.eu-dev.protokol.sh",
 				// TODO: Adjust secrets
 				REALM_SERVER: "https://keycloak.eu-dev.protokol.sh",
 				REALM_NAME: "enterprise-wallet-realm",

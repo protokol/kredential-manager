@@ -22,9 +22,19 @@ const main = async () => {
   // console.log({ openIdIssuer })
   // console.log({ openIdMetadata })
   // Authenticate with the issuer
+  // const requestedCredentials = [
+  //   'VerifiableCredential',
+  //   'UniversityDegreeCredential',
+  // ];
+  // const requestedCredentials = [
+  //   "VerifiableCredential",
+  //   "VerifiableAttestation",
+  //   "CTWalletSameAuthorisedInTime"
+  // ];
   const requestedCredentials = [
-    'VerifiableCredential',
-    'UniversityDegreeCredential',
+    "VerifiableCredential",
+    "VerifiableAttestation",
+    "CTWalletSameAuthorisedDeferred"
   ];
 
   const codeVerifier = generateRandomString(50);
@@ -44,7 +54,6 @@ const main = async () => {
     accessToken
   );
   if (credential.credential) {
-    console.log('InTime Credential', credential.credential);
   } else if (credential.acceptance_token) {
     console.log('Deferred Credential');
     const deferredResponse = await hw.deferredCredentialEndpoint(

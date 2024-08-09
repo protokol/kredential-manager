@@ -31,6 +31,7 @@ export class AuthService {
 
         const clientDefinedState = generateRandomString(50)
         const cliendDefinedNonce = generateRandomString(25)
+        const issuerState = 'tracker=' + generateRandomString(10)
         const redirectUri = 'openid://'
         try {
             const authRequest = AuthRequestComposer
@@ -45,6 +46,7 @@ export class AuthService {
                     },
                 ])
                 .setState(clientDefinedState)
+                .setIssuerState(issuerState)
                 .setNonce(cliendDefinedNonce)
 
             const authResult = await this.httpClient.get(authRequest.createGetRequestUrl());
@@ -65,7 +67,6 @@ export class AuthService {
             if (idTokenReqPayload.iss !== openIdIssuer.credential_issuer) throw new Error('Issuer does not match')
             if (idTokenReqPayload.aud !== clientId) throw new Error('Audience does not match')
             if (idTokenReqPayload && idTokenReqPayload.exp && idTokenReqPayload.exp < Math.floor(Date.now() / 1000)) throw new Error('Token expired')
-            if (idTokenReqPayload.nonce !== cliendDefinedNonce) throw new Error('Nonce does not match')
             const serverDefinedState = parsedSignedRequest.state ?? ''
 
             // 3.) ID Token Response
@@ -74,7 +75,7 @@ export class AuthService {
                 alg: 'ES256',
                 kid: this.privateKey.kid ?? ''
             }
-            const idTokenResponseBody = await new IdTokenResponseComposer(this.privateKey, serverDefinedState, this.signer)
+            const idTokenResponseBody = await new IdTokenResponseComposer(this.privateKey, this.signer)
                 .setHeader(header)
                 .setPayload({
                     iss: this.did,
@@ -82,6 +83,7 @@ export class AuthService {
                     aud: openIdIssuer.credential_issuer,
                     exp: Math.floor(Date.now() / 1000) + 60 * 5,
                     iat: Math.floor(Date.now() / 1000),
+                    state: serverDefinedState,
                     nonce: idTokenReqPayload.nonce
                 } as IdTokenResponse)
                 .compose();

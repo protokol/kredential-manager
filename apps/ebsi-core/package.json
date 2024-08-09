@@ -1,6 +1,6 @@
 {
     "name": "@probeta/mp-core",
-    "version": "0.0.26",
+    "version": "0.0.38",
     "type": "module",
     "private": false,
     "devDependencies": {
@@ -22,6 +22,7 @@
         "watch": "onchange 'src/**/*' -- sh -c 'pnpm run build && echo \"export const timestamp = \\\"$(date)\\\";\" > ./../backend/src/reload.ts' && echo 'File updated with timestamp'"
     },
     "dependencies": {
+        "@probeta/mp-core": "^0.0.27",
         "tslib": "^2.6.2",
         "typescript-transformer-esm": "^1.1.0"
     }

@@ -19,7 +19,7 @@ const dataSourceOptions: DataSourceOptions = {
   database: configService.get('DB_NAME'),
   entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
   synchronize: false,
-  logging: configService.get('nodenv') === 'development',
+  logging: false, //configService.get('nodenv') === 'development',
   migrations: [`${__dirname}/migrations/*{.ts,.js}`],
   migrationsTableName: 'migrations',
 };

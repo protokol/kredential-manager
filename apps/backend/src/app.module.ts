@@ -33,10 +33,10 @@ import { AppConfig, DatabaseConfig } from "./config";
 import { Nonce } from "@entities/nonce.entity";
 import { dataSourceOptions } from "./db/typeorm.config";
 import { LoggerMiddleware } from "./logger/LoggerMiddleware";
+import { StateService } from "./state/state.service";
+import { State } from "@entities/state.entity";
 @Module({
     imports: [
-
-
         ConfigModule.forRoot({
             isGlobal: true, cache: true,
             load: [AppConfig, DatabaseConfig],
@@ -48,7 +48,7 @@ import { LoggerMiddleware } from "./logger/LoggerMiddleware";
             }),
             inject: [ConfigService],
         }),
-        TypeOrmModule.forFeature([Nonce]),
+        TypeOrmModule.forFeature([Nonce, State]),
 
         // Keycloak
         KeycloakConnectModule.register({
@@ -96,6 +96,7 @@ import { LoggerMiddleware } from "./logger/LoggerMiddleware";
         },
         ResolverService,
         NonceService,
+        StateService,
         OpenIDProviderService,
         IssuerService,
         AuthService,
@@ -108,5 +109,3 @@ export class AppModule implements NestModule {
         consumer.apply(LoggerMiddleware).forRoutes('*');
     }
 }
-
-// export class AppModule { }

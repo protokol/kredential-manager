@@ -182,17 +182,17 @@ export class AuthService {
 
         // If the grant type is pre-authorized_code, handle it immediately
         if (request.grant_type === 'urn:ietf:params:oauth:grant-type:pre-authorized_code') {
-            if (!request.user_pin || !request.pre_authorized_code) {
-                throw new Error('Missing user pin or pre-authorized code');
-            }
+            // if (!request.user_pin || !request.pre_authorized_code) {
+            //     throw new Error('Missing user pin or pre-authorized code');
+            // }
             // Conformance test
-            if (request.user_pin === '1234' && request.pre_authorized_code === 'SplxlOBeZQQYbYS6WxSbIA') {
-                const stateData = await this.state.getByField('preAuthorisedCode', request.pre_authorized_code, StateStep.AUTHORIZE, StateStatus.UNCLAIMED, request.client_id);
+            // if (request.user_pin === '1234' && request.pre_authorized_code === 'SplxlOBeZQQYbYS6WxSbIA') {
+            //     const stateData = await this.state.getByField('preAuthorisedCode', request.pre_authorized_code, StateStep.AUTHORIZE, StateStatus.UNCLAIMED, request.client_id);
 
-            }
-            if (this.offerCredential(request.user_pin, request.pre_authorized_code)) {
+            // }
+            // if (this.offerCredential(request.user_pin, request.pre_authorized_code)) {
 
-            }
+            // }
         }
 
         // Retrieve the nonce data to ensure it exists and is unclaimed.
@@ -308,19 +308,20 @@ export class AuthService {
      * @param request The request object containing the acceptance token and other necessary details.
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
-    async credentilDeferred(request: any): Promise<{ header: any, code: number, response: any }> {
+    async credentilDeferred(body: any, headers: any): Promise<{ header: any, code: number, response: any }> {
         console.log("STEP: credentilDeferred: ")
-        console.log({ CREDENTIAL_DEFERRED_REQUEST: request })
+        console.log({ CREDENTIAL_DEFERRED_REQUEST_BODY: body })
+        console.log({ CREDENTIAL_DEFERRED_REQUEST_HEADERS: headers })
         // Check if the request headers are defined
-        if (!request.headers) {
+        if (!headers) {
             return { header: this.header, code: 400, response: 'Missing request headers' };
         }
         // Check if the Authorization header is present
-        if (!request.headers['Authorization'] && !request.headers['authorization']) {
+        if (!headers['Authorization'] && !headers['authorization']) {
             return { header: this.header, code: 400, response: 'Missing Authorization header' };
         }
         // Extract the bearer token from the request headers.
-        const acceptanceToken = extractBearerToken(request.headers);
+        const acceptanceToken = extractBearerToken(headers);
         // Decode the acceptance token to validate its contents.
         const { header, payload } = await this.issuer.verifyBearerToken(acceptanceToken);
         const bearerPayload = payload as unknown as { vcId: number };
@@ -355,6 +356,7 @@ export class AuthService {
         if (!isCreated) {
             throw new Error('Failed to create pre-authorised code');
         }
+        return false
     }
     /**
  * Handles the credential offering process.

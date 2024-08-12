@@ -235,14 +235,26 @@ export class VcService {
             return { code: 400, response: `Requested credentials do not match the VC with ID ${id}.` };
         }
 
+        let credentialTyles = []
+        // The order of the credential types is important, the conformance test will fail if the order is not correct 
+        // CTWalletSameAuthorisedInTime|CTWalletSameAuthorisedDeferred must be the last item in the array
+        if (requestedCredentials.includes('CTWalletSameAuthorisedInTime')) {
+            credentialTyles = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "CTWalletSameAuthorisedInTime"
+            ]
+        } else if (requestedCredentials.includes('CTWalletSameAuthorisedDeferred')) {
+            credentialTyles = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "CTWalletSameAuthorisedDeferred"
+            ]
+        }
         const credential = {
             "vc": {
                 "@context": ["https://www.w3.org/2018/credentials/v1"],
-                "type": [
-                    "VerifiableCredential",
-                    "VerifiableAttestation",
-                    "CTWalletSameAuthorisedInTime"
-                ],
+                "type": credentialTyles,
                 "credentialSubject": {
                     "id": clientId
                 },

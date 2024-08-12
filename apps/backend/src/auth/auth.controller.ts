@@ -114,7 +114,8 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const { code, response } = await this.auth.credentilDeferred(req);
+            console.log({ headers })
+            const { code, response } = await this.auth.credentilDeferred(req, headers);
             console.log({ response })
             console.log({ code })
             return res.status(code).json(response);

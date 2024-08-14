@@ -41,7 +41,6 @@ export class StateService {
         });
 
         if (state) {
-
             state.step = StateStep.AUTH_RESPONSE;
             state.status = StateStatus.UNCLAIMED;
             state.code = code;
@@ -83,25 +82,40 @@ export class StateService {
         return false;
     }
 
+    async validatePreAuthorisedAndPinCode(pinCode: string, preAuthorisedCode: string) {
+        const state = await this.stateRepository.findOne({
+            where: { preAuthorisedCode: preAuthorisedCode, preAuthorisedCodePin: pinCode },
+        });
+        if (!state) {
+            return false;
+        }
+        return !state.preAuthorisedCodeIsUsed;
+    }
 
-    async createPreAuthorisedCode(pinCode: string, preAuthorisedCode: string, did: string, requestedCredentials: string[]) {
+    async createPreAuthorisedAndPinCode(pinCode: string, preAuthorisedCode: string, did: string, requestedCredentials: string[]) {
         const state = await this.stateRepository.findOne({
             where: { preAuthorisedCode: preAuthorisedCode, preAuthorisedCodePin: pinCode },
         });
 
-        if (!state) {
-            return false;
+        if (state) {
+            throw new Error('Pre-authorised code and pin code already exists');
         }
 
         const newState = this.stateRepository.create({
             clientId: did,
             payload: {
-                authorizationDetails: {
-                    requestedCredentials
-                }
-            }
+                authorizationDetails: [
+                    {
+                        types: requestedCredentials
+                    }
+                ]
+            },
+            step: StateStep.TOKEN_REQUEST,
+            status: StateStatus.UNCLAIMED,
+            preAuthorisedCode,
+            preAuthorisedCodePin: pinCode,
+            preAuthorisedCodeIsUsed: false,
         });
-
         try {
             await this.stateRepository.save(newState);
         } catch (error) {
@@ -147,6 +161,15 @@ export class StateService {
             case StateStep.TOKEN_REQUEST:
                 throw new Error('Invalid state');
         }
+    }
+
+    async getByPreAuthorisedAndPinCode(pinCode: string, preAuthorisedCode: string,): Promise<State | undefined> {
+        return await this.stateRepository.findOne({ where: { preAuthorisedCode, preAuthorisedCodePin: pinCode } });
+    }
+
+    // Conformance Testing
+    async deleteByPreAuthorisedAndPinCode(pinCode: string, preAuthorisedCode: string): Promise<void> {
+        await this.stateRepository.delete({ preAuthorisedCode, preAuthorisedCodePin: pinCode });
     }
 
 }

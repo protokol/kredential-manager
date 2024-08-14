@@ -36,8 +36,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.2(@nestjs/common@10.3.7(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/core@10.3.7(@nestjs/common@10.3.7(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/platform-express@10.3.7)(reflect-metadata@0.1.14)(rxjs@7.8.1))(reflect-metadata@0.1.14)(rxjs@7.8.1)(typeorm@0.3.20(pg@8.11.5)(ts-node@10.9.2(@types/node@20.12.5)(typescript@5.4.4)))
       '@probeta/mp-core':
-        specifier: ^0.0.38
-        version: 0.0.38(typescript@5.4.4)
+        specifier: ^0.0.40
+        version: 0.0.40(typescript@5.4.4)
       ajv:
         specifier: ^8.12.0
         version: 8.12.0
@@ -680,8 +680,8 @@ packages:
   '@probeta/mp-core@0.0.27':
     resolution: {integrity: sha512-T+dxFf8hDoOEDtb1Lw3UpN/nhJXOMLkTwuVM+Q8d5Kd9nZMZfv2WRPaDib5FMG2Pzs/qC3pFUZZTJapW8KmlnQ==}
 
-  '@probeta/mp-core@0.0.38':
-    resolution: {integrity: sha512-hL/JtUh5Hcqnrz+7wYQwyzmLcZ6ldlP8mqJK4u459/2J5GvM7mG6Ci4Omink+0052CkOfI+PB5BuS54PIOw1Fw==}
+  '@probeta/mp-core@0.0.40':
+    resolution: {integrity: sha512-fHF5R6jZFe+GqwB8x74anYWCKmuAeT9oQIisj9XNXVAtUgqNlk1m6LDWTpdW5wmsX6pz51Gc1u3RIiujPu7nZQ==}
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -4242,7 +4242,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@probeta/mp-core@0.0.38(typescript@5.4.4)':
+  '@probeta/mp-core@0.0.40(typescript@5.4.4)':
     dependencies:
       '@probeta/mp-core': 0.0.27(typescript@5.4.4)
       tslib: 2.6.2

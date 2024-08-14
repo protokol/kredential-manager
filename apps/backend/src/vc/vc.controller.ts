@@ -9,6 +9,7 @@ import {
     HttpCode,
     HttpStatus,
     BadRequestException,
+    HttpException
 } from "@nestjs/common";
 import { VerifiableCredential } from "../entities/verifiableCredential.entity";
 import { VerifiableEducationalID } from "./../types/schema/VerifiableEducationID202311";
@@ -57,13 +58,12 @@ export class VcController {
         @Body() updatePayload: UpdateStatusDto,
     ): Promise<any> {
         if (updatePayload.status == VCStatus.ISSUED) {
-            const { code, response } = await this.vcService.issueVerifiableCredential(id);
-            if (code !== 200) {
-                throw new BadRequestException(
-                    `Error issuing credential: ${response}`,
-                );
+            try {
+                const response = await this.vcService.issueVerifiableCredential(id);
+                return { message: response };
+            } catch (error) {
+                throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
             }
-            return { message: response };
         } else {
             const updateResult = await this.vcService.update(id, updatePayload);
             if (updateResult.affected === 0) {

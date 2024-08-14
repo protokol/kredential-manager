@@ -95,6 +95,23 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 issuance_criteria: "",
                 supported_evidence_types: []
             },
+            {
+                format: 'jwt_vc',
+                types: [
+                    'VerifiableCredential',
+                    'VerifiableAttestation',
+                    'CTWalletSamePreAuthorisedDeferred'
+                ],
+                trust_framework: {
+                    name: 'Best university',
+                    type: 'university',
+                    uri: 'https://www.best-university.ever'
+                },
+                display: [
+                ],
+                issuance_criteria: "",
+                supported_evidence_types: []
+            },
         ]
     };
 }

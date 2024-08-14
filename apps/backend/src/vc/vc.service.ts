@@ -193,13 +193,15 @@ export class VcService {
         );
     }
 
-    // Issue the verifiable credential
-    async issueVerifiableCredential(id: number): Promise<{ code: number, response: string }> {
+    async issueVerifiableCredential(id: number): Promise<string> {
+        console.log("STEP: issueVerifiableCredential: ")
         const vc = await this.findVerifiableCredentialById(id);
+        console.log("STEP: issueVerifiableCredential: 1")
+        console.log({ vc })
         const { isValid, errorMessage } = await this.validateVerifiableCredential(vc, id);
 
         if (!isValid) {
-            return { code: 400, response: errorMessage };
+            throw new Error(errorMessage);
         }
 
         const credential = {
@@ -220,11 +222,48 @@ export class VcService {
             }
         };
 
+        console.log({ credential })
         const signedCredential = await this.issueCredential(credential, vc.did.identifier);
         await this.updateVerifiableCredential(id, credential, signedCredential);
 
-        return { code: 200, response: "Verifiable credential issued successfully." };
+        return "Verifiable credential issued successfully.";
     }
+
+    // // Issue the verifiable credential
+    // async issueVerifiableCredential(id: number): Promise<{ code: number, response: string }> {
+    //     const vc = await this.findVerifiableCredentialById(id);
+    //     const { isValid, errorMessage } = await this.validateVerifiableCredential(vc, id);
+    //     console.log("ISVALID: ", isValid)
+    //     if (!isValid) {
+    //         console.log("STEP: issueVerifiableCredential: ")
+    //         console.log({ errorMessage })
+    //         console.log("STEP: issueVerifiableCredential END: ")
+    //         return { code: 400, response: errorMessage };
+    //     }
+
+    //     const credential = {
+    //         "vc": {
+    //             "@context": ["https://www.w3.org/2018/credentials/v1"],
+    //             "type": vc.requested_credentials,
+    //             "credentialSubject": {
+    //                 "id": vc.did.identifier
+    //             },
+    //             "credentialSchema": {
+    //                 "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
+    //                 "type": "FullJsonSchemaValidator2021"
+    //             },
+    //             // "termsOfUse": { // TODO: change to the correct issuer
+    //             //     "id": "https://api-conformance.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zjHZjJ4Sy7r92BxXzFGs7qD/attributes/bcdb6bc952c8c897ca1e605fce25f82604c76c16d479770014b7b262b93c0250",
+    //             //     "type": "IssuanceCertificate"
+    //             // }
+    //         }
+    //     };
+
+    //     const signedCredential = await this.issueCredential(credential, vc.did.identifier);
+    //     await this.updateVerifiableCredential(id, credential, signedCredential);
+
+    //     return { code: 200, response: "Verifiable credential issued successfully." };
+    // }
 
 
     async CONFORMANCE_issueVerifiableCredential(id: number, requestedCredentials: string[], clientId: string) {
@@ -235,26 +274,42 @@ export class VcService {
             return { code: 400, response: `Requested credentials do not match the VC with ID ${id}.` };
         }
 
-        let credentialTyles = []
+        let credentialTypes = []
         // The order of the credential types is important, the conformance test will fail if the order is not correct 
         // CTWalletSameAuthorisedInTime|CTWalletSameAuthorisedDeferred must be the last item in the array
         if (requestedCredentials.includes('CTWalletSameAuthorisedInTime')) {
-            credentialTyles = [
+            credentialTypes = [
                 "VerifiableCredential",
                 "VerifiableAttestation",
                 "CTWalletSameAuthorisedInTime"
             ]
         } else if (requestedCredentials.includes('CTWalletSameAuthorisedDeferred')) {
-            credentialTyles = [
+            credentialTypes = [
                 "VerifiableCredential",
                 "VerifiableAttestation",
                 "CTWalletSameAuthorisedDeferred"
             ]
+        } else if (requestedCredentials.includes('CTWalletSamePreAuthorisedInTime')) {
+            credentialTypes = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "CTWalletSamePreAuthorisedInTime"
+            ]
+        } else if (requestedCredentials.includes('CTWalletSamePreAuthorisedDeferred')) {
+            credentialTypes = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "CTWalletSamePreAuthorisedDeferred"
+            ]
+        }
+        console.log({ credentialTypes })
+        if (credentialTypes.length === 0) {
+            throw new Error('Invalid credential types');
         }
         const credential = {
             "vc": {
                 "@context": ["https://www.w3.org/2018/credentials/v1"],
-                "type": credentialTyles,
+                "type": credentialTypes,
                 "credentialSubject": {
                     "id": clientId
                 },
@@ -269,7 +324,9 @@ export class VcService {
             }
         };
 
+        console.log({ credential })
         const signedCredential = await this.issueCredential(credential, clientId);
+        console.log({ signedCredential })
         await this.updateVerifiableCredential(id, credential, signedCredential);
 
         return signedCredential  // Return the issued credential

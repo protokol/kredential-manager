@@ -2,7 +2,9 @@
 
 ## Introduction to Verifiable Credentials
 
-Verifiable Credentials (VCs) are digital attestations issued by a trusted authority, which can be verified cryptographically. They are used to prove claims about a subject (e.g., a person or an organization) and are part of the European Blockchain Services Infrastructure (EBSI). In order to be able to issue VCs the issuer needs access to an Enterprise Wallet
+Verifiable Credentials (VCs) are digital attestations issued by a trusted authority, which can be verified cryptographically. They are used to prove claims about a subject (e.g., a person or an organization) and are part of the European Blockchain Services Infrastructure (EBSI). In order to be able to issue VCs the issuer needs access to an Enterprise Wallet.
+
+For a more detailed explanation on verifiable credential issuance please refer to EBSI [documentation](https://hub.ebsi.eu/conformance/learn/verifiable-credential-issuance#user-authentication)
 
 ### Credential Issuance Process
 
@@ -22,7 +24,14 @@ Verifiable Credentials (VCs) are digital attestations issued by a trusted author
 
 ## Dashboard
 Dashboard is the first screen presented after the successful login and serves as a quick overview of current situation.
+
 <img src="./docs/images/dashboard.png" width="70%" alt="dashboard">
+
+## Credentials
+There are 3 different statuses a credential can have:
+- Pending - user has requested a credential but the request has not been processed yet by the issuer.
+- Issued - after the VC has been approved it moves to the status Issued and is now ready to be downloaded to the holder wallet. Please not that this action has to be through the holder wallet by the user that requested the VC.
+- Rejected - if for some reason the issuer thinks the user is not entitled to the certificate they can reject it.
 
 ## Issuing a credential
 From the list of all requests with the status of "pending" select the one you wish to view, approve or reject. The "Quick actions" menu on the right has options for all available actions.

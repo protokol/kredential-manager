@@ -21,7 +21,10 @@ The image below shows a high level view of the major parts of the Kredential Man
 <img src="./docs/images/architecture.png" width="70%" alt="architecture">
 
 ### Data storage
-It has to be noted that all personal data needed to issue a credential is only cached by the system until it is strictly needed for the process of issuance. Once the VC is sent to the holder all personal data is permanently deleted from the system. In case the holder needs a re-issuance of the VC they will have to repeat the request-issue process again.
+There is no need to permanently store  personal data needed to issue a credential. The issuance process only requires the data has to be cached by the system until it is strictly needed for the process of issuance. Once the VC is sent to the holder all personal data can be permanently deleted from the system. In case the holder needs a re-issuance of the VC they will have to repeat the request-issue process again. 
+
+> [!IMPORTANT]  
+> It has to be noted that the current reference implementation is storing data beyond caching, mainly for demonstration and development purposes. This needs to be revisited during the pilot phase as it depends on details of the implementation (such as is it run locally by the issuer or by a third party, what are the needs of the issuers, legal implications, etc.)
 
 Current implementation is running on AWS infrastructure. CDK scripts to simplify deployment to AWS are also included as part of this implementation.
 

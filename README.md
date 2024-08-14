@@ -51,18 +51,18 @@ In order to request a credential holder wallets need a way to communicate with t
 ### Apps Folder
 Currently, contains working directories for:
 - `cdk` - AWS CDK for deploying infrastructure (if needed). AWS CDK is IaC (Infrastructure as Code) framework for AWS making it easy to deploy same infrastructure to various environments.
-- `backend` - Backend application. Currently using [Nest.js](https://nestjs.com/).
-- `frontend` - Frontend application. Currently using [Next.js](https://nextjs.org/) and [tailwindcss](https://tailwindcss.com/).
+- `backend` - Backend application. Currently, using [Nest.js](https://nestjs.com/).
+- `frontend` - Frontend application. Currently, using [Next.js](https://nextjs.org/) and [tailwindcss](https://tailwindcss.com/).
 
 ### CI/CD
 
 For CI/CD we are currently using GitHub Actions.
 
 ## Installation guide
+TODO
 
 ### Prerequisites
-The organisation running this system needs to be onboarded to EBSI first. That means it needs to have a DID created and the DID document needs to be registered to EBSI. Details on this can be found here:
-//TODO 
+The organisation running this system needs to be onboarded to EBSI first. That means it needs to have a DID created and the DID document needs to be registered to EBSI. Details on this are not clear yet: TDB
 
 ## License
 The project and its applications can be licensed for use under a dual license model. For use within the EBSI VECTOR Pilot Project of the European Union and by the stakeholders therein, it is made available free of cost under the GNU Affero General Public License v3.0 ([AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.en.html#license-text)). For all other uses, a commercial license, granted on an as-is basis, is available. For the avoidance of doubt, a commercial license does not grant the licensee a license to any background IPR or prior creations. Please refer to the AGPL-3.0 license text for more details on the terms and conditions. For commercial licensing inquiries, please contact us at info@protokol.com.

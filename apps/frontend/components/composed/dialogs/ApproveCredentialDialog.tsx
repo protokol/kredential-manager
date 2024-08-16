@@ -239,36 +239,31 @@ export default function ApproveCredentialDialog({
           </Dialog.Title>
           <div className='flex h-full flex-col justify-between'>
             <div>
-              <fieldset className='mb-4 mt-4 flex flex items-center gap-3'>
-                <Button
-                  className={`w-full border-slate-300 text-xs ${
-                    selectedOption === 'existingStudent' &&
-                    'bg-sky-950 hover:bg-sky-950 active:bg-sky-950  enabled:hover:bg-sky-950'
+              <div className='relative mb-4 mt-4 flex flex h-9 items-center border-1.5 border-slate-200 bg-white'>
+                <div
+                  className={`duration-250 absolute left-0 top-0 z-10 h-full w-1/2 transform rounded-md bg-sky-950 transition ease-out ${
+                    selectedOption === 'newStudent' && 'translate-x-full'
                   }`}
-                  variant={
-                    selectedOption === 'existingStudent'
-                      ? 'primary'
-                      : 'secondary'
-                  }
+                />
+                <div
+                  className={`z-20 flex h-full w-full cursor-pointer items-center justify-center rounded-md  text-xs text-slate-500 transition-colors ease-in ${
+                    selectedOption === 'existingStudent' && 'text-white'
+                  }`}
                   onClick={() => setSelectedOption('existingStudent')}
                 >
                   {t('credentials.approve.choose_a_student')}
-                </Button>
-                <Button
-                  className={`w-full border-slate-300 text-xs ${
-                    selectedOption === 'newStudent' &&
-                    'bg-sky-950 hover:bg-sky-950 active:bg-sky-950  enabled:hover:bg-sky-950'
+                </div>
+                <div
+                  className={`z-20 flex h-full w-full cursor-pointer items-center justify-center rounded-md text-xs text-slate-500 transition-colors ease-in ${
+                    selectedOption === 'newStudent' && 'text-white '
                   }`}
-                  variant={
-                    selectedOption === 'newStudent' ? 'primary' : 'secondary'
-                  }
                   onClick={() => {
                     setSelectedOption('newStudent');
                   }}
                 >
                   {t('credentials.approve.create_new_student')}
-                </Button>
-              </fieldset>
+                </div>
+              </div>
               <div className='flex gap-4'>
                 {selectedOption === 'existingStudent' && (
                   <div className='flex w-full flex-col gap-4'>

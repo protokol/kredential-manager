@@ -9,7 +9,12 @@ import request from '@utils/configs/axios';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getVC = async (params?: any) => {
-  params.sort = 'created_at:desc';
+  const { sortBy } = params;
+  if (sortBy) {
+    const [first, second] = sortBy.split('.');
+    params.sort = `${first}:${second}`;
+  }
+
   return request
     .get<PaginatedResource<TVCredential>>('/verifiable-credentials', { params })
     .then((res) => res.data);

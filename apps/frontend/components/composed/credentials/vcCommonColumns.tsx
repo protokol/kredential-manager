@@ -41,8 +41,7 @@ export const useVCCommonColumns = (
     vcCommonColumnHelper.accessor('created_at', {
       id: 'created_at',
       header: t('credentials.columns.date_requested'),
-      cell: ({ getValue }) => <DateCell value={getValue()} />,
-      enableSorting: false
+      cell: ({ getValue }) => <DateCell value={getValue()} />
     }),
     vcCommonColumnHelper.accessor('role', {
       id: 'role',

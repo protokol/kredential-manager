@@ -4,6 +4,7 @@ import { notFound } from '@navigation';
 
 import DeviceScreenWrapper from '@components/composed/DeviceScreenWrapper';
 import NotificationsProvider from '@components/composed/NotificationsProvider';
+import { PaginationProvider } from '@components/composed/PaginationProvider';
 import ReactQueryProvider from '@components/composed/ReactQueryProvider';
 import AuthProvider from '@components/composed/auth/AuthProvider';
 
@@ -28,7 +29,9 @@ export default async function LocaleLayout({
       <ReactQueryProvider>
         <DeviceScreenWrapper>
           <AuthProvider>
-            <NotificationsProvider>{children}</NotificationsProvider>
+            <PaginationProvider>
+              <NotificationsProvider>{children}</NotificationsProvider>
+            </PaginationProvider>
           </AuthProvider>
         </DeviceScreenWrapper>
       </ReactQueryProvider>

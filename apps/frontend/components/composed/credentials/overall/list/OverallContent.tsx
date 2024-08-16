@@ -10,6 +10,7 @@ import {
   StatusOptions,
   VCStatus
 } from '@utils/api/credentials/credentials.type';
+import type { TVCredential } from '@utils/api/credentials/credentials.type';
 import { getStatusFilter } from '@utils/api/credentials/credentials.utils';
 import { routes } from '@utils/routes';
 
@@ -19,6 +20,7 @@ import FilterMultiSelect from '@ui/table/filters/FilterMultiSelect';
 import useClientSideMultiSelectFilter from '@ui/table/hooks/useClientSideMultiSelectFilter';
 import useServerSideTableData from '@ui/table/hooks/useServerSideTableData';
 
+import { usePagination } from '@components/composed/PaginationProvider';
 import useUpdateStatus from '@components/composed/credentials/useUpdateStatus';
 import { useVCCommonColumns } from '@components/composed/credentials/vcCommonColumns';
 import ApproveCredentialDialog from '@components/composed/dialogs/ApproveCredentialDialog';
@@ -37,14 +39,21 @@ const OverallContent = () => {
     setIsRejectDialogOpen
   } = useUpdateStatus();
 
+  const { paginationState, updatePaginationState } = usePagination();
+
   const {
     isLoading,
     data,
     refetch,
-    tableConfig: { paginationConfig }
+    tableConfig: { paginationConfig, sortConfig }
   } = useServerSideTableData({
     useDataHook: (apiParams) =>
-      useGetVC({ ...apiParams, filter: getStatusFilter(filters) })
+      useGetVC({
+        ...apiParams,
+        filter: getStatusFilter(filters),
+        page: paginationState.currentPage - 1,
+        size: paginationState.resultsPerPage
+      })
   });
 
   const { filteredList: filteredListByType, ...statusFilterConfig } =
@@ -83,6 +92,11 @@ const OverallContent = () => {
     setFilters(selectedItems);
   }, [selectedItems]);
 
+  const handleRowClick = (rowData: TVCredential) => {
+    updatePaginationState({ currentPage: paginationConfig.currentPage });
+    push(routes.app.credentials.view(String(rowData.id)));
+  };
+
   return (
     <div>
       <div className='mb-6 text-lg font-bold text-sky-950'>
@@ -99,10 +113,21 @@ const OverallContent = () => {
       <PaginatedTable
         isLoading={isLoading}
         columns={vcColumns}
-        onRowClick={(rowData) => {
-          push(routes.app.credentials.view(String(rowData.id)));
+        onRowClick={handleRowClick}
+        paginationConfig={{
+          ...paginationConfig,
+          currentPage: paginationState.currentPage,
+          resultsPerPage: paginationState.resultsPerPage,
+          setCurrentPage: (page: number) => {
+            paginationConfig.setCurrentPage(page);
+            updatePaginationState({ currentPage: page });
+          },
+          setResultsPerPage: (pageSize: number) => {
+            paginationConfig.setResultsPerPage(pageSize);
+            updatePaginationState({ resultsPerPage: pageSize });
+          }
         }}
-        paginationConfig={paginationConfig}
+        sortConfig={sortConfig}
         data={data?.items ?? []}
       />
       <ApproveCredentialDialog

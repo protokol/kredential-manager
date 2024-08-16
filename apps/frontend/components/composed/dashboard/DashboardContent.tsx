@@ -43,7 +43,12 @@ const DashboardContent = () => {
     setIsRejectDialogOpen
   } = useUpdateStatus();
 
-  const { isLoading, data, refetch } = useServerSideTableData({
+  const {
+    isLoading,
+    data,
+    refetch,
+    tableConfig: { sortConfig }
+  } = useServerSideTableData({
     useDataHook: (apiParams) =>
       useGetVC({ ...apiParams, filter: getStatusFilter(filters) })
   });
@@ -127,6 +132,7 @@ const DashboardContent = () => {
       <Table
         isLoading={isLoading}
         columns={vcColumns}
+        sortConfig={sortConfig}
         onRowClick={(rowData) => {
           push(routes.app.credentials.view(String(rowData.id)));
         }}

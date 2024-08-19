@@ -1,6 +1,6 @@
 {
     "name": "@probeta/mp-core",
-    "version": "0.0.38",
+    "version": "0.0.40",
     "type": "module",
     "private": false,
     "devDependencies": {

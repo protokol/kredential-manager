@@ -35,7 +35,7 @@ const PendingContent = () => {
       useGetVC({
         ...apiParams,
         filter: getStatusFilter(['pending']),
-        page: pendingPaginationState.currentPage,
+        page: pendingPaginationState.currentPage - 1,
         size: pendingPaginationState.resultsPerPage
       })
   });

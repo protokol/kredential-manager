@@ -77,7 +77,7 @@ const SidebarSubItem: FC<SidebarSubItemProps> = ({
   <Link
     href={href}
     className={cn(
-      'flex w-full items-center justify-between gap-3 rounded-lg py-2.5 pl-11 pr-3 text-sm transition-colors hover:bg-sky-950 hover:text-white',
+      'flex w-full items-center justify-between gap-4 rounded-lg py-2.5 pl-11 pr-3 text-sm transition-colors hover:bg-sky-950 hover:text-white',
       className
     )}
   >
@@ -117,7 +117,7 @@ const SidebarItem: FC<SidebarItemProps> = ({
   ...props
 }) => {
   const classes = cn(
-    'flex w-full items-center justify-between gap-3 rounded-lg py-2 pl-2 pr-3 text-sm font-medium transition-colors',
+    'flex w-full items-center justify-between gap-4 rounded-lg py-2 pl-2 pr-3 text-sm font-medium transition-colors',
     'text-sky-950 hover:bg-sky-950 hover:text-white',
     'outline-none',
     {
@@ -148,7 +148,7 @@ const SidebarItem: FC<SidebarItemProps> = ({
           )}
           disabled
         >
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-4'>
             {Icon && <Icon className='size-6 flex-shrink-0' />}
             <span className='truncate'>{name}</span>
           </div>
@@ -165,7 +165,7 @@ const SidebarItem: FC<SidebarItemProps> = ({
     return (
       <WrapperComponent>
         <Link className={classes} href={href}>
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-4'>
             {Icon && <Icon className='h-6 w-6 flex-shrink-0' />}
             <span className='truncate'>{name}</span>
           </div>
@@ -181,7 +181,7 @@ const SidebarItem: FC<SidebarItemProps> = ({
   return (
     <WrapperComponent>
       <button {...props} className={classes}>
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-4'>
           {Icon && <Icon className='h-6 w-6 shrink-0' />}
           <span className='truncate'>{name}</span>
         </div>

@@ -8,24 +8,28 @@ import { Construct } from "constructs";
 interface DatabaseStackProps extends cdk.StackProps {
 	vpc: Vpc;
 	databaseSG: SecurityGroup;
+	stage: string;
 }
 export class DatabaseStack extends cdk.Stack {
 	public readonly dbInstance: DatabaseInstance;
 	constructor(scope: Construct, id: string, props: DatabaseStackProps) {
 		super(scope, id, props);
+		const { stage } = props;
 		const engine = DatabaseInstanceEngine.postgres({ version: PostgresEngineVersion.VER_14 });
 		const instanceType = InstanceType.of(InstanceClass.T3, InstanceSize.MICRO);
 		const port = 5432;
 
-		const masterUserSecret = new Secret(this, "DatabaseMasterSecret", {
-			description: "Database master credentials",
-			generateSecretString: {
-				secretStringTemplate: JSON.stringify({ username: "enterprisewalletuser" }),
-				generateStringKey: "password",
-				passwordLength: 32,
-				excludePunctuation: true,
-			},
-		});
+		// const databaseMasterSecret = new Secret(this, "DatabaseMasterSecret", {
+		// 	description: "Database master credentials",
+		// 	generateSecretString: {
+		// 		secretStringTemplate: JSON.stringify({ username: "enterprisewalletuser" }),
+		// 		generateStringKey: "password",
+		// 		passwordLength: 32,
+		// 		excludePunctuation: true,
+		// 	},
+		// });
+
+		const databaseMasterSecret = Secret.fromSecretNameV2(this, "DatabaseMasterSecret", `${stage}/database/master`);
 
 		this.dbInstance = new DatabaseInstance(this, "Database", {
 			vpc: props.vpc,
@@ -37,7 +41,7 @@ export class DatabaseStack extends cdk.Stack {
 			instanceType,
 			engine,
 			port,
-			credentials: Credentials.fromSecret(masterUserSecret),
+			credentials: Credentials.fromSecret(databaseMasterSecret),
 			backupRetention: Duration.days(0), // disable automatic DB snapshot retention
 			deleteAutomatedBackups: true,
 			removalPolicy: cdk.RemovalPolicy.DESTROY,

@@ -1,17 +1,36 @@
+import { AwsEnvironment, EnvironmentConfig } from "../config";
+import * as crypto from "crypto";
+
 export function getStackName(stack: string): string {
-	return process.env.STAGE_NAME ? `${process.env.STAGE_NAME}${stack}` : stack;
+	return process.env.STAGE_NAME ? `${process.env.STAGE_NAME}-${stack}` : stack;
 }
 
-export function getPublicHostedZoneId(): string {
-	return process.env.PUBLIC_HOSTED_ZONE_ID || "Z08139353PYYZ63C4KDJW";
+export function getPublicHostedZoneId(env: AwsEnvironment): string {
+	return env.publicHostedZoneId;
 }
 
-export function getPublicHostedZoneName(): string {
-	return process.env.PUBLIC_HOSTED_ZONE_NAME || "eu-dev.protokol.sh";
+export function getPublicHostedZoneName(env: AwsEnvironment): string {
+	return env.publicHostedZoneName;
 }
 
-export function getDomainNameWithPrefix(prefix: string): string {
-	return process.env.STAGE_NAME
-		? `${prefix}.${process.env.STAGE_NAME}.${getPublicHostedZoneName()}`
-		: `${prefix}.${getPublicHostedZoneName()}`;
+export function getDomainNameWithPrefix(prefix: string, config: EnvironmentConfig): string {
+	return config.stage !== "dev"
+		? `${prefix}.${config.aws.publicHostedZoneName}`
+		: `${prefix}.${config.stage}.${config.aws.publicHostedZoneName}`;
+}
+
+export function generateName(id: string, name: string): string {
+	return `${id}-${name}`;
+}
+
+export function generateRandomString(length: number): string {
+	return crypto.randomBytes(length).toString("hex");
+}
+
+export function generateRealmName(stage: string): string {
+	return `${stage}-realm`;
+}
+
+export function generateClientId(stage: string): string {
+	return `${stage}-client-id`;
 }

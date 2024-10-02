@@ -1,3 +1,4 @@
+import { generateName } from "./../utils";
 import { AwsLogDriver } from "aws-cdk-lib/aws-ecs";
 import { RetentionDays } from "aws-cdk-lib/aws-logs";
 import { Construct } from "constructs";
@@ -11,16 +12,16 @@ export class Logging extends Construct {
 		super(scope, id);
 
 		this.enterpriseWalletLogDriver = new AwsLogDriver({
-			streamPrefix: "enterprise-wallet",
+			streamPrefix: generateName(id, "enterprise-wallet"),
 			logRetention: RetentionDays.THREE_DAYS,
 		});
 		this.keycloakLogDriver = new AwsLogDriver({
-			streamPrefix: "keycloak",
+			streamPrefix: generateName(id, "keycloak"),
 			logRetention: RetentionDays.ONE_WEEK,
 		});
 
 		this.rpcLogDriver = new AwsLogDriver({
-			streamPrefix: "rpc",
+			streamPrefix: generateName(id, "rpc"),
 			logRetention: RetentionDays.ONE_WEEK,
 		});
 	}

@@ -26,42 +26,41 @@ const STACK_NAMES = {
 	BACKEND: "BackendStack",
 };
 
-// function createStacks(app: cdk.App, stage: Environment) {
+function createStacks(app: cdk.App, stage: Environment) {
+	// Secrets stack
+	new SecretsStack(app, getStackName(STACK_NAMES.SECRETS), { stage: stage });
 
-// Secrets stack
-new SecretsStack(app, getStackName(STACK_NAMES.SECRETS), { stage: stage });
+	// Vpc cluster stack
+	const vpcClusterStack = new VpcClusterStack(app, getStackName(STACK_NAMES.VPC_CLUSTER), {
+		config: envConfig,
+	});
 
-// Vpc cluster stack
-const vpcClusterStack = new VpcClusterStack(app, getStackName(STACK_NAMES.VPC_CLUSTER), {
-	config: { stage: stage, aws: envConfig.aws },
-});
+	// Database stack
+	const databaseStack = new DatabaseStack(app, getStackName(STACK_NAMES.DATABASE), {
+		vpc: vpcClusterStack.vpc,
+		databaseSG: vpcClusterStack.databaseSG,
+		config: envConfig,
+	});
 
-// Database stack
-const databaseStack = new DatabaseStack(app, getStackName(STACK_NAMES.DATABASE), {
-	vpc: vpcClusterStack.vpc,
-	databaseSG: vpcClusterStack.databaseSG,
-	env: envConfig.aws,
-	stage: stage,
-});
+	// // Keycloak stack
+	new KeycloakStack(app, getStackName(STACK_NAMES.KEYCLOAK), {
+		cluster: vpcClusterStack.cluster,
+		dbInstance: databaseStack.dbInstance,
+		keycloakSG: vpcClusterStack.keycloakServiceSG,
+		certificate: vpcClusterStack.keycloakCertificate,
+		loadBalancer: vpcClusterStack.keycloakLoadBalancer,
+		config: envConfig,
+	});
 
-// Keycloak stack
-new KeycloakStack(app, getStackName(STACK_NAMES.KEYCLOAK), {
-	cluster: vpcClusterStack.cluster,
-	dbInstance: databaseStack.dbInstance,
-	keycloakSG: vpcClusterStack.keycloakServiceSG,
-	certificate: vpcClusterStack.keycloakCertificate,
-	loadBalancer: vpcClusterStack.keycloakLoadBalancer,
-	config: envConfig,
-});
+	// // // Backend stack
+	new BackendStack(app, getStackName(STACK_NAMES.BACKEND), {
+		cluster: vpcClusterStack.cluster,
+		dbInstance: databaseStack.dbInstance,
+		backendSG: vpcClusterStack.backendServiceSG,
+		certificate: vpcClusterStack.apiCertificate,
+		loadBalancer: vpcClusterStack.backendLoadBalancer,
+		config: envConfig,
+	});
+}
 
-// // Backend stack
-new BackendStack(app, getStackName(STACK_NAMES.BACKEND), {
-	cluster: vpcClusterStack.cluster,
-	dbInstance: databaseStack.dbInstance,
-	backendSG: vpcClusterStack.backendServiceSG,
-	certificate: vpcClusterStack.apiCertificate,
-	loadBalancer: vpcClusterStack.backendLoadBalancer,
-	env: envConfig.aws,
-});
-
-// createStacks(app, stage);
+createStacks(app, stage);

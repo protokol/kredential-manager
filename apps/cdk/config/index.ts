@@ -6,10 +6,15 @@ export type AwsEnvironment = {
 	publicHostedZoneName: string;
 };
 
+export type DatabaseConfig = {
+	name: string;
+	port: number;
+};
 // Environment config
 export type EnvironmentConfig = {
 	stage: Environment;
 	aws: AwsEnvironment;
+	db: DatabaseConfig;
 };
 
 // Available environments
@@ -21,6 +26,10 @@ export type Config = Record<Environment, EnvironmentConfig>;
 export const config: Config = {
 	miha: {
 		stage: "miha",
+		db: {
+			name: "enterprisewallet",
+			port: 5432,
+		},
 		aws: {
 			region: "us-east-1",
 			account: "654654561029",
@@ -30,6 +39,10 @@ export const config: Config = {
 	},
 	dev: {
 		stage: "dev",
+		db: {
+			name: "enterprisewallet",
+			port: 5432,
+		},
 		aws: {
 			region: "us-east-1",
 			account: "654654561029",
@@ -39,6 +52,10 @@ export const config: Config = {
 	},
 	prod: {
 		stage: "prod",
+		db: {
+			name: "enterprisewallet",
+			port: 5432,
+		},
 		aws: {
 			region: "us-east-1",
 			account: "654654561029",

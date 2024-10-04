@@ -39,6 +39,8 @@ export class VpcClusterStack extends cdk.Stack {
 		const { stage, aws } = config;
 		console.log({ stage, aws });
 
+		console.log(`VPCAccount: ${this.account}, Region: ${this.region}`);
+
 		const publicZone = HostedZone.fromHostedZoneAttributes(this, generateName(id, "HostedZone"), {
 			hostedZoneId: getPublicHostedZoneId(aws),
 			zoneName: getPublicHostedZoneName(aws),

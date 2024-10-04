@@ -15,8 +15,8 @@ export function getPublicHostedZoneName(env: AwsEnvironment): string {
 
 export function getDomainNameWithPrefix(prefix: string, config: EnvironmentConfig): string {
 	return config.stage !== "dev"
-		? `${prefix}.${config.aws.publicHostedZoneName}`
-		: `${prefix}.${config.stage}.${config.aws.publicHostedZoneName}`;
+		? `${prefix}.${config.stage}.${config.aws.publicHostedZoneName}`
+		: `${prefix}.${config.aws.publicHostedZoneName}`;
 }
 
 export function generateName(id: string, name: string): string {

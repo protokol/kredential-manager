@@ -25,6 +25,7 @@ import { CourseModule } from "./course/course.module";
 import { SeedModule } from "./seed/seed.module";
 import { ResolverService } from "./resolver/resolver.service";
 import { AuthController } from "./auth/auth.controller";
+import { ProxyController } from "./proxy/proxy.controller";
 import { IssuerService } from "./issuer/issuer.service";
 import { AuthService } from "./auth/auth.service";
 import { NonceService } from "./nonce/nonce.service";
@@ -34,6 +35,7 @@ import { Nonce } from "@entities/nonce.entity";
 import { LoggerMiddleware } from "./logger/LoggerMiddleware";
 import { StateService } from "./state/state.service";
 import { State } from "@entities/state.entity";
+import { ProxyService } from "./proxy/proxy.service";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -74,7 +76,8 @@ import { State } from "@entities/state.entity";
     controllers: [
         AppController,
         VcController,
-        AuthController
+        AuthController,
+        ProxyController
     ],
     providers: [
         AppService,
@@ -99,6 +102,7 @@ import { State } from "@entities/state.entity";
         OpenIDProviderService,
         IssuerService,
         AuthService,
+        ProxyService
     ],
     exports: [],
 })

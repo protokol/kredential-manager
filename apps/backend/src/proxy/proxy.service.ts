@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
 
 @Injectable()
 export class ProxyService {
     async getRedirectLocation(url: string): Promise<string> {
         try {
-            const response = await axios.get(url, {
-                maxRedirects: 0,
-                validateStatus: (status) => status >= 200 && status < 400,
+            const response = await fetch(url, {
+                method: 'GET',
+                redirect: 'manual',
             });
-            return response.headers['location'];
+            if (response.status >= 200 && response.status < 400) {
+                return response.headers.get('location');
+            }
+
+            throw new Error(`Unexpected response status: ${response.status}`);
         } catch (error) {
             if (error.response && error.response.status === 302) {
                 return error.response.headers['location'];

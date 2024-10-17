@@ -6,16 +6,16 @@ x-logging: &logging
 
 services:
   postgres:
-    image: postgres:${POSTGRES_VERSION}
+    image: postgres:16.1
     restart: unless-stopped
     ports:
       - 5432:5432
     # healthcheck:
     #   test: [ "CMD", "pg_isready", "-U", "postgres" ]
     environment:
-      POSTGRES_DB: "enterprise-wallet"
-      POSTGRES_USER: "enterprise-wallet-user"
-      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: ${KM_DB_NAME}
+      POSTGRES_USER: ${KC_DB_USERNAME}
+      POSTGRES_PASSWORD: ${KM_DB_PASSWORD}
     volumes:
       - type: tmpfs
         target: /var/lib/postgresql/data
@@ -29,14 +29,15 @@ services:
     # restart: unless-stopped
     environment:
       KC_DB: postgres
-      KC_DB_USERNAME: "enterprise-wallet-user"
-      KC_DB_PASSWORD: "password"
-      KC_DB_URL: "jdbc:postgresql://postgres:5432/enterprise-wallet"
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KC_DB_SCHEMA: ${KC_DB_SCHEMA}
+      KC_DB_URL: "jdbc:postgresql://postgres:${KC_DB_PORT}/${KC_DB_NAME}"
       KC_METRICS_ENABLED: true
       KC_LOG_LEVEL: ${KC_LOG_LEVEL}
       KC_REALM_NAME: ${KC_REALM_NAME}
-      KC_ADMIN_USERNAME: ${KC_ADMIN_USERNAME}
-      KC_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+      KEYCLOAK_ADMIN: ${KC_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
     ports:
       - ${KC_PORT}:8080
     volumes:

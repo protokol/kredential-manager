@@ -17,7 +17,7 @@ RUN pnpm install
 EXPOSE 3000
 
 # Set working dir for operations within the container
-WORKDIR /app/packages/enterprise-wallet
+WORKDIR /app/packages/backend
 
 # Define the command to run your app using npm start
 CMD ["pnpm", "run", "start:prod"]

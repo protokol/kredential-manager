@@ -1,22 +1,22 @@
-import { AwsEnvironment, EnvironmentConfig } from "../config";
+import { AwsConfig, EnvironmentConfig } from "config/types";
 import * as crypto from "crypto";
 
-export function getStackName(stack: string): string {
-	return process.env.STAGE_NAME ? `${process.env.STAGE_NAME}-${stack}` : stack;
+export function getStackName(stack: string, config: EnvironmentConfig): string {
+	return config.APP_CONFIG.STAGE ? `${config.APP_CONFIG.STAGE}-${stack}` : stack;
 }
 
-export function getPublicHostedZoneId(env: AwsEnvironment): string {
-	return env.publicHostedZoneId;
+export function getPublicHostedZoneId(env: AwsConfig): string {
+	return env.PUBLIC_HOSTED_ZONE_ID;
 }
 
-export function getPublicHostedZoneName(env: AwsEnvironment): string {
-	return env.publicHostedZoneName;
+export function getPublicHostedZoneName(env: AwsConfig): string {
+	return env.PUBLIC_HOSTED_ZONE_NAME;
 }
 
 export function getDomainNameWithPrefix(prefix: string, config: EnvironmentConfig): string {
-	return config.stage !== "dev"
-		? `${prefix}.${config.stage}.${config.aws.publicHostedZoneName}`
-		: `${prefix}.${config.aws.publicHostedZoneName}`;
+	const stage = config.APP_CONFIG.STAGE;
+	const publicHostedZoneName = config.AWS_CONFIG.PUBLIC_HOSTED_ZONE_NAME;
+	return stage !== "dev" ? `${prefix}.${stage}.${publicHostedZoneName}` : `${prefix}.${publicHostedZoneName}`;
 }
 
 export function generateName(id: string, name: string): string {

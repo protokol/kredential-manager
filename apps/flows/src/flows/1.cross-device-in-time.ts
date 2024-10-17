@@ -44,7 +44,7 @@ export const main = async (): Promise<void> => {
     const res = await axios.get(
         `${initiateCredentialOfferEndpoint}?${qs.stringify(requestParams)}`,
     );
-    console.log(res.data);
+    // console.log(res.data);
 
     let search: string;
     if (credentialType.startsWith("CTWalletSame")) {
@@ -53,13 +53,13 @@ export const main = async (): Promise<void> => {
         search = new URL(res.data as string).search;
     }
     const parsedCredentialOffer = qs.parse(search.slice(1)) as CredentialOffer;
-    console.log(parsedCredentialOffer);
+    // console.log(parsedCredentialOffer);
     const respCredentialPayload = await axios.get(
         parsedCredentialOffer.credential_offer_uri!,
     );
     const credentialPayload =
         respCredentialPayload.data as CredentialOfferPayload;
-    console.log(credentialPayload);
+    // console.log(credentialPayload);
     //--------------------------------
     /**
      * Get configurations
@@ -76,7 +76,8 @@ export const main = async (): Promise<void> => {
     const requestedTypes = [
         "VerifiableCredential",
         "VerifiableAttestation",
-        "CTWalletCrossAuthorisedInTime",
+        // "CTWalletCrossAuthorisedInTime",
+        "CTWalletSameAuthorisedDeferred",
     ];
     const inputAlg = "ES256";
     const codeVerifier = randomBytes(50).toString("base64url");
@@ -115,6 +116,7 @@ export const main = async (): Promise<void> => {
         },
     ];
 
+    // console.log({ clientMetadata })
     const queryParams = {
         scope: "openid",
         client_id: clientId,
@@ -149,6 +151,8 @@ export const main = async (): Promise<void> => {
         .setAudience(authorizationServer)
         .sign(clientPrivateKey);
 
+
+
     const responseAuthorize = await axios.get(
         `${openIdConfiguration.authorization_endpoint}?${new URLSearchParams({
             ...queryParams,
@@ -162,13 +166,15 @@ export const main = async (): Promise<void> => {
         },
     );
 
+    console.log({ responseAuthorize })
     const { location } = responseAuthorize.headers as { [x: string]: string };
     const locationUrl = new URL(location);
     if (locationUrl.searchParams.get("error"))
         throw new Error(locationUrl.searchParams.toString());
     const responseQueryParams = qs.parse(locationUrl.search.substring(1));
-    console.log(responseQueryParams);
-    console.log(responseQueryParams.state);
+    console.log({ responseQueryParams });
+    console.log({ state: responseQueryParams.state });
+
     //--------------------------------
     /**
      * ==> conformance authMockDirectPostIdToken {"authorization_server":"https://api-conformance.ebsi.eu/conformance/v3/auth-mock","credential_issuer":"https://api-conformance.ebsi.eu/conformance/v3/issuer-mock"} {"redirect_uris":["https://api-conformance.ebsi.eu/conformance/v3/auth-mock/direct_post"]} {"state":"fb1a71fa-43af-497f-9e84-a9c093c9ca0f","client_id":"https://api-conformance.ebsi.eu/conformance/v3/auth-mock","redirect_uri":"https://api-conformance.ebsi.eu/conformance/v3/auth-mock/direct_post","response_type":"id_token","response_mode":"direct_post","scope":"openid","nonce":"ac4db8ce-fdfb-4dab-9a43-7b9b8ae03afb","request_uri":"https://api-conformance.ebsi.eu/conformance/v3/auth-mock/request_uri/8d8a8662-4081-4cbf-92a1-8d52d19b068f"} ES256
@@ -189,11 +195,18 @@ export const main = async (): Promise<void> => {
         .setExpirationTime("5m")
         .sign(clientPrivateKey);
     console.log(idTokenDirectPost);
+    const d = did + "#" + did.split(":")[2]
+    console.log("DID: ", d)
+    console.log("AAA--------------------------------------------------")
+
     const data = new URLSearchParams({
         id_token: idTokenDirectPost,
         state: state!.toString(),
     }).toString();
+    console.log({ data })
+
     console.log(queryParams.state);
+    console.log('URL: ', openIdConfiguration.redirect_uris[0]);
     const responseDirectPost = await axios.post(
         openIdConfiguration.redirect_uris[0],
         data,
@@ -208,6 +221,7 @@ export const main = async (): Promise<void> => {
         },
     );
     const data2 = responseDirectPost.headers as { [x: string]: string };
+
     const location2 = data2.location;
 
     const locationUrl2 = new URL(location2);
@@ -281,8 +295,6 @@ export const main = async (): Promise<void> => {
         .setIssuedAt()
         .setExpirationTime("5m")
         .sign(clientPrivateKey);
-
-    console.log(responseToken.data.access_token);
     const responseCredential = await axios.post(
         `${openIdCredentialIssuer.credential_issuer}/credential`,
         {

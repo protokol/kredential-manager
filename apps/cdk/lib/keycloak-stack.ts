@@ -1,4 +1,3 @@
-import { EnvironmentConfig } from "../config";
 import { Logging } from "./constructs/Logging";
 import { PublicDockerRepositories } from "./constructs/PublicDockerRepositories";
 import { generateName, getDomainNameWithPrefix } from "./utils";
@@ -10,6 +9,7 @@ import { Cluster, FargateService, FargateTaskDefinition, Protocol } from "aws-cd
 import { ApplicationLoadBalancer, ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { DatabaseInstance } from "aws-cdk-lib/aws-rds";
 import { Secret } from "aws-cdk-lib/aws-secretsmanager";
+import { EnvironmentConfig } from "config/types";
 import { Construct } from "constructs";
 
 interface KeycloakStackProps extends cdk.StackProps {
@@ -26,7 +26,10 @@ export class KeycloakStack extends cdk.Stack {
 		super(scope, id, props);
 
 		const { config } = props;
-		const { stage, db } = config;
+		const stage = config.APP_CONFIG.STAGE;
+		const KC_DB_NAME = config.APP_CONFIG.KC_DB_NAME;
+		const KC_DB_PORT = config.APP_CONFIG.KC_DB_PORT;
+		const KC_DB_SCHEMA = config.APP_CONFIG.KC_DB_SCHEMA;
 
 		const dockerRepositories = new PublicDockerRepositories(this, "DockerRepositories");
 		const logging = new Logging(this, "Logging");
@@ -42,24 +45,24 @@ export class KeycloakStack extends cdk.Stack {
 
 		const container = keycloakTaskDef.addContainer(generateName(id, "Container"), {
 			image: dockerRepositories.keycloackImage,
-			logging: logging.enterpriseWalletLogDriver,
+			logging: logging.kredentialManagerLogDriver,
 			command: ["start-dev"],
 			environment: {
 				KC_DB: "postgres",
-				KC_DB_URL: `jdbc:postgresql://${props.dbInstance.instanceEndpoint.hostname}:${db.port}/${db.name}`,
+				KC_DB_URL: `jdbc:postgresql://${props.dbInstance.instanceEndpoint.hostname}:${KC_DB_PORT}/${KC_DB_NAME}`,
+				KC_DB_SCHEMA: KC_DB_SCHEMA,
 				KC_METRICS_ENABLED: "true",
 				KC_LOG_LEVEL: "INFO",
 				KC_HOSTNAME_STRICT: "false",
 				KC_HTTP_ENABLED: "true",
 				KC_PROXY: "edge",
 				KC_HOSTNAME: getDomainNameWithPrefix("keycloak", config),
-				KEYCLOAK_URL: "http://localhost:8080/auth",
 			},
 			secrets: {
 				KC_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(databaseMasterSecret, "username"),
 				KC_DB_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(databaseMasterSecret, "password"),
-				KC_ADMIN_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(keycloakAdminSecret, "username"),
-				KC_ADMIN_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(keycloakAdminSecret, "password"),
+				KC_BOOTSTRAP_ADMIN_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(keycloakAdminSecret, "username"),
+				KC_BOOTSTRAP_ADMIN_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(keycloakAdminSecret, "password"),
 				KC_REALM_NAME: cdk.aws_ecs.Secret.fromSecretsManager(keycloakConfigSecret, "realm"),
 				KC_CLIENT_ID: cdk.aws_ecs.Secret.fromSecretsManager(keycloakConfigSecret, "client_id"),
 				KC_CLIENT_SECRET: cdk.aws_ecs.Secret.fromSecretsManager(keycloakConfigSecret, "client_secret"),
@@ -67,7 +70,7 @@ export class KeycloakStack extends cdk.Stack {
 		});
 
 		const service = new FargateService(this, generateName(id, "Service"), {
-			serviceName: generateName(id, "KeycloakService"),
+			serviceName: "KeycloakService",
 			cluster: props.cluster,
 			taskDefinition: keycloakTaskDef,
 			desiredCount: 1,

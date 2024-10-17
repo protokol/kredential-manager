@@ -23,7 +23,11 @@ export class SecretsStack extends cdk.Stack {
 			description: "Database master credentials",
 			secretName: `${stage}/database/master`,
 			generateSecretString: {
-				secretStringTemplate: JSON.stringify({ username: "kredentialmanageradmin" }),
+				secretStringTemplate: JSON.stringify({
+					username: "kredentialmanageradmin",
+					KM_DB_NAME: "kredentialmanager",
+					KM_DB_PORT: 5432,
+				}),
 				generateStringKey: "password",
 				passwordLength: 32,
 				excludePunctuation: true,
@@ -41,7 +45,7 @@ export class SecretsStack extends cdk.Stack {
 		});
 
 		this.keycloakSecret = new Secret(this, "KeycloakSecret", {
-			secretName: `${props.stage}/keycloak/config`,
+			secretName: `${stage}/keycloak/config`,
 			secretObjectValue: {
 				realm: cdk.SecretValue.unsafePlainText(realmName),
 				client_id: cdk.SecretValue.unsafePlainText(clientId),

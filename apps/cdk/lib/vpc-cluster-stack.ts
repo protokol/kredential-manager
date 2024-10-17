@@ -1,15 +1,14 @@
-import { EnvironmentConfig } from "../config";
 import { generateName, getDomainNameWithPrefix, getPublicHostedZoneId, getPublicHostedZoneName } from "./utils";
 import * as cdk from "aws-cdk-lib";
 import { Certificate, CertificateValidation } from "aws-cdk-lib/aws-certificatemanager";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Peer, Port, SecurityGroup, SubnetType, Vpc } from "aws-cdk-lib/aws-ec2";
 import { Cluster } from "aws-cdk-lib/aws-ecs";
 import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { ARecord, HostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
 import { LoadBalancerTarget } from "aws-cdk-lib/aws-route53-targets";
+import { EnvironmentConfig } from "config/types";
 import { Construct } from "constructs";
-
-// Import the AwsEnvironment type
 
 interface VpcClusterStackProps extends cdk.StackProps {
 	config: EnvironmentConfig;
@@ -29,6 +28,7 @@ export class VpcClusterStack extends cdk.Stack {
 
 	// SGs
 	public readonly databaseSG: SecurityGroup;
+	public readonly lambdaSG: SecurityGroup;
 	public readonly backendServiceSG: SecurityGroup;
 	public readonly keycloakServiceSG: SecurityGroup;
 
@@ -36,14 +36,13 @@ export class VpcClusterStack extends cdk.Stack {
 		super(scope, id, props);
 
 		const { config } = props;
-		const { stage, aws } = config;
-		console.log({ stage, aws });
+		const stage = config.APP_CONFIG.STAGE;
 
 		console.log(`VPCAccount: ${this.account}, Region: ${this.region}`);
 
 		const publicZone = HostedZone.fromHostedZoneAttributes(this, generateName(id, "HostedZone"), {
-			hostedZoneId: getPublicHostedZoneId(aws),
-			zoneName: getPublicHostedZoneName(aws),
+			hostedZoneId: getPublicHostedZoneId(config.AWS_CONFIG),
+			zoneName: getPublicHostedZoneName(config.AWS_CONFIG),
 		});
 
 		const apiDomainName = getDomainNameWithPrefix("api", config);
@@ -66,13 +65,23 @@ export class VpcClusterStack extends cdk.Stack {
 					subnetType: SubnetType.PUBLIC,
 					cidrMask: 24,
 				},
+
+				{
+					cidrMask: 24,
+					name: "isolated-subnet",
+					subnetType: SubnetType.PRIVATE_ISOLATED,
+				},
+				{
+					cidrMask: 24,
+					name: "private-subnet",
+					subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+				},
 			],
 			maxAzs: 2,
+			natGateways: 0,
+			enableDnsHostnames: true,
+			enableDnsSupport: true,
 		});
-		// this.cluster = new Cluster(this, generateName(id, "Cluster"), {
-		// 	vpc: this.vpc,
-		// 	clusterName: generateName(id, "Cluster"),
-		// });
 
 		this.cluster = new Cluster(this, "Cluster", {
 			vpc: this.vpc,
@@ -115,6 +124,22 @@ export class VpcClusterStack extends cdk.Stack {
 			this.databaseSG.addIngressRule(Peer.anyIpv4(), Port.tcp(5432));
 		}
 
+		// Lambda Stack SGs
+		this.lambdaSG = new SecurityGroup(this, generateName(id, "LambdaSG"), {
+			vpc: this.vpc,
+			description: `Security group for ${stage} lambda.`,
+			securityGroupName: generateName(id, "lambda-sg"),
+			allowAllOutbound: true,
+		});
+
+		this.vpc.addInterfaceEndpoint(generateName(id, "SecretsManagerEndpoint"), {
+			service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+			subnets: {
+				subnetType: SubnetType.PRIVATE_ISOLATED,
+			},
+			securityGroups: [this.lambdaSG],
+		});
+
 		// Backend Stack SGs
 		this.backendServiceSG = new SecurityGroup(this, generateName(id, "BackendServiceSG"), {
 			vpc: this.vpc,
@@ -129,22 +154,10 @@ export class VpcClusterStack extends cdk.Stack {
 		// Keycloak Stack SGs
 		this.keycloakServiceSG = new SecurityGroup(this, generateName(id, "KeycloakServiceSG"), {
 			vpc: this.vpc,
-			description: `Security group for ${aws} keycloak service.`,
+			description: `Security group for ${stage} keycloak service.`,
 			securityGroupName: generateName(id, "keycloak-service-sg"),
 			allowAllOutbound: true,
 		});
 		this.keycloakServiceSG.addIngressRule(Peer.anyIpv4(), Port.tcp(8080));
-
-		// new cdk.CfnOutput(this, "VpcId", {
-		// 	value: this.vpc.vpcId,
-		// 	exportName: `${id}-VpcId`,
-		// });
-
-		// this.vpc.publicSubnets.forEach((subnet, index) => {
-		// 	new cdk.CfnOutput(this, `PublicSubnet${index + 1}Id`, {
-		// 		value: subnet.subnetId,
-		// 		exportName: `${id}-PublicSubnet${index + 1}Id`,
-		// 	});
-		// });
 	}
 }

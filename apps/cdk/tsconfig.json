@@ -23,8 +23,13 @@
 		"typeRoots": [
 			"./node_modules/@types"
 		],
+		"outDir": "./dist",
 		"baseUrl": "."
 	},
+	"include": [
+		"lib/**/*.ts",
+		"lambda/**/*.ts"
+	],
 	"exclude": [
 		"node_modules",
 		"cdk.out"

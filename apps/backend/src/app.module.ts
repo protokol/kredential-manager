@@ -31,7 +31,6 @@ import { NonceService } from "./nonce/nonce.service";
 import { DidService } from "./student/did.service";
 import { AppConfig, DatabaseConfig } from "./config";
 import { Nonce } from "@entities/nonce.entity";
-import { dataSourceOptions } from "./db/typeorm.config";
 import { LoggerMiddleware } from "./logger/LoggerMiddleware";
 import { StateService } from "./state/state.service";
 import { State } from "@entities/state.entity";
@@ -52,17 +51,17 @@ import { State } from "@entities/state.entity";
 
         // Keycloak
         KeycloakConnectModule.register({
-            authServerUrl: process.env.REALM_SERVER || "",
+            authServerUrl: process.env.KC_REALM_SERVER || "",
             bearerOnly: true,
-            realm: process.env.REALM_NAME || "",
-            clientId: process.env.CLIENT_ID || "",
+            realm: process.env.KC_REALM_NAME || "",
+            clientId: process.env.KC_CLIENT_ID || "",
             secret: "",
             cookieKey: "KEYCLOAK_JWT",
             logLevels: ["verbose"],
             useNestLogger: false,
             policyEnforcement: PolicyEnforcementMode.PERMISSIVE,
             tokenValidation: TokenValidation.OFFLINE,
-            realmPublicKey: process.env.REALM_PUBLIC_KEY || "",
+            realmPublicKey: process.env.KC_REALM_PUBLIC_KEY || "",
         }),
         VcModule,
         StudentModule,

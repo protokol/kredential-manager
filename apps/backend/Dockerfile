@@ -24,11 +24,11 @@ RUN npx ts-patch install -s && pnpm run build
 FROM --platform=linux/amd64 node:20-alpine AS runner
 
 WORKDIR /app
-ENV DB_HOST="host.docker.internal"
-ENV DB_USERNAME="enterprise-wallet-user"
-ENV DB_PORT="5432"
-ENV DB_PASSWORD="password"
-ENV DB_NAME="enterprise-wallet"
+ENV KM_DB_HOST=${KM_DB_HOST}
+ENV KM_DB_USERNAME=${KM_DB_USERNAME}
+ENV KM_DB_PORT=${KM_DB_PORT}
+ENV KM_DB_PASSWORD=${KM_DB_PASSWORD}
+ENV KM_DB_NAME=${KM_DB_NAME}
 
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder /app/tsconfig.json ./tsconfig.json

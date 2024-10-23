@@ -22,7 +22,6 @@ import { ProgramModule } from "./program/program.module";
 import { EnrollmentModule } from "./enrollment/enrollment.module";
 import { DiplomaModule } from "./diploma/diploma.module";
 import { CourseModule } from "./course/course.module";
-import { SeedModule } from "./seed/seed.module";
 import { ResolverService } from "./resolver/resolver.service";
 import { AuthController } from "./auth/auth.controller";
 import { ProxyController } from "./proxy/proxy.controller";
@@ -70,8 +69,7 @@ import { ProxyService } from "./proxy/proxy.service";
         ProgramModule,
         CourseModule,
         DiplomaModule,
-        EnrollmentModule,
-        SeedModule
+        EnrollmentModule
     ],
     controllers: [
         AppController,

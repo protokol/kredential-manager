@@ -40,8 +40,10 @@ const appConfigSchema = z.object({
 });
 
 const enterpriseWalletConfigSchema = z.object({
-	ISSUER_PRIVATE_KEY: z.string().min(1, "ISSUER_PRIVATE_KEY cannot be empty"),
 	ISSUER_PRIVATE_KEY_ID: z.string().min(1, "ISSUER_PRIVATE_KEY_ID cannot be empty"),
+	ISSUER_DID: z.string().min(1, "ISSUER_DID cannot be empty"),
+	ISSUER_PRIVATE_KEY_JWK: z.string().min(1, "ISSUER_PRIVATE_KEY_JWK cannot be empty"),
+	ISSUER_PUBLIC_KEY_JWK: z.string().min(1, "ISSUER_PUBLIC_KEY_JWK cannot be empty"),
 });
 
 const awsConfig = awsConfigSchema.parse({

@@ -19,18 +19,7 @@ const main = async () => {
   // Discover issuer and configuration metadata
   const openIdIssuer = await hw.discoverIssuerMetadata();
   const openIdMetadata = await hw.discoverConfigurationMetadata();
-  // console.log({ openIdIssuer })
-  // console.log({ openIdMetadata })
-  // Authenticate with the issuer
-  // const requestedCredentials = [
-  //   'VerifiableCredential',
-  //   'UniversityDegreeCredential',
-  // ];
-  // const requestedCredentials = [
-  //   "VerifiableCredential",
-  //   "VerifiableAttestation",
-  //   "CTWalletSameAuthorisedInTime"
-  // ];
+
   const requestedCredentials = [
     "VerifiableCredential",
     "VerifiableAttestation",

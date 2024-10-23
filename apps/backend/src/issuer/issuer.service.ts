@@ -12,28 +12,25 @@ export class IssuerService {
 
     constructor() {
         (async () => {
-            const did = 'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbpjcLy3gYehCgmmjCKEt6pafLdMdcXysUgySbPc4Bno4d7Ef6rk36EFDYnEo1m47SwvTS2S2yLiW1HEyLs3sCs1s7ZkVgknAr8e5YeuTWo23Etw3U83mmRAQji6nSuAAyiU'
-            const privateKeyJwk = {
-                kty: 'EC',
-                crv: 'P-256',
-                x: 'NbkoaUnGy2ma932oIHHxmVr_m3uGeMO7DSJXbXEBAio',
-                y: 'oonFfsV2IRHXoDq0_pvMfHScaKGUNKm5Y43ohxAaAK0',
-                d: 'B8tLRpFVeS3qH2BfE2x5FC-gYr7kVmNrzi4icpPY2r0',
-                kid: process.env.ISSUER_PRIVATE_KEY_ID
+
+            const did = process.env.ISSUER_DID || '';
+
+            if (!did || !process.env.ISSUER_PRIVATE_KEY_JWK || !process.env.ISSUER_PUBLIC_KEY_JWK) {
+                throw new Error('Missing required environment variables for issuer');
             }
-            const publicKeyJwk = {
-                alg: 'ES256',
-                kid: process.env.ISSUER_PRIVATE_KEY_ID,
-                kty: 'EC',
-                crv: 'P-256',
-                x: 'NbkoaUnGy2ma932oIHHxmVr_m3uGeMO7DSJXbXEBAio',
-                y: 'oonFfsV2IRHXoDq0_pvMfHScaKGUNKm5Y43ohxAaAK0'
+
+            try {
+                const privateKeyJwk = JSON.parse(process.env.ISSUER_PRIVATE_KEY_JWK || '{}');
+                const publicKeyJwk = JSON.parse(process.env.ISSUER_PUBLIC_KEY_JWK || '{}');
+
+                this.issuer = process.env.ISSUER_BASE_URL ?? '';
+                this.did = did;
+                this.privateKeyJwk = privateKeyJwk;
+                this.publicKeyJwk = publicKeyJwk;
+                this.jwtUtil = new EnterpriseJwtUtil(this.privateKeyJwk);
+            } catch (error) {
+                console.error('Error parsing JWKs:', error);
             }
-            this.issuer = process.env.ISSUER_BASE_URL ?? '';
-            this.did = did;
-            this.privateKeyJwk = privateKeyJwk;
-            this.publicKeyJwk = publicKeyJwk;
-            this.jwtUtil = new EnterpriseJwtUtil(this.privateKeyJwk);
         })();
     }
 

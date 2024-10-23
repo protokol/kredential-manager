@@ -10,8 +10,6 @@ services:
     restart: unless-stopped
     ports:
       - 5432:5432
-    # healthcheck:
-    #   test: [ "CMD", "pg_isready", "-U", "postgres" ]
     environment:
       POSTGRES_DB: ${KM_DB_NAME}
       POSTGRES_USER: ${KC_DB_USERNAME}

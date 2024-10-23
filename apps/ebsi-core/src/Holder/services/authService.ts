@@ -96,9 +96,9 @@ export class AuthService {
             const tokenRequestBody = await new TokenRequestComposer(
                 this.privateKey,
                 'authorization_code',
-                parsedAuthorizationResponse.code,
                 this.signer
             )
+                .setCode(parsedAuthorizationResponse.code)
                 .setHeader(header)
                 .setPayload({
                     iss: this.did,

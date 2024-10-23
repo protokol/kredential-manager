@@ -9,7 +9,6 @@ interface SecretsStackProps extends cdk.StackProps {
 
 export class SecretsStack extends cdk.Stack {
 	public readonly databaseMasterSecret: Secret;
-	public readonly keycloakAdminSecret: Secret;
 	public readonly keycloakSecret: Secret;
 	constructor(scope: Construct, id: string, props: SecretsStackProps) {
 		super(scope, id, props);
@@ -28,16 +27,6 @@ export class SecretsStack extends cdk.Stack {
 					KM_DB_NAME: "kredentialmanager",
 					KM_DB_PORT: 5432,
 				}),
-				generateStringKey: "password",
-				passwordLength: 32,
-				excludePunctuation: true,
-			},
-		});
-
-		this.keycloakAdminSecret = new Secret(this, "KeycloakAdminSecret", {
-			secretName: `${stage}/keycloak/admin`,
-			generateSecretString: {
-				secretStringTemplate: JSON.stringify({ username: "keycloackadmin" }),
 				generateStringKey: "password",
 				passwordLength: 32,
 				excludePunctuation: true,

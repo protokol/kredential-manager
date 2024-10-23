@@ -39,30 +39,34 @@ export class KeycloakStack extends cdk.Stack {
 			cpu: 512,
 		});
 
-		const keycloakAdminSecret = Secret.fromSecretNameV2(this, "KeycloakAdminSecret", `${stage}/keycloak/admin`);
 		const keycloakConfigSecret = Secret.fromSecretNameV2(this, "KeycloakConfigSecret", `${stage}/keycloak/config`);
 		const databaseMasterSecret = Secret.fromSecretNameV2(this, "DatabaseMasterSecret", `${stage}/database/master`);
 
 		const container = keycloakTaskDef.addContainer(generateName(id, "Container"), {
 			image: dockerRepositories.keycloackImage,
 			logging: logging.kredentialManagerLogDriver,
-			command: ["start-dev"],
+			command: ["start"],
 			environment: {
 				KC_DB: "postgres",
 				KC_DB_URL: `jdbc:postgresql://${props.dbInstance.instanceEndpoint.hostname}:${KC_DB_PORT}/${KC_DB_NAME}`,
 				KC_DB_SCHEMA: KC_DB_SCHEMA,
+				KC_PROXY_HEADERS: "xforwarded",
 				KC_METRICS_ENABLED: "true",
 				KC_LOG_LEVEL: "INFO",
 				KC_HOSTNAME_STRICT: "false",
+				KC_HOSTNAME_DEBUG: "false",
 				KC_HTTP_ENABLED: "true",
 				KC_PROXY: "edge",
+				PROXY_ADDRESS_FORWARDING: "true",
 				KC_HOSTNAME: getDomainNameWithPrefix("keycloak", config),
+				KC_BOOTSTRAP_ADMIN_USERNAME: "tempadminuser",
+				KC_BOOTSTRAP_ADMIN_PASSWORD: "tempadminpass",
+				KC_BOOTSTRAP_ADMIN_CLIENT_ID: "client",
+				KC_BOOTSTRAP_ADMIN_CLIENT_SECRET: "seecreet",
 			},
 			secrets: {
 				KC_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(databaseMasterSecret, "username"),
 				KC_DB_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(databaseMasterSecret, "password"),
-				KC_BOOTSTRAP_ADMIN_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(keycloakAdminSecret, "username"),
-				KC_BOOTSTRAP_ADMIN_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(keycloakAdminSecret, "password"),
 				KC_REALM_NAME: cdk.aws_ecs.Secret.fromSecretsManager(keycloakConfigSecret, "realm"),
 				KC_CLIENT_ID: cdk.aws_ecs.Secret.fromSecretsManager(keycloakConfigSecret, "client_id"),
 				KC_CLIENT_SECRET: cdk.aws_ecs.Secret.fromSecretsManager(keycloakConfigSecret, "client_secret"),

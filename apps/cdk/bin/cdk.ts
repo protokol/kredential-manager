@@ -14,9 +14,6 @@ dotenv.config();
 
 const app = new cdk.App();
 const stage = config.APP_CONFIG.STAGE as Environment;
-console.log(`Deploying stage: ${stage}`);
-console.log(config.APP_CONFIG);
-console.log(config.AWS_CONFIG);
 
 function createStacks(app: cdk.App, stage: Environment) {
 	// Secrets stack
@@ -37,7 +34,7 @@ function createStacks(app: cdk.App, stage: Environment) {
 	});
 
 	// Keycloak stack
-	new KeycloakStack(app, getStackName("KeycloakStack", config), {
+	const keycloakStack = new KeycloakStack(app, getStackName("KeycloakStack", config), {
 		cluster: vpcClusterStack.cluster,
 		dbInstance: databaseStack.dbInstance,
 		keycloakSG: vpcClusterStack.keycloakServiceSG,
@@ -46,8 +43,10 @@ function createStacks(app: cdk.App, stage: Environment) {
 		config: config,
 	});
 
+	keycloakStack.addDependency(databaseStack);
+
 	// Backend stack
-	new BackendStack(app, getStackName("BackendStack", config), {
+	const backendStack = new BackendStack(app, getStackName("BackendStack", config), {
 		cluster: vpcClusterStack.cluster,
 		dbInstance: databaseStack.dbInstance,
 		backendSG: vpcClusterStack.backendServiceSG,
@@ -55,6 +54,8 @@ function createStacks(app: cdk.App, stage: Environment) {
 		loadBalancer: vpcClusterStack.backendLoadBalancer,
 		config: config,
 	});
+
+	backendStack.addDependency(keycloakStack);
 }
 
 createStacks(app, stage);

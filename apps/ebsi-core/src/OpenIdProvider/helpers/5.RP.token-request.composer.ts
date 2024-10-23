@@ -10,15 +10,15 @@ interface JWK {
  */
 export class TokenRequestComposer {
     private privateKeyJWK: JWK;
+    private isPreAuthorized: boolean;
     private header?: JHeader;
     private grantType: string;
-    // private clientId: string;
-    private code: string;
-    // private codeVerifier: string;
+    private code?: string;
     private payload?: TokenRequest;
-    //, clientId: string, code: string, 
     private codeVerifier?: string
     private jwtUtil: JwtUtil;
+    private preAuthorizedCode?: string;
+    private userPin?: string;
 
     /**
      * Initializes a new instance of the TokenRequestComposer with essential parameters for an OAuth 2.0 token request.
@@ -26,11 +26,33 @@ export class TokenRequestComposer {
      * @param grantType - The type of grant requested (e.g., 'authorization_code').
      * @param code - The authorization code received from the authorization server.
      */
-    constructor(privateKeyJWK: JWK, grantType: string, code: string, jwtUtil: JwtUtil) {
+    constructor(privateKeyJWK: JWK, grantType: string, jwtUtil: JwtUtil, isPreAuthorized: boolean = false) {
         this.privateKeyJWK = privateKeyJWK;
         this.grantType = grantType;
-        this.code = code;
         this.jwtUtil = jwtUtil;
+        this.isPreAuthorized = isPreAuthorized;
+    }
+
+    /**
+     * Sets the code for the token request.
+     * @param code - The code to be included in the request.
+     * @returns This instance for method chaining.
+     */
+    setCode(code: string): this {
+        this.code = code;
+        return this;
+    }
+
+    /**
+     * Sets the pre-authorized details for the token request.
+     * @param preAuthorizedCode - The pre-authorized code to be included in the request.
+     * @param userPin - The user pin to be included in the request.
+     * @returns This instance for method chaining.
+     */
+    setPreAuthorizedDetails(preAuthorizedCode: string, userPin: string): this {
+        this.preAuthorizedCode = preAuthorizedCode;
+        this.userPin = userPin;
+        return this;
     }
 
     /**
@@ -80,16 +102,38 @@ export class TokenRequestComposer {
         // URL-encode the signed JWT
         const clientAssertion = encodeURIComponent(signedJwt);
 
+        let requestBody: TokenRequestBody;
+
+        if (!this.grantType) {
+            throw new Error('Grant type must be set before composing the request.');
+        }
+
         // Construct the request body
-        const requestBody = {
-            grant_type: this.grantType,
-            client_id: this.payload?.iss,
-            code: this.code,
-            client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-            client_assertion: clientAssertion,
-            code_verifier: this.codeVerifier
-        } as TokenRequestBody
+        if (this.grantType === 'urn:ietf:params:oauth:grant-type:pre-authorized_code') {
+            if (!this.preAuthorizedCode || !this.userPin) {
+                throw new Error('Pre-authorized code and user pin must be set for pre-authorized requests.');
+            }
+            requestBody = {
+                grant_type: this.grantType,
+                'pre-authorized_code': this.preAuthorizedCode,
+                user_pin: this.userPin
+            };
+        } else {
+            if (!this.code || !this.codeVerifier) {
+                throw new Error('Authorization code and code verifier must be set for standard requests.');
+            }
+            requestBody = {
+                grant_type: this.grantType,
+                client_id: this.payload?.iss,
+                code: this.code,
+                client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                client_assertion: clientAssertion,
+                code_verifier: this.codeVerifier
+            };
+        }
 
         return requestBody
     }
 }
+
+

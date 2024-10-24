@@ -44,12 +44,10 @@ const main = async () => {
   );
   if (credential.credential) {
   } else if (credential.acceptance_token) {
-    console.log('Deferred Credential');
     const deferredResponse = await hw.deferredCredentialEndpoint(
       openIdIssuer,
       credential.acceptance_token
     );
-    console.log('Response:', deferredResponse);
   }
 };
 

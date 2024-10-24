@@ -47,7 +47,6 @@ export const handler: Handler = async () => {
                 if (attempt >= maxRetries) {
                     throw new Error("Failed to connect to the database after multiple attempts");
                 }
-                console.log(`Retrying database connection (${attempt}/${maxRetries})...`);
                 await new Promise(res => setTimeout(res, 10000));
             }
         }

@@ -38,15 +38,12 @@ export class VpcClusterStack extends cdk.Stack {
 		const { config } = props;
 		const stage = config.APP_CONFIG.STAGE;
 
-		console.log(`VPCAccount: ${this.account}, Region: ${this.region}`);
-
 		const publicZone = HostedZone.fromHostedZoneAttributes(this, generateName(id, "HostedZone"), {
 			hostedZoneId: getPublicHostedZoneId(config.AWS_CONFIG),
 			zoneName: getPublicHostedZoneName(config.AWS_CONFIG),
 		});
 
 		const apiDomainName = getDomainNameWithPrefix("api", config);
-		console.log({ apiDomainName });
 		this.apiCertificate = new Certificate(this, generateName(id, "APICertificate"), {
 			domainName: apiDomainName,
 			validation: CertificateValidation.fromDns(publicZone),

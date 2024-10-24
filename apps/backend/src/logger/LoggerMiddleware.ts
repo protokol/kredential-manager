@@ -17,7 +17,6 @@ export class LoggerMiddleware implements NestMiddleware {
             this.logger.log(
                 `${method} ${url} ${statusCode} ${contentLength} - ${userAgent} ${ip}`
             );
-            console.log({ url: request.url })
         });
 
         next();

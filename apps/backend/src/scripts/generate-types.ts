@@ -9,9 +9,7 @@ async function generateTypes() {
     for (const key in VCSupportedSchemas) {
         if (VCSupportedSchemas.hasOwnProperty(key)) {
             const element = VCSupportedSchemas[key];
-            console.log({ element });
             const typePath = `src/types/schema/${key}.ts`;
-            console.log(`Generating types for ${key}`);
             try {
                 const schema = await $RefParser.dereference(element.schemaPath);
                 const ts = await compile(

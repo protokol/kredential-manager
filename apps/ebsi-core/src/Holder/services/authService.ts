@@ -53,7 +53,6 @@ export class AuthService {
 
             if (authResult.status !== 302) throw new Error('Invalid status code')
 
-            console.log({ A: authRequest.createGetRequestUrl() })
             // // Extract ID Token from the authorization response
             const { location } = parseRedirectHeaders(authResult.headers)
             const parsedSignedRequest = parseAuthorizeRequestSigned(location);

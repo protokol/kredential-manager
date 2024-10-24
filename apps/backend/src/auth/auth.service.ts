@@ -99,7 +99,6 @@ export class AuthService {
             await this.state.createAuthState(request.client_id, request.code_challenge, request.code_challenge_method, request.redirect_uri, request.scope, request.response_type, serverDefinedState, serverDefinedNonce, request.state, request.nonce, payload)
             return { header, code: 302, url: redirectUrl };
         } catch (error) {
-            console.log({ error })
             return { code: 400 };
         }
     }
@@ -146,7 +145,6 @@ export class AuthService {
             const redirectUrl = await this.provider.getInstance().createAuthorizationRequest(code, walletDefinedState, redirectUri);
             return { header, code: 302, url: redirectUrl };
         } catch (error) {
-            console.log({ error })
             throw error
         }
     }
@@ -164,7 +162,6 @@ export class AuthService {
 
             return await this.handleStandardTokenRequest(request);
         } catch (error) {
-            console.log({ error });
             return { header: this.header, code: 400, response: error.message };
         }
     }
@@ -261,7 +258,6 @@ export class AuthService {
 
             // Create the verifiable credential.
             let vcId = await this.handleCredentialCreation(did, requestedCredentials);
-            // console.log({ vcId })
             // Compose the deferred credential response.
             const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS
             const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
@@ -302,7 +298,6 @@ export class AuthService {
 
             return { header: this.header, code: 200, response };
         } catch (error) {
-            console.log({ error })
             return { header: this.header, code: 400, response: 'Invalid request' };
         }
     }
@@ -394,7 +389,7 @@ export class AuthService {
         try {
 
             const state = await this.state.getByPreAuthorisedAndPinCode(pinCode, preAuthorisedCode);
-            console.log({ state })
+
             if (!state || !state.clientId || state.preAuthorisedCodeIsUsed) {
                 throw new Error('Invalid pre-authorised code');
             }
@@ -402,7 +397,6 @@ export class AuthService {
             const did = state.clientId;
             // Define the requested credentials
             const requestedCredentials = state?.payload?.authorizationDetails?.[0]?.types ?? [];
-            console.log({ requestedCredentials })
             if (requestedCredentials.length === 0) {
                 throw new Error('No requested credentials in state');
             }

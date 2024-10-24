@@ -61,8 +61,6 @@ export class KeycloakStack extends cdk.Stack {
 				KC_HOSTNAME: getDomainNameWithPrefix("keycloak", config),
 				KC_BOOTSTRAP_ADMIN_USERNAME: "tempadminuser",
 				KC_BOOTSTRAP_ADMIN_PASSWORD: "tempadminpass",
-				KC_BOOTSTRAP_ADMIN_CLIENT_ID: "client",
-				KC_BOOTSTRAP_ADMIN_CLIENT_SECRET: "seecreet",
 			},
 			secrets: {
 				KC_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(databaseMasterSecret, "username"),

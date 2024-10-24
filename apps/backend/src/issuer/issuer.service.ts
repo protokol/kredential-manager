@@ -8,25 +8,29 @@ export class IssuerService {
     private issuer: string;
     private privateKeyJwk: JWK;
     private publicKeyJwk: JWK;
+    private privateKeyId: string;
     private jwtUtil: EnterpriseJwtUtil;
 
     constructor() {
         (async () => {
-
-            const did = process.env.ISSUER_DID || '';
-
-            if (!did || !process.env.ISSUER_PRIVATE_KEY_JWK || !process.env.ISSUER_PUBLIC_KEY_JWK) {
+            if (!process.env.ISSUER_BASE_URL || !process.env.ISSUER_DID || !process.env.ISSUER_PRIVATE_KEY_JWK || !process.env.ISSUER_PUBLIC_KEY_JWK) {
                 throw new Error('Missing required environment variables for issuer');
             }
-
             try {
-                const privateKeyJwk = JSON.parse(process.env.ISSUER_PRIVATE_KEY_JWK || '{}');
-                const publicKeyJwk = JSON.parse(process.env.ISSUER_PUBLIC_KEY_JWK || '{}');
-
                 this.issuer = process.env.ISSUER_BASE_URL ?? '';
-                this.did = did;
-                this.privateKeyJwk = privateKeyJwk;
-                this.publicKeyJwk = publicKeyJwk;
+                this.did = process.env.ISSUER_DID || '';
+
+                this.privateKeyJwk = {
+                    alg: "ES256",
+                    kid: process.env.ISSUER_PRIVATE_KEY_ID,
+                    ...JSON.parse(process.env.ISSUER_PRIVATE_KEY_JWK || '{}')
+                };
+
+                this.publicKeyJwk = {
+                    alg: "ES256",
+                    kid: process.env.ISSUER_PRIVATE_KEY_ID,
+                    ...JSON.parse(process.env.ISSUER_PUBLIC_KEY_JWK || '{}')
+                };
                 this.jwtUtil = new EnterpriseJwtUtil(this.privateKeyJwk);
             } catch (error) {
                 console.error('Error parsing JWKs:', error);
@@ -55,6 +59,7 @@ export class IssuerService {
      * @returns The public key in JWK format.
      */
     getPublicKeyJwk(): JWK {
+        console.log("publicKeyJwk", this.publicKeyJwk);
         return this.publicKeyJwk;
     }
 

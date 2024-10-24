@@ -13,10 +13,12 @@ export function getPublicHostedZoneName(env: AwsConfig): string {
 	return env.PUBLIC_HOSTED_ZONE_NAME;
 }
 
-export function getDomainNameWithPrefix(prefix: string, config: EnvironmentConfig): string {
+export function getDomainNameWithPrefix(prefix: string, config: EnvironmentConfig,
+	includeHttps: boolean = false): string {
 	const stage = config.APP_CONFIG.STAGE;
 	const publicHostedZoneName = config.AWS_CONFIG.PUBLIC_HOSTED_ZONE_NAME;
-	return stage !== "dev" ? `${prefix}.${stage}.${publicHostedZoneName}` : `${prefix}.${publicHostedZoneName}`;
+	const domain = stage !== "dev" ? `${prefix}.${stage}.${publicHostedZoneName}` : `${prefix}.${publicHostedZoneName}`;
+	return includeHttps ? `https://${domain}` : domain;
 }
 
 export function generateName(id: string, name: string): string {

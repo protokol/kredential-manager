@@ -24,13 +24,9 @@ const appConfigSchema = z.object({
 		.string()
 		.transform(Number)
 		.refine(port => port > 0, "KC_PORT must be a positive number"),
-	KC_REALM_NAME: z.string().min(1, "KC_REALM_NAME cannot be empty"),
 	KC_LOG_LEVEL: z.enum(["DEBUG", "INFO", "WARN", "ERROR"]).default("INFO"),
 	KC_ADMIN_USERNAME: z.string().nullable(), // SECRET MANAGED BY SECRETS MANAGER
 	KC_ADMIN_PASSWORD: z.string().nullable(), // SECRET MANAGED BY SECRETS MANAGER
-	KC_REALM_SERVER: z.string().url("Invalid URL format for KC_REALM_SERVER"),
-	KC_CLIENT_ID: z.string().min(1, "KC_CLIENT_ID cannot be empty"),
-	KC_REALM_PUBLIC_KEY: z.string().min(1, "KC_REALM_PUBLIC_KEY cannot be empty"),
 	KC_DB_NAME: z.string().min(1, "KC_DB_NAME cannot be empty"),
 	KC_DB_PORT: z
 		.string()

@@ -11,13 +11,9 @@ export interface AppConfig {
     STAGE: string;
     KC_VERSION: string;
     KC_PORT: number;
-    KC_REALM_NAME: string;
     KC_LOG_LEVEL: "DEBUG" | "INFO" | "WARN" | "ERROR";
     KC_ADMIN_USERNAME: string;
     KC_ADMIN_PASSWORD: string;
-    KC_REALM_SERVER: string;
-    KC_CLIENT_ID: string;
-    KC_REALM_PUBLIC_KEY: string;
     KC_DB_NAME: string;
     KC_DB_PORT: number;
     KC_DB_SCHEMA: string;

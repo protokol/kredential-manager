@@ -48,9 +48,6 @@ export class BackendStack extends cdk.Stack {
 				ISSUER_PUBLIC_KEY_JWK: JSON.stringify(KM_CONFIG.ISSUER_PUBLIC_KEY_JWK),
 				ISSUER_BASE_URL: getDomainNameWithPrefix("api", config, true),
 				KC_REALM_SERVER: getDomainNameWithPrefix("keycloak", config, true),
-				KC_REALM_NAME: APP_CONFIG.KC_REALM_NAME,
-				KC_CLIENT_ID: APP_CONFIG.KC_CLIENT_ID,
-				KC_REALM_PUBLIC_KEY: APP_CONFIG.KC_REALM_PUBLIC_KEY,
 			},
 			secrets: {
 				KM_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "username"),

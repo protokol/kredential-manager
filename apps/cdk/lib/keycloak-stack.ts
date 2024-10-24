@@ -39,7 +39,6 @@ export class KeycloakStack extends cdk.Stack {
 			cpu: 512,
 		});
 
-		const keycloakConfigSecret = Secret.fromSecretNameV2(this, "KeycloakConfigSecret", `${stage}/keycloak/config`);
 		const databaseMasterSecret = Secret.fromSecretNameV2(this, "DatabaseMasterSecret", `${stage}/database/master`);
 
 		const container = keycloakTaskDef.addContainer(generateName(id, "Container"), {
@@ -65,9 +64,6 @@ export class KeycloakStack extends cdk.Stack {
 			secrets: {
 				KC_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(databaseMasterSecret, "username"),
 				KC_DB_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(databaseMasterSecret, "password"),
-				KC_REALM_NAME: cdk.aws_ecs.Secret.fromSecretsManager(keycloakConfigSecret, "realm"),
-				KC_CLIENT_ID: cdk.aws_ecs.Secret.fromSecretsManager(keycloakConfigSecret, "client_id"),
-				KC_CLIENT_SECRET: cdk.aws_ecs.Secret.fromSecretsManager(keycloakConfigSecret, "client_secret"),
 			},
 		});
 

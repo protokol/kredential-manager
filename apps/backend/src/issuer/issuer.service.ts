@@ -59,7 +59,6 @@ export class IssuerService {
      * @returns The public key in JWK format.
      */
     getPublicKeyJwk(): JWK {
-        console.log("publicKeyJwk", this.publicKeyJwk);
         return this.publicKeyJwk;
     }
 

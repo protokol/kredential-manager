@@ -81,7 +81,7 @@ export class DatabaseStack extends cdk.Stack {
 			environment: {
 				DB_SECRET_ARN: databaseMasterSecret.secretArn,
 			},
-			timeout: Duration.minutes(1),
+			timeout: Duration.minutes(5),
 			vpc,
 			vpcSubnets: { subnetType: SubnetType.PRIVATE_ISOLATED },
 			securityGroups: [lambdaSG],
@@ -94,8 +94,10 @@ export class DatabaseStack extends cdk.Stack {
 			onEventHandler: createSchemaFunction,
 		});
 
-		new CustomResource(this, "CustomResource", {
+		const customResource = new CustomResource(this, "CustomResource", {
 			serviceToken: provider.serviceToken,
 		});
+
+		customResource.node.addDependency(this.dbInstance);
 	}
 }

@@ -75,5 +75,7 @@ jobs:
           KC_ADMIN_PASSWORD: ${{ vars.KC_ADMIN_PASSWORD }}
           KM_DB_PORT: ${{ vars.KM_DB_PORT }}
           KC_DB_PORT: ${{ vars.KC_DB_PORT }}
+          KC_VERSION: ${{ vars.KC_VERSION }}
+          KC_PORT: ${{ vars.KC_PORT }}
 
         run: cd apps/cdk && pnpm run cdk deploy --all --require-approval never

@@ -151,8 +151,6 @@ export class OpenIdProvider {
             .setHeader(header)
             .setPayload(payload)
             .compose()
-
-        // console.log({ redirectUrl })
         // Return header and url
         return { header, redirectUrl, authDetails, serverDefinedState, serverDefinedNonce };
     }

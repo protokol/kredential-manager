@@ -15,6 +15,7 @@ on:
 
 jobs:
   cdk-deploy:
+    environment: Development
     permissions:
       id-token: write
       contents: read
@@ -40,11 +41,18 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Install dependencies
         run: pnpm install
 
       - name: Run cdk deploy
+        env:
+          ISSUER_PRIVATE_KEY_ID: ${{ secrets.ISSUER_PRIVATE_KEY_ID }}
+          ISSUER_PRIVATE_KEY_JWK: ${{ secrets.ISSUER_PRIVATE_KEY_JWK }}
+          ISSUER_PUBLIC_KEY_JWK: ${{ secrets.ISSUER_PUBLIC_KEY_JWK }}
+          ISSUER_DID: ${{ env.ISSUER_DID }}
+          KC_DB_SCHEMA: ${{ env.KC_DB_SCHEMA }}
+          KM_DB_SCHEMA: ${{ env.KM_DB_SCHEMA }}
         run: cd apps/cdk && pnpm run cdk deploy --all --require-approval never

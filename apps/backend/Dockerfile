@@ -29,6 +29,7 @@ ENV KM_DB_USERNAME=${KM_DB_USERNAME}
 ENV KM_DB_PORT=${KM_DB_PORT}
 ENV KM_DB_PASSWORD=${KM_DB_PASSWORD}
 ENV KM_DB_NAME=${KM_DB_NAME}
+ENV KM_DB_SCHEMA=${KM_DB_SCHEMA}
 
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
@@ -36,6 +37,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
-# TODO: Find better way to run migrations
 CMD npm run migration:run:prod && npm run start:prod
-#npm run typeorm:drop && 

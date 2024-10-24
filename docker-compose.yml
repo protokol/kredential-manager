@@ -19,6 +19,7 @@ services:
         target: /var/lib/postgresql/data
         tmpfs:
           size: 100000000
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     logging: *logging
 
   keycloak:

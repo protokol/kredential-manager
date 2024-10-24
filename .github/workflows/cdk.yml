@@ -25,10 +25,20 @@ jobs:
     timeout-minutes: 30
 
     steps:
+
+    - name: Print environment variables
+      run: |
+        echo "AWS_REGION: ${{ env.AWS_REGION }}"
+        echo "AWS_ROLE_TO_ASSUME: ${{ env.AWS_ROLE_TO_ASSUME }}"
+        echo "ISSUER_DID: ${{ env.ISSUER_DID }}"
+        echo "KC_DB_SCHEMA: ${{ env.KC_DB_SCHEMA }}"
+        echo "KM_DB_SCHEMA: ${{ env.KM_DB_SCHEMA }}"
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: "latest"
+          
 
       - name: Check out Git repository
         uses: actions/checkout@v4

@@ -61,6 +61,57 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 issuance_criteria: "",
                 supported_evidence_types: []
             },
+            {
+                format: 'jwt_vc',
+                types: [
+                    'VerifiableCredential',
+                    'VerifiableAttestation',
+                    'CTWalletSameAuthorisedDeferred'
+                ],
+                trust_framework: {
+                    name: 'Best university',
+                    type: 'university',
+                    uri: 'https://www.best-university.ever'
+                },
+                display: [
+                ],
+                issuance_criteria: "",
+                supported_evidence_types: []
+            },
+            {
+                format: 'jwt_vc',
+                types: [
+                    'VerifiableCredential',
+                    'VerifiableAttestation',
+                    'CTWalletSamePreAuthorisedInTime'
+                ],
+                trust_framework: {
+                    name: 'Best university',
+                    type: 'university',
+                    uri: 'https://www.best-university.ever'
+                },
+                display: [
+                ],
+                issuance_criteria: "",
+                supported_evidence_types: []
+            },
+            {
+                format: 'jwt_vc',
+                types: [
+                    'VerifiableCredential',
+                    'VerifiableAttestation',
+                    'CTWalletSamePreAuthorisedDeferred'
+                ],
+                trust_framework: {
+                    name: 'Best university',
+                    type: 'university',
+                    uri: 'https://www.best-university.ever'
+                },
+                display: [
+                ],
+                issuance_criteria: "",
+                supported_evidence_types: []
+            },
         ]
     };
 }
@@ -71,23 +122,25 @@ export class OpenIDProviderService {
 
     constructor() {
         const HOST = process.env.ISSUER_BASE_URL || 'localhost:3000';
-        const privateKeyID = process.env.ISSUER_PRIVATE_KEY_ID;
         const issuerMetadata = getOpenIdIssuerMetadata(HOST);
         const configMetadata = getOpenIdConfigMetadata(HOST);
-        const did = 'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbpjcLy3gYehCgmmjCKEt6pafLdMdcXysUgySbPc4Bno4d7Ef6rk36EFDYnEo1m47SwvTS2S2yLiW1HEyLs3sCs1s7ZkVgknAr8e5YeuTWo23Etw3U83mmRAQji6nSuAAyiU'
-        const privateKeyJwk = {
-            kty: 'EC',
-            crv: 'P-256',
-            x: 'NbkoaUnGy2ma932oIHHxmVr_m3uGeMO7DSJXbXEBAio',
-            y: 'oonFfsV2IRHXoDq0_pvMfHScaKGUNKm5Y43ohxAaAK0',
-            d: 'B8tLRpFVeS3qH2BfE2x5FC-gYr7kVmNrzi4icpPY2r0',
-            kid: process.env.ISSUER_PRIVATE_KEY_ID
+
+
+        if (!process.env.ISSUER_PRIVATE_KEY_JWK || !process.env.ISSUER_PRIVATE_KEY_ID || !process.env.ISSUER_PUBLIC_KEY_JWK) {
+            throw new Error('Missing required environment variables for issuer');
         }
 
-        this.jwtUtil = new EnterpriseJwtUtil(privateKeyJwk);
-        this.provider = new OpenIdProvider(issuerMetadata, configMetadata, privateKeyJwk, this.jwtUtil);
-
-        console.log({ issuerMetadata })
+        try {
+            const privateKeyJwk = {
+                alg: "ES256",
+                kid: process.env.ISSUER_PRIVATE_KEY_ID,
+                ...JSON.parse(process.env.ISSUER_PRIVATE_KEY_JWK || '{}')
+            };
+            this.jwtUtil = new EnterpriseJwtUtil(privateKeyJwk);
+            this.provider = new OpenIdProvider(issuerMetadata, configMetadata, privateKeyJwk, this.jwtUtil);
+        } catch (error) {
+            console.error('Error parsing JWKs:', error);
+        }
     }
 
     getInstance() {

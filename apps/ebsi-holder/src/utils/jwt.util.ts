@@ -28,7 +28,7 @@ export class HolderJwtSigner implements JwtUtil {
         const key = await importJWK(this.privateKey);
         const jwt = new SignJWT(payload)
             .setProtectedHeader({
-                typ: 'jwt',
+                typ: 'JWT',
                 alg: algo,
                 kid: this.did,
                 ...header

@@ -17,7 +17,7 @@ export async function mapHeadersToJwtHeader(headers: Record<string, string | str
 }
 
 export function extractBearerToken(headers: { [key: string]: string }): string {
-    const authorizationHeader = headers['Authorization'];
+    const authorizationHeader = headers['authorization'];
     if (!authorizationHeader) {
         throw new Error('Authorization header is missing');
     }

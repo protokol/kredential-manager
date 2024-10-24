@@ -14,13 +14,14 @@ export class IdTokenRequestComposer {
     private header?: JHeader;
     private payload?: IdTokenRequestPayload;
     private jwtUtil: JwtUtil;
-
+    private redirectUri: string;
     /**
      * Initializes a new instance of the IdTokenRequestComposer with the private key used for signing the JWT.
      * @param privateKeyJWK - The private key in JWK format used for signing the JWT.
      */
-    constructor(jwtUtil: JwtUtil) {
+    constructor(jwtUtil: JwtUtil, redirectUri: string) {
         this.jwtUtil = jwtUtil;
+        this.redirectUri = redirectUri;
     }
 
     /**
@@ -63,18 +64,19 @@ export class IdTokenRequestComposer {
         const uriParams = new URLSearchParams({
             client_id: this.payload.client_id,
             response_type: this.payload.response_type,
+            response_mode: this.payload.response_mode,
             state: this.payload.state,
             scope: this.payload.scope,
             redirect_uri: this.payload.redirect_uri,
             request: encodedJwt
         }).toString();
-        const redirectUri = this.payload.redirect_uri
-        if (!redirectUri) {
+
+        if (!this.redirectUri) {
             return `openid://${uriParams}`;
         }
-        if (redirectUri.endsWith(':')) {
-            return `${redirectUri}//${uriParams}`;
+        if (this.redirectUri.endsWith(':')) {
+            return `${this.redirectUri}//${uriParams}`;
         }
-        return `${redirectUri}${uriParams}`;
+        return `${this.redirectUri}?${uriParams}`;
     }
 }

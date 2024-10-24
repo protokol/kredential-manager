@@ -39,6 +39,6 @@ export class AuthorizationResponseComposer {
             code: this.code,
             state: this.state,
         }).toString();
-        return `${this.uri}${uriParams}`;
+        return `${this.uri}?${uriParams}`;
     }
 }

@@ -12,17 +12,15 @@ export class IdTokenResponseComposer {
     private header?: JHeader;
     private payload?: IdTokenResponse;
     private privateKey: JWK;
-    private state: string;
     private jwtUtil: JwtUtil;
-
+    private state?: string;
     /**
      * Initializes a new instance of the IdTokenResponseComposer with the private key used for signing the JWT and the state value.
      * @param privateKey - The private key in JWK format used for signing the JWT.
      * @param state - The state value to be included in the response.
      */
-    constructor(privateKey: JWK, state: string, jwtUtil: JwtUtil) {
+    constructor(privateKey: JWK, jwtUtil: JwtUtil) {
         this.privateKey = privateKey;
-        this.state = state;
         this.jwtUtil = jwtUtil;
     }
 
@@ -33,6 +31,16 @@ export class IdTokenResponseComposer {
      */
     setPayload(payload: IdTokenResponse): this {
         this.payload = payload;
+        return this;
+    }
+
+    /**
+     * Sets the state for the ID token response.
+     * @param state - The state value to be included in the response.
+     * @returns This instance for method chaining.
+     */
+    setState(state: string): this {
+        this.state = state;
         return this;
     }
 
@@ -57,12 +65,12 @@ export class IdTokenResponseComposer {
         }
 
         // Sign the JWT
-        const idToken = await this.jwtUtil.sign(this.payload, {}, 'ES256');
+        const idToken = await this.jwtUtil.sign(this.payload, this.header, 'ES256');
 
         // Construct the request body
         const responseBody = {
             id_token: idToken,
-            state: this.state,
+            state: this.state ?? ''
         };
 
         return responseBody;

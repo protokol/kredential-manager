@@ -1,6 +1,7 @@
 import { BackendDockerRepository } from "./constructs/BackendDockerRepository";
 import { JsonRPCDockerRepository } from "./constructs/JsonRPCDockerRepository";
 import { Logging } from "./constructs/Logging";
+import { getDomainNameWithPrefix } from "./utils";
 import * as cdk from "aws-cdk-lib";
 import { Duration } from "aws-cdk-lib";
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
@@ -12,44 +13,49 @@ import {
 	ListenerCondition,
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { DatabaseInstance } from "aws-cdk-lib/aws-rds";
+import { EnvironmentConfig } from "config/types";
 import { Construct } from "constructs";
 
 interface BackendStackProps extends cdk.StackProps {
 	cluster: Cluster;
 	dbInstance: DatabaseInstance;
 	backendSG: SecurityGroup;
-	loadBalancer: ApplicationLoadBalancer;
 	certificate: Certificate;
+	loadBalancer: ApplicationLoadBalancer;
+	config: EnvironmentConfig;
 }
 export class BackendStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props: BackendStackProps) {
 		super(scope, id, props);
+		const { config } = props;
+		const { APP_CONFIG, KM_CONFIG } = config;
 
 		const backendDockerRepository = new BackendDockerRepository(this, "BackendDockerRepository");
 		const rpcDockerRepositoriy = new JsonRPCDockerRepository(this, "RpcDockerRepository");
 		const logging = new Logging(this, "Logging");
 
-		// BACKEND
 		const backendTaskDef = new FargateTaskDefinition(this, "BackendTaskDef");
 		const backendContainer = backendTaskDef.addContainer("Container", {
 			image: backendDockerRepository.image,
-			logging: logging.enterpriseWalletLogDriver,
+			logging: logging.kredentialManagerLogDriver,
 			environment: {
-				DB_HOST: props.dbInstance.instanceEndpoint.hostname,
-				ISSUER_PRIVATE_KEY: "0xe79990c72548c68da2188b01e665ef4c411279260dcd2fc4107543b3220cf2cf",
-				ISSUER_PRIVATE_KEY_ID: "4cwn_BBI3Jk8RXsmP8nL6wDzTy864Khf4FIpSA_aeNI",
-				ISSUER_BASE_URL: "https://api.eu-dev.protokol.sh",
-				// TODO: Adjust secrets
-				REALM_SERVER: "https://keycloak.eu-dev.protokol.sh",
-				REALM_NAME: "enterprise-wallet-realm",
-				CLIENT_ID: "enterprise-wallet-app",
-				REALM_PUBLIC_KEY:
-					"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3+FYwHel13e7MPg4UlzQyZjw9uxjDHQKpu4CjDAiyOdGxfC3T5FILJ9xiTrP5TbVkZTj/4fva/G5i81JQfPpPs18MrE95kVNV1YkC1sE8CwKuPBBk+ApDjv43Qtf1gOgtKRCF1pMmhcJkX1KeSmfan9KYjUk5QmC8j6bx8egQ2fuh7zyLN093Famr/4PQpGeTDiq471D9OOHj21RRKFDRIDu2JSnaJnOuyAA9C5Rq0rXMimkhMOOcFCctjadjPj1/oygUARZa86ZX8V4Wrsy9M5hK3V+OTSyaAlkj2lDQKD45Wo1BkxAz8SuyDfHnhiwupDmwdbm2QhhC/nP1dIsnQIDAQAB",
+				KM_DB_HOST: props.dbInstance.instanceEndpoint.hostname,
+				KM_DB_PORT: props.dbInstance.instanceEndpoint.port.toString(),
+				KM_DB_SCHEMA: APP_CONFIG.KM_DB_SCHEMA,
+				ISSUER_DID: KM_CONFIG.ISSUER_DID,
+				ISSUER_PRIVATE_KEY_ID: KM_CONFIG.ISSUER_PRIVATE_KEY_ID,
+				ISSUER_PRIVATE_KEY_JWK: JSON.stringify(KM_CONFIG.ISSUER_PRIVATE_KEY_JWK),
+				ISSUER_PUBLIC_KEY_JWK: JSON.stringify(KM_CONFIG.ISSUER_PUBLIC_KEY_JWK),
+				ISSUER_BASE_URL: getDomainNameWithPrefix("api", config, true),
+				KC_REALM_SERVER: getDomainNameWithPrefix("keycloak", config, true),
+				KC_REALM_NAME: APP_CONFIG.KC_REALM_NAME,
+				KC_CLIENT_ID: APP_CONFIG.KC_CLIENT_ID,
+				KC_REALM_PUBLIC_KEY: APP_CONFIG.KC_REALM_PUBLIC_KEY,
 			},
 			secrets: {
-				DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "username"),
-				DB_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "password"),
-				DB_NAME: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "dbname"),
+				KM_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "username"),
+				KM_DB_PASSWORD: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "password"),
+				KM_DB_NAME: cdk.aws_ecs.Secret.fromSecretsManager(props.dbInstance.secret!, "dbname"),
 			},
 		});
 

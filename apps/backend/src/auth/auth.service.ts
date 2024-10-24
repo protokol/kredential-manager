@@ -12,8 +12,23 @@ import { DidService } from './../student/did.service';
 import { VCStatus } from './../types/VC';
 import { validateCodeChallenge } from './../issuer/hash.util';
 import { ResolverService } from './../resolver/resolver.service';
+import { StateService } from './../state/state.service';
+import { StateStep } from './../state/enum/step.enum';
+import { StateStatus } from './../state/enum/status.enum';
 
-const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000; // TODO: Move to a shared utility file.
+const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
+const MOCK_EBSI_PRE_AUTHORISED_DID = 'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kboj7g9PfXJxbbs4KYegyr7ELnFVnpDMzbJJDDNZjavX6jvtDmALMbXAGW67pdTgFea2FrGGSFs8Ejxi96oFLGHcL4P6bjLDPBJEvRRHSrG4LsPne52fczt2MWjHLLJBvhAC';
+const MOCK_EBSI_PRE_AUTHORISED_IN_TIME_CREDENTIALS = ['CTWalletSamePreAuthorisedInTime'];
+const MOCK_EBSI_PRE_AUTHORISED_DEFERRED_CREDENTIALS = ['CTWalletSamePreAuthorisedDeferred'];
+const MOCK_EBSI_PRE_AUTHORISED_PIN_CODE = '1234';
+const MOCK_EBSI_PRE_AUTHORISED_CODE = 'conformance';
+interface PreAuthorisedCode {
+    code: string;
+    pinCode: string;
+    userDid: string;
+    isUsed: boolean;
+}
+
 @Injectable()
 export class AuthService {
 
@@ -35,6 +50,7 @@ export class AuthService {
         private provider: OpenIDProviderService,
         private issuer: IssuerService,
         private nonce: NonceService,
+        private state: StateService,
         private vcService: VcService,
         private didService: DidService,
         private resolverService: ResolverService
@@ -73,16 +89,14 @@ export class AuthService {
      */
     async authorize(request: AuthorizeRequest): Promise<{ header?: JHeader, code: number, url?: string }> {
         try {
-            const { header, redirectUrl, authDetails, serverDefinedState } = await this.provider.getInstance().handleAuthorizationRequest(request);
-            // // Create a nonce for the client.
-            const noncePayload: AuthNonce = {
+            const redirectUri = `${process.env.ISSUER_BASE_URL}/direct_post`
+            const { header, redirectUrl, authDetails, serverDefinedState, serverDefinedNonce } = await this.provider.getInstance().handleAuthorizationRequest(request, redirectUri);
+
+            const payload = {
                 authorizationDetails: authDetails,
-                redirectUri: request.redirect_uri,
-                serverDefinedState: serverDefinedState,
-                clientDefinedState: request.state,
-                codeChallenge: request.code_challenge,
-            };
-            await this.nonce.createAuthNonce(request.client_id, request.nonce, noncePayload);
+            }
+
+            await this.state.createAuthState(request.client_id, request.code_challenge, request.code_challenge_method, request.redirect_uri, request.scope, request.response_type, serverDefinedState, serverDefinedNonce, request.state, request.nonce, payload)
             return { header, code: 302, url: redirectUrl };
         } catch (error) {
             return { code: 400 };
@@ -98,7 +112,11 @@ export class AuthService {
     async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header?: JHeader, code: number, url?: string }> {
         try {
             const { payload, header } = await this.provider.getInstance().decodeIdTokenRequest(request.id_token);
-
+            // Extract the state from the request or payload. * The documentations says that state should be send in payload, but the conformance test is sending it in the request.
+            const state = payload.state ?? request.state
+            if (!state) {
+                throw new Error('Missing state parameter');
+            }
             // Extract the issuer from the payload or header.
             let issuer = ''
             if (payload.iss && payload.iss.startsWith("did:")) {
@@ -106,24 +124,28 @@ export class AuthService {
             } else if (header.kid && header.kid.startsWith("did:")) {
                 issuer = header.kid.trim().split("#")[0];
             }
+
             const resolvedPublicKeysFromDid = await this.resolverService.resolveDID(issuer)
             if (!resolvedPublicKeysFromDid) {
                 throw new Error('Failed to resolve DID');
             }
+
             // Verify the request.
             await this.issuer.verifyJWT(request.id_token, resolvedPublicKeysFromDid, issuer, header.alg)
-            const nonceData = await this.nonce.getNonceByField('nonce', payload.nonce, NonceStep.AUTHORIZE, NonceStatus.UNCLAIMED, issuer);
-            // Extract the client-defined state from the authorization response.
-            const state = nonceData.payload.clientDefinedState;
-            const redirectUri = nonceData.payload.redirectUri ?? 'openid://';
+            const stateData = await this.state.getByField('serverDefinedState', state, StateStep.AUTHORIZE, StateStatus.UNCLAIMED, issuer);
+
             // Generate a unique code for the client.
             const code = generateRandomString(25);
-            // Update the nonce for the client, including the generated code and ID token.
-            await this.nonce.createAuthResponseNonce(payload.nonce, code, request.id_token);
-            const redirectUrl = await this.provider.getInstance().createAuthorizationRequest(code, state, redirectUri);
+            // Extract the client-defined state from the authorization response.
+            const walletDefinedState = stateData.walletDefinedState;
+            const redirectUri = stateData.redirectUri ?? 'openid://';
+
+            // Update the state for the client, including the generated code and ID token.
+            await this.state.createAuthResponseNonce(stateData.id, code, request.id_token);
+            const redirectUrl = await this.provider.getInstance().createAuthorizationRequest(code, walletDefinedState, redirectUri);
             return { header, code: 302, url: redirectUrl };
         } catch (error) {
-            return { code: 400 };
+            throw error
         }
     }
 
@@ -133,23 +155,82 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
     async token(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
-        // Retrieve the nonce data to ensure it exists and is unclaimed.
-        const nonceData = await this.nonce.getNonceByField('code', request.code, NonceStep.AUTH_RESPONSE, NonceStatus.UNCLAIMED, request.client_id);
-        // Validate the code challenge against the one sent in the initial auth request.
-        const isCodeChallengeValid = await validateCodeChallenge(nonceData.payload.codeChallenge, request.code_verifier);
-        if (isCodeChallengeValid !== true) {
-            throw new Error('Invalid code challenge.');
+        try {
+            if (request.grant_type === 'urn:ietf:params:oauth:grant-type:pre-authorized_code') {
+                return await this.handlePreAuthorizedCode(request);
+            }
+
+            return await this.handleStandardTokenRequest(request);
+        } catch (error) {
+            return { header: this.header, code: 400, response: error.message };
         }
-        // Prepare the token response.
-        const idToken = nonceData.payload.idToken;
-        const authDetails = nonceData.payload.authorizationDetails;
+    }
+
+    /**
+     * Handles the pre-authorized code token request.
+     * @param request The token request body.
+     * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
+     */
+    private async handlePreAuthorizedCode(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
+        const pinCode = request.user_pin;
+        const preAuthorisedCode = request['pre-authorized_code'];
+
+        if (!pinCode || !preAuthorisedCode) {
+            throw new Error('Missing user pin or pre-authorized code');
+        }
+        // ******************
+        // CONFORMANCE TEST
+        // ******************
+        if (pinCode === MOCK_EBSI_PRE_AUTHORISED_PIN_CODE && preAuthorisedCode.startsWith(MOCK_EBSI_PRE_AUTHORISED_CODE)) {
+            await this.state.deleteByPreAuthorisedAndPinCode(pinCode, preAuthorisedCode);
+            if (preAuthorisedCode.startsWith(`${MOCK_EBSI_PRE_AUTHORISED_CODE}InTime`)) {
+                await this.state.createPreAuthorisedAndPinCode(pinCode, preAuthorisedCode, MOCK_EBSI_PRE_AUTHORISED_DID, MOCK_EBSI_PRE_AUTHORISED_IN_TIME_CREDENTIALS);
+            } else if (preAuthorisedCode.startsWith(`${MOCK_EBSI_PRE_AUTHORISED_CODE}Deferred`)) {
+                await this.state.createPreAuthorisedAndPinCode(pinCode, preAuthorisedCode, MOCK_EBSI_PRE_AUTHORISED_DID, MOCK_EBSI_PRE_AUTHORISED_DEFERRED_CREDENTIALS);
+            } else {
+                throw new Error('Invalid pre-authorised code');
+            }
+
+        }
+        // ******************
+
+        await this.offerPreAuthorisedCredential(pinCode, preAuthorisedCode);
+
+        const stateData = await this.state.getByPreAuthorisedAndPinCode(pinCode, preAuthorisedCode);
+        const idToken = "";
+        const authDetails = [];
         const cNonce = generateRandomString(20);
         const cNonceExpiresIn = 60 * 60; // seconds
-        // Update the nonce for the client, including the cNonce.
-        await this.nonce.createTokenRequestCNonce(nonceData.nonce, cNonce, cNonceExpiresIn);
+
+        await this.state.createTokenRequestCNonce(stateData.id, cNonce, cNonceExpiresIn);
         const response = await this.provider.getInstance().composeTokenResponse(idToken, cNonce, cNonceExpiresIn, authDetails);
         return { header: this.header, code: 200, response };
     }
+
+    /**
+     * Handles the standard token request.
+     * @param request The token request body.
+     * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
+     */
+    private async handleStandardTokenRequest(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
+        const stateData = await this.state.getByField('code', request.code, StateStep.AUTH_RESPONSE, StateStatus.UNCLAIMED, request.client_id);
+
+        const isCodeChallengeValid = await validateCodeChallenge(stateData.codeChallenge, request.code_verifier);
+        if (!isCodeChallengeValid) {
+            throw new Error('Invalid code challenge.');
+        }
+
+        const idToken = stateData.payload.idToken;
+        const authDetails = stateData.payload.authorizationDetails;
+        const cNonce = generateRandomString(20);
+        const cNonceExpiresIn = 60 * 60; // seconds
+
+        await this.state.createTokenRequestCNonce(stateData.id, cNonce, cNonceExpiresIn);
+        const response = await this.provider.getInstance().composeTokenResponse(idToken, cNonce, cNonceExpiresIn, authDetails);
+
+        return { header: this.header, code: 200, response };
+    }
+
 
     /**
      * Handles the creation of a deferred credential response.
@@ -163,26 +244,58 @@ export class AuthService {
             const decodedRequest = await this.provider.getInstance().decodeCredentialRequest(request);
             const cNonce = decodedRequest.nonce;
             // Retrieve the nonce data associated with the cNonce to ensure it exists and is unclaimed.
-            const nonceData = await this.nonce.getNonceByField('cNonce', cNonce, NonceStep.TOKEN_REQUEST, NonceStatus.UNCLAIMED, request.client_id);
+            const stateData = await this.state.getByField('cNonce', cNonce, StateStep.TOKEN_REQUEST, StateStatus.UNCLAIMED, request.client_id);
+
             // Validate the issuer of the request against the stored nonce data.
-            if (decodedRequest.iss !== nonceData.clientId) {
+            if (decodedRequest.iss !== stateData.clientId) {
                 throw new Error('Invalid issuer');
             }
+
             // Extract the requested credentials from the nonce payload.
-            const requestedCredentials = nonceData.payload.authorizationDetails[0].types;
+            const requestedCredentials = stateData.payload.authorizationDetails[0].types;
             // Retrieve the DID of the client from the nonce data.
-            const did = nonceData.clientId;
+            const did = stateData.clientId;
 
             // Create the verifiable credential.
             let vcId = await this.handleCredentialCreation(did, requestedCredentials);
-
             // Compose the deferred credential response.
             const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS
             const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
-            const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, vcId);
 
-            // Update the nonce for the client, including the acceptance token.
-            await this.nonce.createDeferredResoponse(nonceData.nonce, response.acceptance_token);
+            // ******************
+            // CONFORMANCE TEST
+            // ******************
+            // If CTWalletSameAuthorisedInTime or CTWalletSameAuthorisedDeferred
+            if (requestedCredentials.includes('CTWalletSameAuthorisedInTime') || requestedCredentials.includes('CTWalletSameAuthorisedDeferred') ||
+                requestedCredentials.includes('CTWalletSamePreAuthorisedInTime') || requestedCredentials.includes('CTWalletSamePreAuthorisedDeferred')) {
+
+                // Issue the verifiable credential
+                const signedCredential = await this.vcService.CONFORMANCE_issueVerifiableCredential(vcId, requestedCredentials, stateData.clientId);
+                if (!signedCredential) {
+                    throw new Error('Failed to issue verifiable credential');
+                }
+
+                // If in time requested, return the in time response
+                if (requestedCredentials.includes('CTWalletSameAuthorisedInTime')) {
+                    const inTimeCredentialResponse = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, signedCredential);
+                    return { header: this.header, code: 200, response: inTimeCredentialResponse };
+                }
+
+                // If deferred requested, return the deferred response
+                if (requestedCredentials.includes('CTWalletSameAuthorisedDeferred')) {
+                    const deferredCredentialResponse = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, vcId);
+                    return { header: this.header, code: 200, response: deferredCredentialResponse };
+                }
+            }
+            // ******************
+            // END CONFORMANCE TEST
+            // ******************
+
+            // Otherwise, compose the deferred credential response
+            const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, vcId);
+            // Update the state for the client, including the acceptance token.
+            await this.state.createDeferredResoponse(stateData.id, response.acceptance_token);
+
             return { header: this.header, code: 200, response };
         } catch (error) {
             return { header: this.header, code: 400, response: 'Invalid request' };
@@ -194,9 +307,17 @@ export class AuthService {
      * @param request The request object containing the acceptance token and other necessary details.
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
-    async credentilDeferred(request: any): Promise<{ header: any, code: number, response: any }> {
+    async credentilDeferred(body: any, headers: any): Promise<{ header: any, code: number, response: any }> {
+        // Check if the request headers are defined
+        if (!headers) {
+            return { header: this.header, code: 400, response: 'Missing request headers' };
+        }
+        // Check if the Authorization header is present
+        if (!headers['Authorization'] && !headers['authorization']) {
+            return { header: this.header, code: 400, response: 'Missing Authorization header' };
+        }
         // Extract the bearer token from the request headers.
-        const acceptanceToken = extractBearerToken(request.headers);
+        const acceptanceToken = extractBearerToken(headers);
         // Decode the acceptance token to validate its contents.
         const { header, payload } = await this.issuer.verifyBearerToken(acceptanceToken);
         const bearerPayload = payload as unknown as { vcId: number };
@@ -223,6 +344,73 @@ export class AuthService {
                 return { header: this.header, code: 403, response: 'Credential status: rejected' };
             default:
                 return { header: this.header, code: 500, response: 'Credential not found' };
+        }
+    }
+
+    /**
+ * Handles the credential offering process.
+ * @param pinCode The pin-code entered by the user.
+ * @param preAuthorisedCode The pre-authorised code used in the Credential Offering.
+ * @returns A promise resolving to an object containing the status and any additional information.
+ */
+    async offerPreAuthorisedCredential(pinCode: string, preAuthorisedCode: string) {
+        try {
+            // Validate the pin-code and pre-authorised code
+            const isValid = await this.validatePreAuthorisedCode(pinCode, preAuthorisedCode);
+            if (!isValid) {
+                throw new Error('Invalid pin-code or pre-authorised code');
+            }
+
+            // Initiate the credential issuance process
+            await this.issuePreAuthorisedCredential(pinCode, preAuthorisedCode);
+
+        } catch (error) {
+            console.error(error);
+            throw error
+        }
+    }
+
+    /**
+    * Validates the pre-authorised code and pin-code.
+    * @param pinCode The pin-code entered by the user.
+    * @param preAuthorisedCode The pre-authorised code used in the Credential Offering.
+    * @returns A promise resolving to a boolean indicating whether the validation was successful.
+    */
+    private async validatePreAuthorisedCode(pinCode: string, preAuthorisedCode: string): Promise<boolean> {
+        return this.state.validatePreAuthorisedAndPinCode(pinCode, preAuthorisedCode);
+    }
+
+    /**
+     * Issues the CTWalletSamePreAuthorisedInTime credential synchronously.
+     * @param preAuthorisedCode The pre-authorised code used in the Credential Offering.
+     * @returns A promise resolving to an object containing the issued credential.
+     */
+    async issuePreAuthorisedCredential(pinCode: string, preAuthorisedCode: string) {
+        try {
+
+            const state = await this.state.getByPreAuthorisedAndPinCode(pinCode, preAuthorisedCode);
+
+            if (!state || !state.clientId || state.preAuthorisedCodeIsUsed) {
+                throw new Error('Invalid pre-authorised code');
+            }
+            // Retrieve the DID of the user from the pre-authorised code
+            const did = state.clientId;
+            // Define the requested credentials
+            const requestedCredentials = state?.payload?.authorizationDetails?.[0]?.types ?? [];
+            if (requestedCredentials.length === 0) {
+                throw new Error('No requested credentials in state');
+            }
+            // Create the verifiable credential
+            const vcId = await this.handleCredentialCreation(did, requestedCredentials);
+            // If not mock, issue the verifiable credential
+            // For the conformance test, we issue the verifiable credential else where
+            if (!preAuthorisedCode.startsWith(MOCK_EBSI_PRE_AUTHORISED_CODE)) {
+                await this.vcService.issueVerifiableCredential(vcId);
+            }
+
+        } catch (error) {
+            console.error("IssuePreAuthorisedCredential:", error);
+            throw error;
         }
     }
 }

@@ -109,25 +109,8 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            const { code, response } = await this.auth.credentilDeferred(req);
-            console.log({ response })
-            console.log({ code })
+            const { code, response } = await this.auth.credentilDeferred(req, headers);
             return res.status(code).json(response);
-        } catch (error) {
-            return res.status(400).json({ message: error.message });
-        }
-    }
-
-    @Get('query_params')
-    @Public(true)
-    async getQueryParams(
-        @Query() req: any,
-        @Res() res: Response
-    ) {
-        try {
-            const queryParams = req;
-            res.setHeader('Content-Type', 'application/json');
-            return res.status(200).json(queryParams);
         } catch (error) {
             return res.status(400).json({ message: error.message });
         }

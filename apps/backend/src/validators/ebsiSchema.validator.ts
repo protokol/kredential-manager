@@ -69,9 +69,7 @@ export function EbsiSchemaTypeValidator(validationOptions?: ValidationOptions) {
                     return valid;
                 },
                 defaultMessage(args: ValidationArguments) {
-                    console.log({ args });
                     const errors = (args.object as any).__tempValidationErrors;
-                    console.log({ errors });
                     const errorMessage = ajv.errorsText(errors, {
                         separator: ", ",
                     });

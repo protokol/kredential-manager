@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -22,20 +22,21 @@ import { ProgramModule } from "./program/program.module";
 import { EnrollmentModule } from "./enrollment/enrollment.module";
 import { DiplomaModule } from "./diploma/diploma.module";
 import { CourseModule } from "./course/course.module";
-import { SeedModule } from "./seed/seed.module";
 import { ResolverService } from "./resolver/resolver.service";
 import { AuthController } from "./auth/auth.controller";
+import { ProxyController } from "./proxy/proxy.controller";
 import { IssuerService } from "./issuer/issuer.service";
 import { AuthService } from "./auth/auth.service";
 import { NonceService } from "./nonce/nonce.service";
 import { DidService } from "./student/did.service";
 import { AppConfig, DatabaseConfig } from "./config";
 import { Nonce } from "@entities/nonce.entity";
-import { dataSourceOptions } from "./db/typeorm.config";
+import { LoggerMiddleware } from "./logger/LoggerMiddleware";
+import { StateService } from "./state/state.service";
+import { State } from "@entities/state.entity";
+import { ProxyService } from "./proxy/proxy.service";
 @Module({
     imports: [
-
-
         ConfigModule.forRoot({
             isGlobal: true, cache: true,
             load: [AppConfig, DatabaseConfig],
@@ -47,34 +48,34 @@ import { dataSourceOptions } from "./db/typeorm.config";
             }),
             inject: [ConfigService],
         }),
-        TypeOrmModule.forFeature([Nonce]),
+        TypeOrmModule.forFeature([Nonce, State]),
 
         // Keycloak
         KeycloakConnectModule.register({
-            authServerUrl: process.env.REALM_SERVER || "",
+            authServerUrl: process.env.KC_REALM_SERVER || "",
             bearerOnly: true,
-            realm: process.env.REALM_NAME || "",
-            clientId: process.env.CLIENT_ID || "",
+            realm: process.env.KC_REALM_NAME || "",
+            clientId: process.env.KC_CLIENT_ID || "",
             secret: "",
             cookieKey: "KEYCLOAK_JWT",
             logLevels: ["verbose"],
             useNestLogger: false,
             policyEnforcement: PolicyEnforcementMode.PERMISSIVE,
             tokenValidation: TokenValidation.OFFLINE,
-            realmPublicKey: process.env.REALM_PUBLIC_KEY || "",
+            realmPublicKey: process.env.KC_REALM_PUBLIC_KEY || "",
         }),
         VcModule,
         StudentModule,
         ProgramModule,
         CourseModule,
         DiplomaModule,
-        EnrollmentModule,
-        SeedModule
+        EnrollmentModule
     ],
     controllers: [
         AppController,
         VcController,
-        AuthController
+        AuthController,
+        ProxyController
     ],
     providers: [
         AppService,
@@ -95,10 +96,17 @@ import { dataSourceOptions } from "./db/typeorm.config";
         },
         ResolverService,
         NonceService,
+        StateService,
         OpenIDProviderService,
         IssuerService,
         AuthService,
+        ProxyService
     ],
     exports: [],
 })
-export class AppModule { }
+
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer): void {
+        consumer.apply(LoggerMiddleware).forRoutes('*');
+    }
+}

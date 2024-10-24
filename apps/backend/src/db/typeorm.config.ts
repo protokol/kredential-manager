@@ -12,14 +12,15 @@ const configService = new ConfigService();
 
 const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: configService.get('DB_HOST'),
-  port: configService.get('DB_PORT'),
-  username: configService.get('DB_USERNAME'),
-  password: configService.get('DB_PASSWORD'),
-  database: configService.get('DB_NAME'),
-  entities: [`${__dirname}/../src/**/*.entity{.ts,.js}`],
-  synchronize: configService.get('nodenv') === 'development',
-  logging: configService.get('nodenv') === 'development',
+  host: configService.get('KM_DB_HOST'),
+  port: configService.get('KM_DB_PORT'),
+  username: configService.get('KM_DB_USERNAME'),
+  password: configService.get('KM_DB_PASSWORD'),
+  database: configService.get('KM_DB_NAME'),
+  schema: configService.get('KM_DB_SCHEMA'),
+  entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
+  synchronize: false,
+  logging: false,
   migrations: [`${__dirname}/migrations/*{.ts,.js}`],
   migrationsTableName: 'migrations',
 };

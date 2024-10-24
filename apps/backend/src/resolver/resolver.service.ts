@@ -1,12 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { DIDDocument, Resolver } from "did-resolver";
+import { Resolver } from "did-resolver";
 import { getResolver as getDidWebResolver } from "web-did-resolver";
 import * as KeyDidResolver from 'key-did-resolver'
-// const { getDidKeyResolver } = require("@veramo/did-provider-key");
 import { getResolver } from "@cef-ebsi/key-did-resolver";
 import { DIDResolutionResult } from "./DIDDocument.interface";
-// import type { getResolver } from "@cef-ebsi/key-did-resolver";
-// import { getDidKeyResolver } from "@veramo/did-provider-key";
 import { JWK } from '@probeta/mp-core';
 @Injectable()
 export class ResolverService {

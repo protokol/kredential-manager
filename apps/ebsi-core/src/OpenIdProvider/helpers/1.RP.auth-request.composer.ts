@@ -127,9 +127,9 @@ export class AuthRequestComposer {
             throw new Error('Issuer URL is missing.');
         }
         const req = { ...this.request } as any;
-        if (req.authorization_details) {
-            req.authorization_details = JSON.stringify(req.authorization_details);
-        }
+        req.authorization_details = JSON.stringify(req.authorization_details ?? []);
+        req.client_metadata = JSON.stringify(req.client_metadata ?? {});
+
         const queryParams = new URLSearchParams(req as any).toString();
         return `${this.issuerUrl}?${queryParams}`;
     }

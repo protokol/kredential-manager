@@ -133,50 +133,55 @@ export class VcService {
         return query.getRawMany();
     }
 
-    async issueVerifiableCredential(id: number): Promise<{ code: number, response: string }> {
-        const vc = await this.vcRepository.findOne({
-            where: { id: id },
+    // Helper functions
+    private async findVerifiableCredentialById(id: number): Promise<VerifiableCredential | null> {
+        return await this.vcRepository.findOne({
+            where: { id },
             relations: ["did", "did.student"],
         });
+    }
+
+    // Equals
+    private arraysAreEqual(array1: string[], array2: string[]): boolean {
+        if (array1.length !== array2.length) return false; // If lengths are not equal, arrays are not equal
+        const sortedArray1 = array1.sort();
+        const sortedArray2 = array2.sort();
+        for (let i = 0; i < array1.length; i++) {
+            if (sortedArray1[i] !== sortedArray2[i]) return false; // If any element doesn't match, arrays are not equal
+        }
+        return true; // All elements match
+    }
+
+    // Validate the verifiable credential
+    private async validateVerifiableCredential(vc: VerifiableCredential | null, id: number): Promise<{ isValid: boolean, errorMessage?: string }> {
         if (!vc) {
-            return {
-                code: 400, response: `VC with ID ${id} not found.`
-            }
+            return { isValid: false, errorMessage: `VC with ID ${id} not found.` };
         }
-        if (!vc.did.student) {
-            return {
-                code: 400, response: `Student not found for VC with ID ${id}.`
-            }
+        if (!vc.did || !vc.did.student) {
+            return { isValid: false, errorMessage: `Student not found for VC with ID ${id}.` };
         }
-
         if (vc.status === VCStatus.ISSUED) {
-            return {
-                code: 400, response: `VC with ID ${id} already issued.`
-            }
+            return { isValid: false, errorMessage: `VC with ID ${id} already issued.` };
         }
+        return { isValid: true };
+    }
 
-        const header = {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        };
-        const credential = {
-            "@context": [
-                "https://www.w3.org/2018/credentials/v1",
-                "https://www.w3.org/2018/credentials/examples/v1"
-            ],
-            "type": ["VerifiableCredential", "UniversityDegreeCredential"],
-            "credentialSubject": {
-                "id": "test",
-                "degree": {
-                    "type": "BachelorDegree",
-                    "name": "Bachelor of Science in Computer Science",
-                    "degreeType": "Undergraduate",
-                    "degreeSchool": "Best University",
-                    "degreeDate": "2023-04-18"
-                }
-            }
-        }
-        // vc.did.identifier
-        const signedCredential = await this.issuerService.issueCredential(credential);
+    // Issue the verifiable credential
+    private async issueCredential(credential: object, clientId: string, options?: {
+        expirationDate?: Date,
+        validFrom?: Date,
+        vcId?: string,
+        sub?: string,
+        iss?: string,
+        nbf?: number,
+        exp?: number,
+        iat?: number
+    }): Promise<string> {
+        return await this.issuerService.issueCredential(credential, clientId, options);
+    }
+
+    // Update the verifiable credential
+    private async updateVerifiableCredential(id: number, credential: object, signedCredential: string): Promise<void> {
         await this.vcRepository.update(
             id,
             {
@@ -185,8 +190,101 @@ export class VcService {
                 credential_signed: signedCredential,
                 issued_at: new Date(),
             }
-
         );
-        return { code: 200, response: "Verifiable credential issued successfully." };
+    }
+
+    async issueVerifiableCredential(id: number): Promise<string> {
+        const vc = await this.findVerifiableCredentialById(id);
+        const { isValid, errorMessage } = await this.validateVerifiableCredential(vc, id);
+
+        if (!isValid) {
+            throw new Error(errorMessage);
+        }
+
+        const credential = {
+            "vc": {
+                "@context": ["https://www.w3.org/2018/credentials/v1"],
+                "type": vc.requested_credentials,
+                "credentialSubject": {
+                    "id": vc.did.identifier
+                },
+                "credentialSchema": {
+                    "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
+                    "type": "FullJsonSchemaValidator2021"
+                },
+                // "termsOfUse": { // TODO: change to the correct issuer
+                //     "id": "https://api-conformance.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zjHZjJ4Sy7r92BxXzFGs7qD/attributes/bcdb6bc952c8c897ca1e605fce25f82604c76c16d479770014b7b262b93c0250",
+                //     "type": "IssuanceCertificate"
+                // }
+            }
+        };
+
+        const signedCredential = await this.issueCredential(credential, vc.did.identifier);
+        await this.updateVerifiableCredential(id, credential, signedCredential);
+
+        return "Verifiable credential issued successfully.";
+    }
+
+    async CONFORMANCE_issueVerifiableCredential(id: number, requestedCredentials: string[], clientId: string) {
+        const vc = await this.findVerifiableCredentialById(id);
+        const existingCredentials = vc.requested_credentials;
+
+        if (!this.arraysAreEqual(existingCredentials as string[], requestedCredentials)) {
+            return { code: 400, response: `Requested credentials do not match the VC with ID ${id}.` };
+        }
+
+        let credentialTypes = []
+        // The order of the credential types is important, the conformance test will fail if the order is not correct 
+        // CTWalletSameAuthorisedInTime|CTWalletSameAuthorisedDeferred must be the last item in the array
+        if (requestedCredentials.includes('CTWalletSameAuthorisedInTime')) {
+            credentialTypes = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "CTWalletSameAuthorisedInTime"
+            ]
+        } else if (requestedCredentials.includes('CTWalletSameAuthorisedDeferred')) {
+            credentialTypes = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "CTWalletSameAuthorisedDeferred"
+            ]
+        } else if (requestedCredentials.includes('CTWalletSamePreAuthorisedInTime')) {
+            credentialTypes = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "CTWalletSamePreAuthorisedInTime"
+            ]
+        } else if (requestedCredentials.includes('CTWalletSamePreAuthorisedDeferred')) {
+            credentialTypes = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "CTWalletSamePreAuthorisedDeferred"
+            ]
+        }
+        if (credentialTypes.length === 0) {
+            throw new Error('Invalid credential types');
+        }
+        const credential = {
+            "vc": {
+                "@context": ["https://www.w3.org/2018/credentials/v1"],
+                "type": credentialTypes,
+                "credentialSubject": {
+                    "id": clientId
+                },
+                "credentialSchema": {
+                    "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
+                    "type": "FullJsonSchemaValidator2021"
+                }//,
+                // "termsOfUse": {
+                //     "id": "https://api-conformance.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zjHZjJ4Sy7r92BxXzFGs7qD/attributes/bcdb6bc952c8c897ca1e605fce25f82604c76c16d479770014b7b262b93c0250",
+                //     "type": "IssuanceCertificate"
+                // }
+            }
+        };
+
+        const signedCredential = await this.issueCredential(credential, clientId);
+        await this.updateVerifiableCredential(id, credential, signedCredential);
+
+        return signedCredential
     }
 }

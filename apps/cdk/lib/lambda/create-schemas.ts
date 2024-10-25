@@ -36,7 +36,7 @@ export const handler: Handler = async () => {
         });
 
 
-        const maxRetries = 5;
+        const maxRetries = 30;
         let attempt = 0;
         while (attempt < maxRetries) {
             try {

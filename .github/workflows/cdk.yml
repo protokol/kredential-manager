@@ -1,4 +1,4 @@
-name: apps/cdk CDK
+name: cdk CDK
 
 concurrency:
   group: ${{ github.workflow }}-cdk

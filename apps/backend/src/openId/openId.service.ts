@@ -141,6 +141,7 @@ export class OpenIDProviderService {
             this.provider = new OpenIdProvider(issuerMetadata, configMetadata, privateKeyJwk, this.jwtUtil);
         } catch (error) {
             console.error('Error parsing JWKs:', error);
+            throw new Error('Error parsing JWKs');
         }
     }
 

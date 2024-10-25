@@ -31,6 +31,7 @@ export class IssuerService {
                 this.jwtUtil = new EnterpriseJwtUtil(this.privateKeyJwk);
             } catch (error) {
                 console.error('Error parsing JWKs:', error);
+                throw new Error('Error parsing JWKs');
             }
         })();
     }

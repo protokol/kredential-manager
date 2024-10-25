@@ -63,8 +63,7 @@ export class EnterpriseJwtUtil implements JwtUtil {
             }
             return await response.json();
         } catch (error) {
-            console.error('Error fetching JWK:', error);
-            return null;
+            throw new Error('Failed to fetch JWK');
         }
     }
 

@@ -136,6 +136,7 @@ export class OpenIDProviderService {
                 kid: process.env.ISSUER_PRIVATE_KEY_ID,
                 ...JSON.parse(process.env.ISSUER_PRIVATE_KEY_JWK || '{}')
             };
+
             this.jwtUtil = new EnterpriseJwtUtil(privateKeyJwk);
             this.provider = new OpenIdProvider(issuerMetadata, configMetadata, privateKeyJwk, this.jwtUtil);
         } catch (error) {

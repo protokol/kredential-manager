@@ -95,11 +95,10 @@ export class AuthService {
             const payload = {
                 authorizationDetails: authDetails,
             }
-
             await this.state.createAuthState(request.client_id, request.code_challenge, request.code_challenge_method, request.redirect_uri, request.scope, request.response_type, serverDefinedState, serverDefinedNonce, request.state, request.nonce, payload)
             return { header, code: 302, url: redirectUrl };
         } catch (error) {
-            return { code: 400 };
+            throw error
         }
     }
 
@@ -139,7 +138,7 @@ export class AuthService {
             // Extract the client-defined state from the authorization response.
             const walletDefinedState = stateData.walletDefinedState;
             const redirectUri = stateData.redirectUri ?? 'openid://';
-
+            console.log({ redirectUri })
             // Update the state for the client, including the generated code and ID token.
             await this.state.createAuthResponseNonce(stateData.id, code, request.id_token);
             const redirectUrl = await this.provider.getInstance().createAuthorizationRequest(code, walletDefinedState, redirectUri);

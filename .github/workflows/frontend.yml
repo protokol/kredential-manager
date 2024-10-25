@@ -25,8 +25,8 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-args: "--force --prod"
-          vercel-org-id: "team_Men14SflVoRjJ10FRChV3qZ0"
-          vercel-project-id: "prj_PiKWNnWByfmfMkjb52VwcLzeJgt5"
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
 
   preview:
     if: github.ref != 'refs/heads/master'
@@ -41,5 +41,5 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-args: "--force"
-          vercel-org-id: "team_Men14SflVoRjJ10FRChV3qZ0"
-          vercel-project-id: "prj_PiKWNnWByfmfMkjb52VwcLzeJgt5"
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}

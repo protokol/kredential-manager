@@ -1,7 +1,5 @@
-name: cdk CDK
-
-concurrency:
-  group: ${{ github.workflow }}-cdk
+# .github/workflows/infrastructure.yml
+name: Infrastructure Deployment
 
 on:
   push:
@@ -13,32 +11,26 @@ on:
       - master
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-cdk
+
 jobs:
   cdk-deploy:
     environment: Production
     permissions:
       id-token: write
       contents: read
-
-    name: CDK Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
     steps:
-
       - name: Print environment variables
         run: |
-          echo "AWS_REGION: ${{ vars.AWS_REGION }}"
-          echo "AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}"
-          echo "ISSUER_DID: ${{ vars.ISSUER_DID }}"
-          echo "KC_DB_SCHEMA: ${{ vars.KC_DB_SCHEMA }}"
-          echo "KM_DB_SCHEMA: ${{ vars.KM_DB_SCHEMA }}"
+          echo "STAGE: ${{ vars.SAGE }}"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: "latest"
-          
 
       - name: Check out Git repository
         uses: actions/checkout@v4
@@ -77,5 +69,4 @@ jobs:
           KC_DB_PORT: ${{ vars.KC_DB_PORT }}
           KC_VERSION: ${{ vars.KC_VERSION }}
           KC_PORT: ${{ vars.KC_PORT }}
-
         run: cd apps/cdk && pnpm run cdk deploy --all --require-approval never

@@ -49,7 +49,7 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 types: [
                     'VerifiableCredential',
                     'VerifiableAttestation',
-                    'TemplateCredentialType3'
+                    'CTWalletSameAuthorisedInTime'
                 ],
                 trust_framework: {
                     name: 'Template Organization Name',
@@ -65,7 +65,7 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 types: [
                     'VerifiableCredential',
                     'VerifiableAttestation',
-                    'TemplateCredentialType4'
+                    'CTWalletSameAuthorisedDeferred'
                 ],
                 trust_framework: {
                     name: 'Template Organization Name',
@@ -81,7 +81,7 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 types: [
                     'VerifiableCredential',
                     'VerifiableAttestation',
-                    'TemplateCredentialType5'
+                    'CTWalletSamePreAuthorisedInTime'
                 ],
                 trust_framework: {
                     name: 'Template Organization Name',
@@ -97,7 +97,7 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 types: [
                     'VerifiableCredential',
                     'VerifiableAttestation',
-                    'TemplateCredentialType6'
+                    'CTWalletSamePreAuthorisedDeferred'
                 ],
                 trust_framework: {
                     name: 'Template Organization Name',

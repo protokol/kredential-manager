@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@probeta/mp-core':
-        specifier: ^0.0.34
-        version: 0.0.34(typescript@5.4.5)
+        specifier: ^0.0.45
+        version: 0.0.45(typescript@5.4.5)
       jose:
         specifier: ^5.3.0
         version: 5.3.0
@@ -44,8 +44,8 @@ packages:
   '@probeta/mp-core@0.0.27':
     resolution: {integrity: sha512-T+dxFf8hDoOEDtb1Lw3UpN/nhJXOMLkTwuVM+Q8d5Kd9nZMZfv2WRPaDib5FMG2Pzs/qC3pFUZZTJapW8KmlnQ==}
 
-  '@probeta/mp-core@0.0.34':
-    resolution: {integrity: sha512-p5iP4U86M8b1Xng/ZL2h9rlZ78WpRyKKs8wzl5Yw7feAtKxSx1DBHr0G4L8nP1pAAdxhmTfuY0kjJYx+MZ+/1Q==}
+  '@probeta/mp-core@0.0.45':
+    resolution: {integrity: sha512-HByyd0bBnCkoGeiOi1VXBJHvpAK9p5yhqyBcrUBIVly9VeQv4yJ9+Rv7Ao2pMsdaGAGYz1Wex7Mo24Jm0scwJw==}
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
@@ -267,7 +267,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@probeta/mp-core@0.0.34(typescript@5.4.5)':
+  '@probeta/mp-core@0.0.45(typescript@5.4.5)':
     dependencies:
       '@probeta/mp-core': 0.0.27(typescript@5.4.5)
       tslib: 2.6.3

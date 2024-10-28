@@ -3,7 +3,7 @@ import { OpenIdIssuer, OpenIdProvider, getOpenIdConfigMetadata } from '@probeta/
 import { EnterpriseJwtUtil } from '../issuer/jwt.util';
 
 export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
-
+    // Template OpenID service response
     return {
         credential_issuer: `${baseUrl}`,
         authorization_endpoint: `${baseUrl}/authorize`,
@@ -12,53 +12,52 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
         credentials_supported: [
             {
                 format: 'jwt',
-                types: ['VerifiableCredential', 'UniversityDegreeCredential'],
+                types: ['VerifiableCredential', 'TemplateCredentialType1'],
                 trust_framework: {
-                    name: 'Best university',
-                    type: 'university',
-                    uri: 'https://www.best-university.ever'
+                    name: 'Template Organization Name',
+                    type: 'Template Organization Type',
+                    uri: 'https://www.template-organization-uri.example'
                 },
                 display: [
                     {
-                        name: 'University degree',
+                        name: 'Template Credential Display Name 1',
                         locale: 'en'
                     }
                 ],
-                issuance_criteria: "Graduation from an accredited institution",
-                supported_evidence_types: ["Transcript", "Diploma"]
+                issuance_criteria: "Template issuance criteria 1",
+                supported_evidence_types: ["Template Evidence Type 1", "Template Evidence Type 2"]
             },
             {
                 format: 'jwt',
-                types: ['VerifiableCredential', 'ProfessionalCertification'],
+                types: ['VerifiableCredential', 'TemplateCredentialType2'],
                 trust_framework: {
-                    name: 'Best university',
-                    type: 'university',
-                    uri: 'https://www.best-university.ever'
+                    name: 'Template Organization Name',
+                    type: 'Template Organization Type',
+                    uri: 'https://www.template-organization-uri.example'
                 },
                 display: [
                     {
-                        name: 'Professional certification',
+                        name: 'Template Credential Display Name 2',
                         locale: 'en'
                     }
                 ],
-                issuance_criteria: "Completion of a certified professional course",
-                supported_evidence_types: ["Certificate of Completion", "Portfolio"]
+                issuance_criteria: "Template issuance criteria 2",
+                supported_evidence_types: ["Template Evidence Type 3", "Template Evidence Type 4"]
             },
             {
                 format: 'jwt_vc',
                 types: [
                     'VerifiableCredential',
                     'VerifiableAttestation',
-                    'CTWalletSameAuthorisedInTime'
+                    'TemplateCredentialType3'
                 ],
                 trust_framework: {
-                    name: 'Best university',
-                    type: 'university',
-                    uri: 'https://www.best-university.ever'
+                    name: 'Template Organization Name',
+                    type: 'Template Organization Type',
+                    uri: 'https://www.template-organization-uri.example'
                 },
-                display: [
-                ],
-                issuance_criteria: "",
+                display: [],
+                issuance_criteria: "Template issuance criteria 3",
                 supported_evidence_types: []
             },
             {
@@ -66,16 +65,15 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 types: [
                     'VerifiableCredential',
                     'VerifiableAttestation',
-                    'CTWalletSameAuthorisedDeferred'
+                    'TemplateCredentialType4'
                 ],
                 trust_framework: {
-                    name: 'Best university',
-                    type: 'university',
-                    uri: 'https://www.best-university.ever'
+                    name: 'Template Organization Name',
+                    type: 'Template Organization Type',
+                    uri: 'https://www.template-organization-uri.example'
                 },
-                display: [
-                ],
-                issuance_criteria: "",
+                display: [],
+                issuance_criteria: "Template issuance criteria 4",
                 supported_evidence_types: []
             },
             {
@@ -83,16 +81,15 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 types: [
                     'VerifiableCredential',
                     'VerifiableAttestation',
-                    'CTWalletSamePreAuthorisedInTime'
+                    'TemplateCredentialType5'
                 ],
                 trust_framework: {
-                    name: 'Best university',
-                    type: 'university',
-                    uri: 'https://www.best-university.ever'
+                    name: 'Template Organization Name',
+                    type: 'Template Organization Type',
+                    uri: 'https://www.template-organization-uri.example'
                 },
-                display: [
-                ],
-                issuance_criteria: "",
+                display: [],
+                issuance_criteria: "Template issuance criteria 5",
                 supported_evidence_types: []
             },
             {
@@ -100,16 +97,15 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
                 types: [
                     'VerifiableCredential',
                     'VerifiableAttestation',
-                    'CTWalletSamePreAuthorisedDeferred'
+                    'TemplateCredentialType6'
                 ],
                 trust_framework: {
-                    name: 'Best university',
-                    type: 'university',
-                    uri: 'https://www.best-university.ever'
+                    name: 'Template Organization Name',
+                    type: 'Template Organization Type',
+                    uri: 'https://www.template-organization-uri.example'
                 },
-                display: [
-                ],
-                issuance_criteria: "",
+                display: [],
+                issuance_criteria: "Template issuance criteria 6",
                 supported_evidence_types: []
             },
         ]
@@ -136,10 +132,12 @@ export class OpenIDProviderService {
                 kid: process.env.ISSUER_PRIVATE_KEY_ID,
                 ...JSON.parse(process.env.ISSUER_PRIVATE_KEY_JWK || '{}')
             };
+
             this.jwtUtil = new EnterpriseJwtUtil(privateKeyJwk);
             this.provider = new OpenIdProvider(issuerMetadata, configMetadata, privateKeyJwk, this.jwtUtil);
         } catch (error) {
             console.error('Error parsing JWKs:', error);
+            throw new Error('Error parsing JWKs');
         }
     }
 

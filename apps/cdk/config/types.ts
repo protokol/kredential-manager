@@ -17,6 +17,9 @@ export interface AppConfig {
     KC_DB_NAME: string;
     KC_DB_PORT: number;
     KC_DB_SCHEMA: string;
+    KC_REALM_NAME: string;
+    KC_CLIENT_ID: string;
+    KC_REALM_PUBLIC_KEY: string;
     KM_DB_NAME: string;
     KM_DB_PORT: number;
     KM_DB_SCHEMA: string;

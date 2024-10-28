@@ -8,7 +8,6 @@ export class IssuerService {
     private issuer: string;
     private privateKeyJwk: JWK;
     private publicKeyJwk: JWK;
-    private privateKeyId: string;
     private jwtUtil: EnterpriseJwtUtil;
 
     constructor() {
@@ -19,13 +18,11 @@ export class IssuerService {
             try {
                 this.issuer = process.env.ISSUER_BASE_URL ?? '';
                 this.did = process.env.ISSUER_DID || '';
-
                 this.privateKeyJwk = {
                     alg: "ES256",
                     kid: process.env.ISSUER_PRIVATE_KEY_ID,
                     ...JSON.parse(process.env.ISSUER_PRIVATE_KEY_JWK || '{}')
                 };
-
                 this.publicKeyJwk = {
                     alg: "ES256",
                     kid: process.env.ISSUER_PRIVATE_KEY_ID,
@@ -34,6 +31,7 @@ export class IssuerService {
                 this.jwtUtil = new EnterpriseJwtUtil(this.privateKeyJwk);
             } catch (error) {
                 console.error('Error parsing JWKs:', error);
+                throw new Error('Error parsing JWKs');
             }
         })();
     }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OpenIdConfiguration, OpenIdIssuer, OpenIdProvider } from '@probeta/mp-core';
+import { OpenIdConfiguration, OpenIdIssuer, OpenIdProvider } from '@protokol/kredential-core';
 import { EnterpriseJwtUtil } from '../issuer/jwt.util';
 
 

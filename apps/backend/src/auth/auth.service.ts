@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, JHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString } from '@probeta/mp-core';
+import { AuthorizeRequest, JHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString } from '@protokol/kredential-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';

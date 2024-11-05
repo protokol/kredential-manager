@@ -1,5 +1,5 @@
 
-import { JWT, JwtUtil } from '@probeta/mp-core';
+import { JWT, JwtUtil } from '@protokol/kredential-core';
 import { verify } from 'crypto';
 import { JWK, SignJWT, jwtVerify, importJWK, decodeProtectedHeader, decodeJwt } from 'jose';
 

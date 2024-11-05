@@ -1,4 +1,4 @@
-import { AuthorizationDetail } from "@probeta/mp-core";
+import { AuthorizationDetail } from "@protokol/kredential-core";
 
 export interface AuthNonce {
     authorizationDetails: AuthorizationDetail[];

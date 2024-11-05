@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@probeta/mp-core':
+      '@protokol/kredential-core':
         specifier: ^0.0.27
         version: 0.0.27(typescript@5.4.4)
       tslib:
@@ -318,7 +318,7 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@probeta/mp-core@0.0.27':
+  '@protokol/kredential-core@0.0.27':
     resolution: {integrity: sha512-T+dxFf8hDoOEDtb1Lw3UpN/nhJXOMLkTwuVM+Q8d5Kd9nZMZfv2WRPaDib5FMG2Pzs/qC3pFUZZTJapW8KmlnQ==}
 
   '@sinclair/typebox@0.27.8':
@@ -1749,7 +1749,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  '@probeta/mp-core@0.0.27(typescript@5.4.4)':
+  '@protokol/kredential-core@0.0.27(typescript@5.4.4)':
     dependencies:
       tslib: 2.6.2
       typescript-transformer-esm: 1.1.0(typescript@5.4.4)

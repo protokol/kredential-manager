@@ -43,6 +43,8 @@ export const signIn = async (credentials: TSignInPayload) => {
   const { username, password } = credentials;
   try {
     const sign_in_url = `${KEYCLOAK_URL}/token`;
+    // alert(sign_in_url);
+    // alert(CLIENT_ID);
     const response: AxiosResponse = await axios.post(
       sign_in_url,
       {

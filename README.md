@@ -28,11 +28,9 @@ Current implementation is running on AWS infrastructure. CDK scripts to simplify
 ├── apps
 │   ├── backend
 │   ├── cdk
-│   ├── ebsi-core
-│   ├── ebsi-holder
-│   ├── ebsi-json-rpc
-│   ├── ebsi-sdk
-│   ├── flows
+│   ├── kredential-base
+│   ├── kredential-rpc
+│   ├── kredential-sdk
 │   └── frontend
 └── docs
 ```

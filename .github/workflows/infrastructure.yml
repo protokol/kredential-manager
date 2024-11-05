@@ -6,7 +6,7 @@ on:
     paths:
       - "apps/cdk/**"
       - "apps/backend/**"
-      - "apps/km-json-rpc/**"
+      - "apps/kredential-rpc/**"
     branches:
       - master
   workflow_dispatch:

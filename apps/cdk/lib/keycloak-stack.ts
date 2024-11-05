@@ -30,6 +30,8 @@ export class KeycloakStack extends cdk.Stack {
 		const KC_DB_NAME = config.APP_CONFIG.KC_DB_NAME;
 		const KC_DB_PORT = config.APP_CONFIG.KC_DB_PORT;
 		const KC_DB_SCHEMA = config.APP_CONFIG.KC_DB_SCHEMA;
+		const KC_REALM_NAME = config.APP_CONFIG.KC_REALM_NAME;
+		const KC_CLIENT_ID = config.APP_CONFIG.KC_CLIENT_ID;
 
 		const dockerRepositories = new PublicDockerRepositories(this, "DockerRepositories");
 		const logging = new Logging(this, "Logging");
@@ -41,7 +43,7 @@ export class KeycloakStack extends cdk.Stack {
 
 		const databaseMasterSecret = Secret.fromSecretNameV2(this, "DatabaseMasterSecret", `${stage}/database/master`);
 
-		const container = keycloakTaskDef.addContainer(generateName(id, "Container"), {
+		const container = keycloakTaskDef.addContainer("Container", {
 			image: dockerRepositories.keycloackImage,
 			logging: logging.kredentialManagerLogDriver,
 			command: ["start"],
@@ -60,6 +62,8 @@ export class KeycloakStack extends cdk.Stack {
 				KC_HOSTNAME: getDomainNameWithPrefix("keycloak", config),
 				KC_BOOTSTRAP_ADMIN_USERNAME: "tempadminuser",
 				KC_BOOTSTRAP_ADMIN_PASSWORD: "tempadminpass",
+				KC_REALM_NAME: KC_REALM_NAME,
+				KC_CLIENT_ID: KC_CLIENT_ID,
 			},
 			secrets: {
 				KC_DB_USERNAME: cdk.aws_ecs.Secret.fromSecretsManager(databaseMasterSecret, "username"),

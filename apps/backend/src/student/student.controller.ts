@@ -24,7 +24,6 @@ import {
 } from "./../types/pagination/FilteringParams";
 import { PaginatedResource } from "./../types/pagination/dto/PaginatedResource";
 import { ApiTags } from "@nestjs/swagger";
-import { Public } from "nest-keycloak-connect";
 
 @Controller("students")
 @ApiTags('Students')

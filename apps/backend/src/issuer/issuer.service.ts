@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JWK, JWT } from '@probeta/mp-core';
+import { JWK, JWT } from '@protokol/kredential-core';
 import { EnterpriseJwtUtil } from './jwt.util';
 import { v4 as uuidv4 } from 'uuid';
 @Injectable()

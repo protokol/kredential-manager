@@ -4,7 +4,7 @@ import { getResolver as getDidWebResolver } from "web-did-resolver";
 import * as KeyDidResolver from 'key-did-resolver'
 import { getResolver } from "@cef-ebsi/key-did-resolver";
 import { DIDResolutionResult } from "./DIDDocument.interface";
-import { JWK } from '@probeta/mp-core';
+import { JWK } from '@protokol/kredential-core';
 @Injectable()
 export class ResolverService {
     async resolveDID(did: string): Promise<JWK> {

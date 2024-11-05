@@ -28,11 +28,9 @@ Current implementation is running on AWS infrastructure. CDK scripts to simplify
 ├── apps
 │   ├── backend
 │   ├── cdk
-│   ├── ebsi-core
-│   ├── ebsi-holder
-│   ├── ebsi-json-rpc
-│   ├── ebsi-sdk
-│   ├── flows
+│   ├── kredential-base
+│   ├── kredential-rpc
+│   ├── kredential-sdk
 │   └── frontend
 └── docs
 ```
@@ -51,7 +49,7 @@ For CI/CD we are currently using GitHub Actions.
 
 ### Prerequisites
 The organisation running this system needs to be onboarded to EBSI first. That means it needs to have a DID created and the DID document needs to be registered to EBSI. Details on this can be found here:
-//TODO 
+[EBSI-Hub Onboard](https://hub.ebsi.eu/tools/cli/onboard)
 
 ## License
 This project is licensed under a dual license model. For use with the EBSI Vector Pilot project, it is available under the GNU Affero General Public License v3.0 (AGPL-3.0). For all other uses, a commercial license is required. Please refer to the [AGPL-3.0 license text](https://www.gnu.org/licenses/agpl-3.0.en.html#license-text) for more details on the terms and conditions. For commercial licensing inquiries, please contact us at info@protokol.com.

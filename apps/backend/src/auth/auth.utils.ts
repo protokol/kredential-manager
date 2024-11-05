@@ -1,4 +1,4 @@
-import { JHeader } from "@probeta/mp-core";
+import { JHeader } from "@protokol/kredential-core";
 
 export async function mapHeadersToJwtHeader(headers: Record<string, string | string[]>): Promise<JHeader> {
     const jwtHeader: JHeader = { typ: '', alg: '', kid: '' };

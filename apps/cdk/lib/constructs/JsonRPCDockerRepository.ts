@@ -8,7 +8,7 @@ export class JsonRPCDockerRepository extends Construct {
 		super(scope, id);
 
 		const backendDockerImage = new DockerImageAsset(this, "DockerImage", {
-			directory: "../ebsi-json-rpc",
+			directory: "../km-json-rpc",
 			file: "Dockerfile",
 			cacheDisabled: true,
 		});

@@ -58,8 +58,8 @@ import { ProxyService } from "./proxy/proxy.service";
             clientId: process.env.KC_CLIENT_ID || "",
             secret: "",
             cookieKey: "KEYCLOAK_JWT",
-            logLevels: ["verbose"],
-            useNestLogger: false,
+            logLevels: ["verbose", "debug", "warn", "error"],
+            useNestLogger: true,
             policyEnforcement: PolicyEnforcementMode.PERMISSIVE,
             tokenValidation: TokenValidation.OFFLINE,
             realmPublicKey: process.env.KC_REALM_PUBLIC_KEY || "",
@@ -107,6 +107,14 @@ import { ProxyService } from "./proxy/proxy.service";
 
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer): void {
+        console.log("!!!!!!!!!!AppModule");
+        console.log(process.env.KC_CLIENT_ID);
+        consumer.apply((req, res, next) => {
+            console.log('Auth Debug:');
+            console.log('Public Key:', process.env.KC_REALM_PUBLIC_KEY);
+            console.log('Token:', req.headers.authorization);
+            next();
+        }).forRoutes('*');
         consumer.apply(LoggerMiddleware).forRoutes('*');
     }
 }

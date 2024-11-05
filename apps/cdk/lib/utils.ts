@@ -13,8 +13,11 @@ export function getPublicHostedZoneName(env: AwsConfig): string {
 	return env.PUBLIC_HOSTED_ZONE_NAME;
 }
 
-export function getDomainNameWithPrefix(prefix: string, config: EnvironmentConfig,
-	includeHttps: boolean = false): string {
+export function getDomainNameWithPrefix(
+	prefix: string,
+	config: EnvironmentConfig,
+	includeHttps: boolean = false,
+): string {
 	const stage = config.APP_CONFIG.STAGE;
 	const publicHostedZoneName = config.AWS_CONFIG.PUBLIC_HOSTED_ZONE_NAME;
 	const domain = stage !== "dev" ? `${prefix}.${stage}.${publicHostedZoneName}` : `${prefix}.${publicHostedZoneName}`;
@@ -29,10 +32,33 @@ export function generateRandomString(length: number): string {
 	return crypto.randomBytes(length).toString("hex");
 }
 
-export function generateRealmName(stage: string): string {
-	return `${stage}-realm`;
-}
-
-export function generateClientId(stage: string): string {
-	return `${stage}-client-id`;
+export function generateRealmConfig(realmName: string, clientId: string) {
+	return {
+		realm: realmName,
+		enabled: true,
+		clients: [
+			{
+				clientId: clientId,
+				enabled: true,
+				protocol: "openid-connect",
+				publicClient: true,
+				directAccessGrantsEnabled: true,
+				standardFlowEnabled: true,
+				implicitFlowEnabled: false,
+				serviceAccountsEnabled: false,
+				authorizationServicesEnabled: false,
+				redirectUris: ["*"],
+				webOrigins: ["*"],
+			},
+		],
+		roles: {
+			realm: [
+				{
+					name: "admin",
+					description: "Administrator role",
+				},
+			],
+		},
+		defaultRoles: ["user"],
+	};
 }

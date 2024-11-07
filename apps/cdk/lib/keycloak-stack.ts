@@ -1,6 +1,6 @@
 import { Logging } from "./constructs/Logging";
 import { PublicDockerRepositories } from "./constructs/PublicDockerRepositories";
-import { generateName, generateRealmConfig, getDomainNameWithPrefix } from "./utils";
+import { generateName, getDomainNameWithPrefix } from "./utils";
 import * as cdk from "aws-cdk-lib";
 import { Duration } from "aws-cdk-lib";
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
@@ -11,9 +11,6 @@ import { DatabaseInstance } from "aws-cdk-lib/aws-rds";
 import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 import { EnvironmentConfig } from "config/types";
 import { Construct } from "constructs";
-import * as fs from "fs";
-
-import path = require("path");
 
 interface KeycloakStackProps extends cdk.StackProps {
 	cluster: Cluster;
@@ -30,24 +27,10 @@ export class KeycloakStack extends cdk.Stack {
 
 		const { config } = props;
 		const stage = config.APP_CONFIG.STAGE;
-		const realmName = config.APP_CONFIG.KC_REALM_NAME;
-		const clientId = config.APP_CONFIG.KC_CLIENT_ID;
 
 		const KC_DB_NAME = config.APP_CONFIG.KC_DB_NAME;
 		const KC_DB_PORT = config.APP_CONFIG.KC_DB_PORT;
 		const KC_DB_SCHEMA = config.APP_CONFIG.KC_DB_SCHEMA;
-
-		const realmConfig = generateRealmConfig(realmName, clientId);
-
-		// Create temporary directory for realm config if it doesn't exist
-		const tempDir = path.join(__dirname, "../../../keycloak");
-		if (!fs.existsSync(tempDir)) {
-			fs.mkdirSync(tempDir, { recursive: true });
-		}
-
-		// Write realm configuration to file
-		const realmConfigPath = path.join(tempDir, "realm.json");
-		fs.writeFileSync(realmConfigPath, JSON.stringify(realmConfig, null, 2));
 
 		const dockerRepositories = new PublicDockerRepositories(this, "DockerRepositories");
 		const logging = new Logging(this, "Logging");
@@ -71,7 +54,7 @@ export class KeycloakStack extends cdk.Stack {
 				KC_METRICS_ENABLED: "true",
 				KC_LOG_LEVEL: "INFO",
 				KC_HOSTNAME_STRICT: "false",
-				KC_HOSTNAME_DEBUG: "false",
+				KC_HOSTNAME_DEBUG: "true",
 				KC_HTTP_ENABLED: "true",
 				KC_PROXY: "edge",
 				PROXY_ADDRESS_FORWARDING: "true",

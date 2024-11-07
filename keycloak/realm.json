@@ -1,13 +1,51 @@
 {
-    "realm": "wallet-realm",
-    "enabled": true,
-    "clients": [
-        {
-            "clientId": "wallet-app",
-            "enabled": true,
-            "protocol": "openid-connect",
-            "publicClient": true,
-            "directAccessGrantsEnabled": true
-        }
+  "realm": "wallet-realm",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "wallet-app",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Administrator role"
+      },
+      {
+        "name": "user",
+        "description": "User role"
+      }
     ]
+  },
+  "defaultRoles": [
+    "user"
+  ],
+  "keys": {
+    "realm": [
+      {
+        "algorithm": "RS256",
+        "certificate": "${Token[TOKEN.973]}",
+        "providerId": "rsa-generated",
+        "providerPriority": 100,
+        "publicKey": "${Token[TOKEN.973]}",
+        "status": "ACTIVE",
+        "type": "RSA"
+      }
+    ]
+  }
 }

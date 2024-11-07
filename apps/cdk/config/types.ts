@@ -1,4 +1,4 @@
-export type Environment = "prod" | "dev";
+export type Environment = "prod" | "dev" | "miha";
 
 export interface AwsConfig {
 	REGION: string;

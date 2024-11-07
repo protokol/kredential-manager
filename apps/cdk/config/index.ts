@@ -33,6 +33,9 @@ const appConfigSchema = z.object({
 		.transform(Number)
 		.refine(port => port > 0, "KC_DB_PORT must be a positive number"),
 	KC_DB_SCHEMA: z.string().min(1, "KC_DB_SCHEMA cannot be empty"),
+	KC_REALM_NAME: z.string().min(1, "KC_REALM_NAME cannot be empty"),
+	KC_CLIENT_ID: z.string().min(1, "KC_CLIENT_ID cannot be empty"),
+	KC_REALM_PUBLIC_KEY: z.string().min(1, "KC_REALM_PUBLIC_KEY cannot be empty"),
 });
 
 const enterpriseWalletConfigSchema = z.object({

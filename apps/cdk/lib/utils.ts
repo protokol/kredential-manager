@@ -31,34 +31,3 @@ export function generateName(id: string, name: string): string {
 export function generateRandomString(length: number): string {
 	return crypto.randomBytes(length).toString("hex");
 }
-
-export function generateRealmConfig(realmName: string, clientId: string) {
-	return {
-		realm: realmName,
-		enabled: true,
-		clients: [
-			{
-				clientId: clientId,
-				enabled: true,
-				protocol: "openid-connect",
-				publicClient: true,
-				directAccessGrantsEnabled: true,
-				standardFlowEnabled: true,
-				implicitFlowEnabled: false,
-				serviceAccountsEnabled: false,
-				authorizationServicesEnabled: false,
-				redirectUris: ["*"],
-				webOrigins: ["*"],
-			},
-		],
-		roles: {
-			realm: [
-				{
-					name: "admin",
-					description: "Administrator role",
-				},
-			],
-		},
-		defaultRoles: ["user"],
-	};
-}

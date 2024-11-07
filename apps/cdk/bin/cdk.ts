@@ -6,18 +6,16 @@ import { SecretsStack } from "../lib/secrets-stack";
 import { getStackName } from "../lib/utils";
 import { VpcClusterStack } from "../lib/vpc-cluster-stack";
 import * as cdk from "aws-cdk-lib";
-import { Environment } from "config/types";
 import * as dotenv from "dotenv";
 import "source-map-support/register";
 
 dotenv.config();
 
 const app = new cdk.App();
-const stage = config.APP_CONFIG.STAGE as Environment;
 
-function createStacks(app: cdk.App, stage: Environment) {
+function createStacks(app: cdk.App) {
 	// Secrets stack
-	const secretsStack = new SecretsStack(app, getStackName("SecretsStack", config), { stage: stage });
+	const secretsStack = new SecretsStack(app, getStackName("SecretsStack", config), { config: config });
 
 	// Vpc cluster stack
 	const vpcClusterStack = new VpcClusterStack(app, getStackName("VpcClusterStack", config), {
@@ -58,4 +56,4 @@ function createStacks(app: cdk.App, stage: Environment) {
 	backendStack.addDependency(keycloakStack);
 }
 
-createStacks(app, stage);
+createStacks(app);

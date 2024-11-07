@@ -27,6 +27,7 @@ export class KeycloakStack extends cdk.Stack {
 
 		const { config } = props;
 		const stage = config.APP_CONFIG.STAGE;
+
 		const KC_DB_NAME = config.APP_CONFIG.KC_DB_NAME;
 		const KC_DB_PORT = config.APP_CONFIG.KC_DB_PORT;
 		const KC_DB_SCHEMA = config.APP_CONFIG.KC_DB_SCHEMA;
@@ -41,7 +42,7 @@ export class KeycloakStack extends cdk.Stack {
 
 		const databaseMasterSecret = Secret.fromSecretNameV2(this, "DatabaseMasterSecret", `${stage}/database/master`);
 
-		const container = keycloakTaskDef.addContainer(generateName(id, "Container"), {
+		const container = keycloakTaskDef.addContainer("Container", {
 			image: dockerRepositories.keycloackImage,
 			logging: logging.kredentialManagerLogDriver,
 			command: ["start"],
@@ -53,7 +54,7 @@ export class KeycloakStack extends cdk.Stack {
 				KC_METRICS_ENABLED: "true",
 				KC_LOG_LEVEL: "INFO",
 				KC_HOSTNAME_STRICT: "false",
-				KC_HOSTNAME_DEBUG: "false",
+				KC_HOSTNAME_DEBUG: "true",
 				KC_HTTP_ENABLED: "true",
 				KC_PROXY: "edge",
 				PROXY_ADDRESS_FORWARDING: "true",

@@ -138,7 +138,7 @@ export class AuthService {
             // Extract the client-defined state from the authorization response.
             const walletDefinedState = stateData.walletDefinedState;
             const redirectUri = stateData.redirectUri ?? 'openid://';
-            console.log({ redirectUri })
+
             // Update the state for the client, including the generated code and ID token.
             await this.state.createAuthResponseNonce(stateData.id, code, request.id_token);
             const redirectUrl = await this.provider.getInstance().createAuthorizationRequest(code, walletDefinedState, redirectUri);

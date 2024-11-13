@@ -35,6 +35,9 @@ import { LoggerMiddleware } from "./logger/LoggerMiddleware";
 import { StateService } from "./state/state.service";
 import { State } from "@entities/state.entity";
 import { ProxyService } from "./proxy/proxy.service";
+import { ApiKeyController } from "./api-key/api-key.controller";
+import { ApiKeyService } from "./api-key/api-key.service";
+import { ApiKeyModule } from "./api-key/api-key.module";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -69,13 +72,15 @@ import { ProxyService } from "./proxy/proxy.service";
         ProgramModule,
         CourseModule,
         DiplomaModule,
-        EnrollmentModule
+        EnrollmentModule,
+        ApiKeyModule
     ],
     controllers: [
         AppController,
         VcController,
         AuthController,
-        ProxyController
+        ProxyController,
+        ApiKeyController
     ],
     providers: [
         AppService,
@@ -100,7 +105,8 @@ import { ProxyService } from "./proxy/proxy.service";
         OpenIDProviderService,
         IssuerService,
         AuthService,
-        ProxyService
+        ProxyService,
+        ApiKeyService
     ],
     exports: [],
 })

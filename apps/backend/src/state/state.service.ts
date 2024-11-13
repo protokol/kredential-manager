@@ -35,6 +35,23 @@ export class StateService {
         }
     }
 
+    async createVPRequestState(
+        clientId: string,
+        nonce: string,
+        walletState: string,
+        presentationDefinition: any
+    ): Promise<void> {
+        await this.stateRepository.save({
+            clientId,
+            nonce,
+            walletState,
+            presentationDefinition,
+            step: StateStep.VP_REQUEST,
+            status: StateStatus.UNCLAIMED,
+            created_at: new Date()
+        });
+    }
+
     async createAuthResponseNonce(id: number, code: string, idToken: string): Promise<boolean> {
         const state = await this.stateRepository.findOne({
             where: { id },

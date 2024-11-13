@@ -110,9 +110,10 @@ export class AppModule implements NestModule {
         console.log("!!!!!!!!!!AppModule");
         console.log(process.env.KC_CLIENT_ID);
         consumer.apply((req, res, next) => {
-            console.log('Auth Debug:');
-            console.log('Public Key:', process.env.KC_REALM_PUBLIC_KEY);
-            console.log('Token:', req.headers.authorization);
+            // console.log('Auth Debug:');
+            // console.log('Public Key:', process.env.KC_REALM_PUBLIC_KEY);
+            // console.log('Token:', req.headers.authorization);
+            // console.log({ req });
             next();
         }).forRoutes('*');
         consumer.apply(LoggerMiddleware).forRoutes('*');

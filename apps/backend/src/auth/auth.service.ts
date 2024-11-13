@@ -89,8 +89,45 @@ export class AuthService {
      */
     async authorize(request: AuthorizeRequest): Promise<{ header?: JHeader, code: number, url?: string }> {
         try {
+
+            if (!request.response_type || !request.client_id) {
+                throw new Error('Missing required parameters');
+            }
+
             const redirectUri = `${process.env.ISSUER_BASE_URL}/direct_post`
-            const { header, redirectUrl, authDetails, serverDefinedState, serverDefinedNonce } = await this.provider.getInstance().handleAuthorizationRequest(request, redirectUri);
+
+
+            const isIDTokenTest = request.scope?.includes('ver_test:id_token');
+
+            let presentationDefinition;
+            if (isIDTokenTest) {
+                presentationDefinition = {
+                    id: generateRandomString(32),
+                    format: {
+                        jwt_vp: { alg: ['ES256'] },
+                        jwt_vc: { alg: ['ES256'] }
+                    },
+                    input_descriptors: [
+                        // Three identical descriptors as per EBSI conformance
+                        ...Array(3).fill({
+                            id: generateRandomString(32),
+                            format: {
+                                jwt_vc: { alg: ['ES256'] }
+                            },
+                            constraints: {
+                                fields: [{
+                                    path: ['$.type'],
+                                    filter: {
+                                        type: 'array',
+                                        contains: { const: 'VerifiableAttestation' }
+                                    }
+                                }]
+                            }
+                        })
+                    ]
+                };
+            }
+            const { header, redirectUrl, authDetails, serverDefinedState, serverDefinedNonce } = await this.provider.getInstance().handleAuthorizationRequest(request, redirectUri, presentationDefinition);
 
             const payload = {
                 authorizationDetails: authDetails,
@@ -110,8 +147,11 @@ export class AuthService {
      */
     async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header?: JHeader, code: number, url?: string }> {
         try {
-            const { payload, header } = await this.provider.getInstance().decodeIdTokenRequest(request.id_token);
+            console.log("Direct post:")
+            const { payload, header } = await this.provider.getInstance().decodeIdTokenResponse(request.id_token);
             // Extract the state from the request or payload. * The documentations says that state should be send in payload, but the conformance test is sending it in the request.
+            console.log({ ID_TOKEN_RESPONSE: payload })
+            console.log({ ID_TOKEN_RESPONSE_RAW: request })
             const state = payload.state ?? request.state
             if (!state) {
                 throw new Error('Missing state parameter');

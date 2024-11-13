@@ -3,8 +3,8 @@
     "description": "Protokol Kredential Core",
     "license": "SEE LICENSE IN https://github.com/protokol/kredential-manager/blob/master/README.md",
     "version": "0.0.1",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "type": "module",
     "private": false,
     "publishConfig": {
@@ -32,7 +32,8 @@
         "typescript": "^5.4.4"
     },
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "watch": "onchange 'src/**/*' -- sh -c 'pnpm run build && echo \"export const timestamp = \\\"$(date)\\\";\" > ./../backend/src/reload.ts' && echo 'File updated with timestamp'"
     },
     "dependencies": {
         "tslib": "^2.6.2",

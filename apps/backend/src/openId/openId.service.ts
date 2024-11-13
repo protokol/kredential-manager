@@ -11,7 +11,7 @@ export function getOpenIdConfigMetadata(baseUrl: string): OpenIdConfiguration {
         token_endpoint: `${baseUrl}/token`,
         jwks_uri: `${baseUrl}/jwks`,
         scopes_supported: ["openid"],
-        response_types_supported: ["id_token"],
+        response_types_supported: ["code", "id_token", "vp_token"],
         response_modes_supported: ["query"],
         grant_types_supported: ["authorization_code"],
         subject_types_supported: ["public"],

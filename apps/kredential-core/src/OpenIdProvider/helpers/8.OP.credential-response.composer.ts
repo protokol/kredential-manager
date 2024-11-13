@@ -1,4 +1,4 @@
-import { BearerToken } from 'src/OpenIdProvider';
+import { BearerToken } from './../interfaces/bearer-token.interface';
 import { CredentialInTimeResponse, CredentialDeferredResponse } from '../interfaces/credential-response.interface';
 import { JwtUtil } from '../../Signer';
 

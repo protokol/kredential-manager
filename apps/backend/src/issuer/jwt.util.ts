@@ -7,7 +7,11 @@ interface JWKS {
     keys: JWK[];
 }
 
-export class EnterpriseJwtUtil implements JwtUtil {
+export interface VPJwtUtil extends JwtUtil {
+    decodeVpToken(token: string): Promise<JWT>;
+    decodeVcToken(token: string): Promise<JWT>;
+}
+export class EnterpriseJwtUtil implements VPJwtUtil {
     private privateKey: any;
 
     constructor(privateKey: any) {
@@ -124,7 +128,6 @@ export class EnterpriseJwtUtil implements JwtUtil {
         }
     }
 
-
     /**
      * Decodes a protected header.
      * @param token The JWT to decode.
@@ -132,5 +135,35 @@ export class EnterpriseJwtUtil implements JwtUtil {
     */
     async decodeProtectedHeader(token: string): Promise<any> {
         return decodeProtectedHeader(token);
+    }
+
+    /**
+     * Decodes and verifies a VP Token
+     * @param token The VP Token to decode
+     * @returns A promise that resolves to the decoded JWT
+     */
+    async decodeVpToken(token: string): Promise<JWT> {
+        try {
+            const header = await this.decodeProtectedHeader(token);
+            const payload = decodeJwt(token);
+            return { header, payload };
+        } catch (error) {
+            throw new Error('Failed to decode VP token');
+        }
+    }
+
+    /**
+     * Decodes and verifies a VC Token
+     * @param token The VC Token to decode
+     * @returns A promise that resolves to the decoded JWT
+     */
+    async decodeVcToken(token: string): Promise<JWT> {
+        try {
+            const header = await this.decodeProtectedHeader(token);
+            const payload = decodeJwt(token);
+            return { header, payload };
+        } catch (error) {
+            throw new Error('Failed to decode VC token');
+        }
     }
 }

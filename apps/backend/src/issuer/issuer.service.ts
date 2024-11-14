@@ -136,4 +136,12 @@ export class IssuerService {
         return await this.jwtUtil.sign(extendedUnsignedCredential, {}, 'ES256');
     }
 
+    /**
+     * Get the JWT utility instance.
+     * @returns The JWT utility instance.
+     */
+    getJwtUtil(): EnterpriseJwtUtil {
+        return this.jwtUtil;
+    }
+
 }

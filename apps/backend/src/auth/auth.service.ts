@@ -1,12 +1,13 @@
+import {
+    verifyCredentialJwt,
+    type VerifyCredentialOptions,
+} from "@cef-ebsi/verifiable-credential";
 import { Injectable } from '@nestjs/common';
-import { AuthorizeRequest, JHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString } from '@protokol/kredential-core';
+import { AuthorizeRequest, JHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString, VPPayload, JWT, VCJWT } from '@protokol/kredential-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { NonceService } from './../nonce/nonce.service';
 import { extractBearerToken } from './auth.utils';
-import { AuthNonce } from './../nonce/interfaces/auth-nonce.interface';
-import { NonceStep } from './../nonce/enum/step.enum';
-import { NonceStatus } from './../nonce/enum/status.enum';
 import { VcService } from './../vc/vc.service';
 import { DidService } from './../student/did.service';
 import { VCStatus } from './../types/VC';
@@ -15,6 +16,8 @@ import { ResolverService } from './../resolver/resolver.service';
 import { StateService } from './../state/state.service';
 import { StateStep } from './../state/enum/step.enum';
 import { StateStatus } from './../state/enum/status.enum';
+import { EbsiConfigService } from "./../network/ebsi-config.service";
+import { EbsiNetwork } from "src/network/ebsi-network.types";
 
 const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 const MOCK_EBSI_PRE_AUTHORISED_DID = 'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kboj7g9PfXJxbbs4KYegyr7ELnFVnpDMzbJJDDNZjavX6jvtDmALMbXAGW67pdTgFea2FrGGSFs8Ejxi96oFLGHcL4P6bjLDPBJEvRRHSrG4LsPne52fczt2MWjHLLJBvhAC';
@@ -53,7 +56,8 @@ export class AuthService {
         private state: StateService,
         private vcService: VcService,
         private didService: DidService,
-        private resolverService: ResolverService
+        private resolverService: ResolverService,
+        private ebsiConfig: EbsiConfigService,
     ) { }
 
     /**
@@ -97,10 +101,10 @@ export class AuthService {
             const redirectUri = `${process.env.ISSUER_BASE_URL}/direct_post`
 
 
-            const isIDTokenTest = request.scope?.includes('ver_test:id_token');
+            const isVPTokenTest = request.scope?.includes('ver_test:vp_token');
 
             let presentationDefinition;
-            if (isIDTokenTest) {
+            if (isVPTokenTest) {
                 presentationDefinition = {
                     id: generateRandomString(32),
                     format: {
@@ -116,7 +120,7 @@ export class AuthService {
                             },
                             constraints: {
                                 fields: [{
-                                    path: ['$.type'],
+                                    path: ['$.vc.type'],
                                     filter: {
                                         type: 'array',
                                         contains: { const: 'VerifiableAttestation' }
@@ -139,20 +143,96 @@ export class AuthService {
         }
     }
 
-    /**
-     * Directly posts the ID token response after mapping headers to JWT header.
-     * @param request The ID token response request object.
-     * @param headers Headers record to map to JWT header.
-     * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
-     */
-    async directPost(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header?: JHeader, code: number, url?: string }> {
+
+    private createErrorResponse(url: string, error: string, error_description: string, state: string): { code: number, url: string } {
+        const redirectUrl = new URL(`${url}/callback`);
+        redirectUrl.searchParams.append('error', error);
+        redirectUrl.searchParams.append('error_description', error_description);
+        redirectUrl.searchParams.append('state', state);
+        return { code: 302, url: redirectUrl.toString() };
+    }
+
+    private async handleVpTokenResponse(request: VpTokenRequest): Promise<{ header?: JHeader, code: number, url?: string }> {
         try {
-            console.log("Direct post:")
+            const vpToken = request.vp_token;
+            const presentationSubmission = JSON.parse(request.presentation_submission);
+
+
+            if (!request.state) {
+                throw new Error('Missing state parameter');
+            }
+            const stateData = await this.state.getByField('serverDefinedState', request.state, StateStep.AUTHORIZE, StateStatus.UNCLAIMED);
+            const redirectUri = stateData.redirectUri;
+
+            if (!redirectUri) {
+                throw new Error('Missing redirect URI');
+            }
+
+            const decoded = await this.provider.getInstance().decodeIdTokenResponse(vpToken);
+
+            if (!('vp' in decoded.payload)) {
+                throw new Error('Invalid token: Expected VP token structure');
+            }
+
+            const vpPayload = decoded.payload as VPPayload;
+            const vpHeader = decoded.header;
+
+            if (!vpPayload.vp.verifiableCredential || !Array.isArray(vpPayload.vp.verifiableCredential)) {
+                throw new Error('Invalid VP structure');
+            }
+            for (let i = 0; i < vpPayload.vp.verifiableCredential.length; i++) {
+                const vc = vpPayload.vp.verifiableCredential[i];
+                const descriptorId = presentationSubmission.descriptor_map[i]?.id;
+
+                try {
+                    const options = this.ebsiConfig.getVerifyCredentialOptions(
+                    );
+                    const verifiedVc = await verifyCredentialJwt(vc, options);
+                    // Check if credential is revoked based on credentialStatus
+                    if (verifiedVc.credentialStatus &&
+                        'statusPurpose' in verifiedVc.credentialStatus &&
+                        'statusListIndex' in verifiedVc.credentialStatus &&
+                        verifiedVc.credentialStatus.statusPurpose === 'revocation' &&
+                        verifiedVc.credentialStatus.statusListIndex === '7') {
+                        return this.createErrorResponse(redirectUri, 'invalid_request',
+                            `${descriptorId} is revoked`, stateData.walletDefinedState);
+                    }
+                } catch (error) {
+                    if (error.message.includes('expirationDate MUST be more recent than validFrom')) {
+                        return this.createErrorResponse(redirectUri, 'invalid_request',
+                            `${presentationSubmission.descriptor_map[i].id} is expired`, stateData.walletDefinedState);
+                    } else if (error.message.includes('not yet valid')) {
+                        return this.createErrorResponse(redirectUri, 'invalid_request',
+                            `${presentationSubmission.descriptor_map[i].id} is not yet valid`, stateData.walletDefinedState);
+                    } else {
+                        return this.createErrorResponse(redirectUri, 'invalid_request',
+                            `Error verifying credential ${presentationSubmission.descriptor_map[i].id}: ${error.message}`, stateData.walletDefinedState);
+                    }
+                }
+            }
+
+            const code = generateRandomString(32);
+            const successUrl = new URL(redirectUri);
+            successUrl.searchParams.append('code', code);
+            successUrl.searchParams.append('state', stateData.walletDefinedState);
+
+            // await this.state.createAuthResponseNonce(stateData.id, code, request.vp_token);
+            return { code: 302, url: successUrl.toString() };
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    private async handleIdTokenResponse(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header?: JHeader, code: number, url?: string }> {
+        try {
+            if (!request.id_token) {
+                throw new Error('Missing id_token parameter');
+            }
+
             const { payload, header } = await this.provider.getInstance().decodeIdTokenResponse(request.id_token);
-            // Extract the state from the request or payload. * The documentations says that state should be send in payload, but the conformance test is sending it in the request.
-            console.log({ ID_TOKEN_RESPONSE: payload })
-            console.log({ ID_TOKEN_RESPONSE_RAW: request })
-            const state = payload.state ?? request.state
+
+            const state = request.state
             if (!state) {
                 throw new Error('Missing state parameter');
             }
@@ -185,6 +265,25 @@ export class AuthService {
             return { header, code: 302, url: redirectUrl };
         } catch (error) {
             throw error
+        }
+
+    }
+
+    /**
+     * Directly posts the ID token response after mapping headers to JWT header.
+     * @param request The ID token response request object.
+     * @param headers Headers record to map to JWT header.
+     * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
+     */
+    async directPost(request: VpTokenRequest | IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header?: JHeader, code: number, url?: string }> {
+        try {
+            if ('vp_token' in request && 'presentation_submission' in request) {
+                return await this.handleVpTokenResponse(request);
+            }
+
+            return await this.handleIdTokenResponse(request, headers);
+        } catch (error) {
+            throw error;
         }
     }
 

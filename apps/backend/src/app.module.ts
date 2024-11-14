@@ -38,6 +38,11 @@ import { ProxyService } from "./proxy/proxy.service";
 import { ApiKeyController } from "./api-key/api-key.controller";
 import { ApiKeyService } from "./api-key/api-key.service";
 import { ApiKeyModule } from "./api-key/api-key.module";
+import { CredentialOfferModule } from "./credential-offer/credential-offer.module";
+import { CredentialOfferController } from "./credential-offer/credential-offer.controller";
+import { CredentialOfferService } from "./credential-offer/credential-offer.service";
+import { DidModule } from "./student/did.module";
+import { EbsiConfigService } from "./network/ebsi-config.service";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -73,14 +78,17 @@ import { ApiKeyModule } from "./api-key/api-key.module";
         CourseModule,
         DiplomaModule,
         EnrollmentModule,
-        ApiKeyModule
+        CredentialOfferModule,
+        ApiKeyModule,
+        DidModule
     ],
     controllers: [
         AppController,
         VcController,
         AuthController,
         ProxyController,
-        ApiKeyController
+        ApiKeyController,
+        CredentialOfferController
     ],
     providers: [
         AppService,
@@ -106,20 +114,16 @@ import { ApiKeyModule } from "./api-key/api-key.module";
         IssuerService,
         AuthService,
         ProxyService,
-        ApiKeyService
+        ApiKeyService,
+        CredentialOfferService,
+        EbsiConfigService
     ],
     exports: [],
 })
 
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer): void {
-        console.log("!!!!!!!!!!AppModule");
-        console.log(process.env.KC_CLIENT_ID);
         consumer.apply((req, res, next) => {
-            // console.log('Auth Debug:');
-            // console.log('Public Key:', process.env.KC_REALM_PUBLIC_KEY);
-            // console.log('Token:', req.headers.authorization);
-            // console.log({ req });
             next();
         }).forRoutes('*');
         consumer.apply(LoggerMiddleware).forRoutes('*');

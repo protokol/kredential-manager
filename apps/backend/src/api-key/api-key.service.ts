@@ -24,7 +24,7 @@ export class ApiKeyService {
 
     async listApiKeys(): Promise<ApiKey[]> {
         return await this.apiKeyRepository.find({
-            select: ['id', 'name', 'created_at', 'expires_at', 'isActive', 'allowedCredentialTypes']
+            select: ['id', 'name', 'created_at', 'expires_at', 'isActive', 'allowedCredentialTypes', 'key']
         });
     }
 

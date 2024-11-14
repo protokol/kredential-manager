@@ -38,7 +38,7 @@ export function getOpenIdConfigMetadata(baseUrl: string): OpenIdConfiguration {
 export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
     return {
         credential_issuer: `${baseUrl}`,
-        authorization_endpoint: `${baseUrl}/authorize`,
+        authorization_server: `${baseUrl}/authorize`,
         credential_endpoint: `${baseUrl}/credential`,
         deferred_credential_endpoint: `${baseUrl}/credential_deferred`,
         credentials_supported: [

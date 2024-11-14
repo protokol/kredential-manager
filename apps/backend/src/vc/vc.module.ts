@@ -4,7 +4,8 @@ import { VcController } from "./vc.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { VerifiableCredential } from "@entities/verifiableCredential.entity";
 import { Did } from "@entities/did.entity";
-import { IssuerService } from "src/issuer/issuer.service";
+import { IssuerService } from "./../issuer/issuer.service";
+import { ApiKeyGuard } from "./../api-key/api-key.guard";
 
 @Module({
     imports: [TypeOrmModule.forFeature([VerifiableCredential, Did])],

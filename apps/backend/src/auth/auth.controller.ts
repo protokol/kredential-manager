@@ -64,6 +64,7 @@ export class AuthController {
     ) {
         try {
             const { code, url } = await this.auth.directPost(req, headers);
+
             return res.redirect(code, url);
         } catch (error) {
             return res.status(400).json({ message: error.message });

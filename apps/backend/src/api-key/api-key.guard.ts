@@ -20,8 +20,7 @@ export class ApiKeyGuard implements CanActivate {
         }
 
         const apiKeyEntity = await this.apiKeyRepository.findOne({
-            where: { key: apiKey as string, isActive: true },
-            relations: ['did']
+            where: { key: apiKey as string, isActive: true }
         });
 
         if (!apiKeyEntity) {

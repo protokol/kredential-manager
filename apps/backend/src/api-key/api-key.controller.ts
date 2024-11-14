@@ -10,11 +10,10 @@ export class ApiKeyController {
 
     @Post()
     async createApiKey(
-        @Body() body: { name: string; didIdentifier: string; allowedCredentialTypes: string[] }
+        @Body() body: { name: string; allowedCredentialTypes: string[] }
     ) {
         return await this.apiKeyService.createApiKey(
             body.name,
-            body.didIdentifier,
             body.allowedCredentialTypes
         );
     }

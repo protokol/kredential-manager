@@ -10,6 +10,7 @@ import { CredentialResponseComposer } from "./helpers/8.OP.credential-response.c
 import { AuthorizationDetail, CredentialRequestPayload, JWT } from "./interfaces";
 import { generateRandomString } from "./utils/random-string.util";
 import { JwtUtil } from "../Signer";
+import { VCJWT, VCPayload, VPJWT, VPPayload } from "./interfaces/vp.interface";
 
 export class OpenIdProvider {
     private issuer: OpenIdIssuer;
@@ -84,7 +85,6 @@ export class OpenIdProvider {
     }
 
     async verifyAuthorizeRequest(request: AuthorizeRequestSigned): Promise<({ verifiedRequest: AuthorizeRequestSigned, authDetails: AuthorizationDetail[] })> {
-        console.log({ request })
         if (request.request) {
             throw new Error('Service wallet not supported.');
         }
@@ -130,14 +130,17 @@ export class OpenIdProvider {
     ): Promise<any> {
         const serverDefinedState = generateRandomString(16);
         const serverDefinedNonce = generateRandomString(25);
-
         const vpRequest = {
             client_id: this.metadata.issuer,
+            iss: this.metadata.issuer,
+            aud: request.client_id,
+            exp: Math.floor(Date.now() / 1000) + parseDuration('5m'),
             response_type: 'vp_token',
             response_mode: 'direct_post',
+            redirect_uri: redirectUri,
             scope: 'openid',
             nonce: serverDefinedNonce,
-            redirect_uri: redirectUri,
+            iat: Math.floor(Date.now() / 1000),
             presentation_definition: presentationDefinition
         };
 
@@ -156,7 +159,8 @@ export class OpenIdProvider {
             scope: vpRequest.scope,
             nonce: vpRequest.nonce,
             redirect_uri: vpRequest.redirect_uri,
-            request: signedRequest
+            request: signedRequest,
+            state: serverDefinedState
         }).toString()}`;
 
         return {
@@ -184,7 +188,6 @@ export class OpenIdProvider {
             client_id: this.metadata.issuer,
             redirect_uri: redirectUri,
             scope: 'openid',
-            state: serverDefinedState,
             nonce: serverDefinedNonce,
             iat: Math.floor(Date.now() / 1000)
         };
@@ -195,7 +198,6 @@ export class OpenIdProvider {
             kid: this.privateKey.kid ?? ''
         };
 
-        console.log({ ID_TOKEN_REQUEST: idToken })
         const signedRequest = await this.jwtUtil.sign(idToken, header, this.privateKey);
 
         const redirectUrl = `openid://?${new URLSearchParams({
@@ -204,7 +206,8 @@ export class OpenIdProvider {
             response_mode: idToken.response_mode,
             scope: idToken.scope,
             redirect_uri: idToken.redirect_uri,
-            request: signedRequest
+            request: signedRequest,
+            state: serverDefinedState
         }).toString()}`;
 
         return {
@@ -260,11 +263,9 @@ export class OpenIdProvider {
     }
 
     async handleAuthorizationRequest(request: AuthorizeRequestSigned, redirectUri: string, presentationDefinition?: any): Promise<({ header: JHeader, redirectUrl: string, authDetails: AuthorizationDetail[], serverDefinedState: string, serverDefinedNonce: string })> {
-        console.log("Authorization request")
         const isVPTokenTest = request.scope?.includes('ver_test:vp_token');
         const isIDTokenTest = request.scope?.includes('ver_test:id_token');
 
-        console.log({ request })
         if (isVPTokenTest) {
             return this.prepareVPTokenRequest(request, redirectUri, presentationDefinition);
         } else if (isIDTokenTest) {
@@ -274,17 +275,27 @@ export class OpenIdProvider {
         }
     }
 
-    async decodeIdTokenResponse(request: string): Promise<JWT> {
+    async decodeIdTokenResponse(request: string): Promise<VPJWT | VCJWT> {
         try {
             const { payload, header } = await this.jwtUtil.decodeJwt(request);
-            return { header, payload: payload };
+            if ('vc' in payload) {
+                return {
+                    header,
+                    payload: payload as VCPayload
+                };
+            }
+
+            return {
+                header,
+                payload: payload as VPPayload
+            };
+
         } catch (error) {
             throw new Error('Failed to decode token');
         }
     }
 
     async decodeCredentialRequest(request: any): Promise<CredentialRequestPayload> {
-        console.log("DECODE CREDENTIAL REQUEST", request)
         if (request.proof.proof_type !== 'jwt') {
             throw new Error('Invalid proof token request.');
         }

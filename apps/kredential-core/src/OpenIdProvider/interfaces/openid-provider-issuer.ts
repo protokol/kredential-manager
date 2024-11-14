@@ -21,7 +21,7 @@ interface CredentialSupported {
 export interface OpenIdIssuer {
     credential_issuer: string;
     credential_endpoint: string;
-    authorization_endpoint: string;
+    authorization_server: string;
     deferred_credential_endpoint: string;
     credentials_supported: CredentialSupported[];
 }

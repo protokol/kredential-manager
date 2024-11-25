@@ -157,6 +157,7 @@ export class VcService {
         if (!vc) {
             return { isValid: false, errorMessage: `VC with ID ${id} not found.` };
         }
+        console.log({ vc })
         if (!vc.did || !vc.did.student) {
             return { isValid: false, errorMessage: `Student not found for VC with ID ${id}.` };
         }
@@ -167,7 +168,7 @@ export class VcService {
     }
 
     // Issue the verifiable credential
-    private async issueCredential(credential: object, clientId: string, options?: {
+    async issueCredential(credential: object, clientId: string, options?: {
         expirationDate?: Date,
         validFrom?: Date,
         vcId?: string,
@@ -193,11 +194,13 @@ export class VcService {
         );
     }
 
-    async issueVerifiableCredential(id: number): Promise<string> {
+    async issueVerifiableCredential(id: number, credentialI?: string): Promise<string> {
         const vc = await this.findVerifiableCredentialById(id);
+        console.log({ vc })
         const { isValid, errorMessage } = await this.validateVerifiableCredential(vc, id);
 
         if (!isValid) {
+            console.log({ errorMessage })
             throw new Error(errorMessage);
         }
 
@@ -220,9 +223,12 @@ export class VcService {
         };
 
         const signedCredential = await this.issueCredential(credential, vc.did.identifier);
+
+        console.log({ signedCredential })
+        console.log({ credentialI })
         await this.updateVerifiableCredential(id, credential, signedCredential);
 
-        return "Verifiable credential issued successfully.";
+        return signedCredential;
     }
 
     async CONFORMANCE_issueVerifiableCredential(id: number, requestedCredentials: string[], clientId: string) {

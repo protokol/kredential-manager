@@ -43,6 +43,7 @@ import { CredentialOfferController } from "./credential-offer/credential-offer.c
 import { CredentialOfferService } from "./credential-offer/credential-offer.service";
 import { DidModule } from "./student/did.module";
 import { EbsiConfigService } from "./network/ebsi-config.service";
+import { OfferController } from "./credential-offer/offer.controller";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -88,7 +89,8 @@ import { EbsiConfigService } from "./network/ebsi-config.service";
         AuthController,
         ProxyController,
         ApiKeyController,
-        CredentialOfferController
+        CredentialOfferController,
+        OfferController
     ],
     providers: [
         AppService,
@@ -124,6 +126,7 @@ import { EbsiConfigService } from "./network/ebsi-config.service";
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer): void {
         consumer.apply((req, res, next) => {
+            // console.log('req', req);
             next();
         }).forRoutes('*');
         consumer.apply(LoggerMiddleware).forRoutes('*');

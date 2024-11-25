@@ -19,18 +19,23 @@ export class CredentialOfferService {
         return Math.floor(100000 + Math.random() * 900000).toString();
     }
 
-    private determineGrantType(credentialType: string): GrantType {
-        if (credentialType.includes('PreAuthorised')) {
-            return GrantType.PRE_AUTHORIZED_CODE;
-        }
-        return GrantType.AUTHORIZATION_CODE;
+    private determineGrantType(credentialTypes: string[]): GrantType {
+        console.log({ credentialTypes })
+        const hasPreAuthorised = credentialTypes.some(type => type.includes('PreAuthorised'));
+        return hasPreAuthorised ? GrantType.PRE_AUTHORIZED_CODE : GrantType.AUTHORIZATION_CODE;
     }
 
     async createOffer(createOfferDto: CreateOfferDto): Promise<CreateOfferResponse> {
-        const { did, credentialTypes, grantType, trustFramework } = createOfferDto;
+        const { data, schemaId, grantType, trustFramework } = createOfferDto;
+        const { did } = data;
+
+        // const credentialTypes = await this.credentialSchemaService.getCredentialTypes(schemaId);
+        const credentialTypes = ["VerifiableCredential", "UniversityDegree"]
         const offerId = uuidv4();
         const pin = this.generatePin(); // Generate 6-digit PIN
-        const effectiveGrantType = grantType || this.determineGrantType(credentialTypes[0]);
+        const effectiveGrantType = grantType || this.determineGrantType(credentialTypes);
+
+        console.log({ credentialTypes })
 
         // Create base credential offer
         const credentialOffer: CredentialOfferResponse = {
@@ -39,9 +44,9 @@ export class CredentialOfferService {
                 format: 'jwt_vc',
                 types: credentialTypes,
                 trust_framework: trustFramework || {
-                    name: 'TODO-University name',
+                    name: 'Evergreen Valley University',
                     type: 'Accreditation',
-                    uri: 'TODO-University accreditation URI'
+                    uri: 'https://evu.edu/accreditation'
                 }
             }],
             grants: {}
@@ -171,7 +176,10 @@ export class CredentialOfferService {
 
     async getOfferById(id: string): Promise<CredentialOfferResponse> {
         const offer = await this.credentialOfferRepository.findOne({
-            where: { id }
+            where: {
+                id,
+                status: 'PENDING'
+            }
         });
 
         if (!offer) {
@@ -182,6 +190,7 @@ export class CredentialOfferService {
             throw new BadRequestException('Offer has expired');
         }
 
+        this.credentialOfferRepository.update(id, { status: 'USED' });
         return offer.credential_offer as CredentialOfferResponse;
     }
 

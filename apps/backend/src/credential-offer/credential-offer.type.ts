@@ -48,8 +48,11 @@ export enum GrantType {
 }
 
 export interface CreateOfferDto {
-    did: string;
-    credentialTypes: string[];
+    schemaId: number;
+    data: {
+        did: string;
+        [key: string]: any;
+    };
     grantType: GrantType;
     trustFramework?: TrustFramework;
 }

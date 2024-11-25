@@ -44,19 +44,19 @@ export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
         credentials_supported: [
             {
                 format: 'jwt',
-                types: ['VerifiableCredential', 'TemplateCredentialType1'],
+                types: ['VerifiableCredential', 'UniversityDegree'],
                 trust_framework: {
-                    name: 'Template Organization Name',
-                    type: 'Template Organization Type',
-                    uri: 'https://www.template-organization-uri.example'
+                    name: 'Evergreen Valley University',
+                    type: 'Accreditation',
+                    uri: 'https://evu.edu/accreditation'
                 },
                 display: [
                     {
-                        name: 'Template Credential Display Name 1',
+                        name: 'University Degree',
                         locale: 'en'
                     }
                 ],
-                issuance_criteria: "Template issuance criteria 1",
+                issuance_criteria: "Issuance criteria",
                 supported_evidence_types: ["Template Evidence Type 1", "Template Evidence Type 2"]
             },
             {

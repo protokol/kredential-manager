@@ -19,11 +19,14 @@ export class CredentialOfferController {
         description: 'API key for credential offer generation'
     })
     async createOffer(@Body() createOfferDto: CreateOfferDto) {
+        console.log('createOfferDto', createOfferDto)
+        console.log({ createOfferDto })
         const offer = await this.credentialOfferService.createOffer(createOfferDto);
 
         // Create the offer URI
         const offerUrl = `${process.env.ISSUER_BASE_URL}/credential-offer/${offer.id}`;
         console.log({ offerUrl })
+        console.log({ offer })
         const encodedUrl = encodeURIComponent(offerUrl);
         const offerUri = `openid-credential-offer://?credential_offer_uri=${encodedUrl}`;
 

@@ -26,7 +26,7 @@ export class AuthController {
         return this.provider.getInstance().getIssuerMetadata();
     }
 
-    @Get('.well-known/openid-configuration')
+    @Get('authorize/.well-known/openid-configuration')
     @Public(true)
     getConfigMetadata() {
         return this.provider.getInstance().getConfigMetadata();

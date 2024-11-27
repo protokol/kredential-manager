@@ -11,13 +11,17 @@ export interface VCPayload extends JPayload {
     nbf?: number;
 }
 
+export interface VP {
+    '@context'?: string[];
+    id?: string;
+    type?: string[];
+    holder: string;
+    verifiableCredential: string[];
+}
+
 export interface VPPayload extends JPayload {
-    vp: {
-        verifiableCredential: string[];
-        '@context'?: string[];
-        type?: string[];
-        [key: string]: any;
-    };
+    vp: VP;
+    nonce: string
 }
 
 export interface VPJWT {
@@ -28,4 +32,22 @@ export interface VPJWT {
 export interface VCJWT {
     header: any;
     payload: VCPayload;
+}
+
+export interface PathNested {
+    format: 'jwt_vc';
+    path: string;
+}
+
+export interface DescriptorMap {
+    id: string;
+    path: string;
+    format: 'jwt_vp';
+    path_nested: PathNested;
+}
+
+export interface PresentationSubmission {
+    id: string;
+    definition_id: string;
+    descriptor_map: DescriptorMap[];
 }

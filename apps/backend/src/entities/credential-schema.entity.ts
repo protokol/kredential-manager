@@ -11,32 +11,23 @@ export class CredentialSchema {
     @Column()
     version: string;
 
-    @Column()
-    author: string;
-
     @Column('jsonb')
-    schema: {
-        $schema: string;
-        type: string;
-        properties: {
-            [key: string]: {
-                type: string;
-                format?: string;
-                pattern?: string;
-                minLength?: number;
-                maxLength?: number;
-                minimum?: number;
-                maximum?: number;
-            };
-        };
-        required: string[];
-    };
+    schema: Record<string, any>;
 
     @Column('simple-array')
-    credentialTypes: string[];
+    templateVariables: string[];
 
-    @Column({ nullable: true })
-    schemaUri: string;
+    @Column('jsonb')
+    validationRules: {
+        [key: string]: {
+            type: string;
+            required?: boolean;
+            pattern?: string;
+            minLength?: number;
+            maxLength?: number;
+            enum?: string[];
+        }
+    };
 
     @CreateDateColumn()
     created_at: Date;

@@ -28,6 +28,7 @@ export class CredentialOfferService {
     async createOffer(createOfferDto: CreateOfferDto): Promise<CreateOfferResponse> {
         const { data, schemaId, grantType, trustFramework } = createOfferDto;
         const { did } = data;
+        console.log({ did })
 
         // const credentialTypes = await this.credentialSchemaService.getCredentialTypes(schemaId);
         const credentialTypes = ["VerifiableCredential", "UniversityDegree"]
@@ -53,7 +54,6 @@ export class CredentialOfferService {
         };
 
         let responsePin: string | undefined;
-
         // Add appropriate grant based on type
         if (grantType === GrantType.AUTHORIZATION_CODE) {
             const issuerState = await this.createJWT({
@@ -66,6 +66,7 @@ export class CredentialOfferService {
                 sub: did
             });
 
+            console.log(issuerState)
             credentialOffer.grants.authorization_code = {
                 issuer_state: issuerState
             };

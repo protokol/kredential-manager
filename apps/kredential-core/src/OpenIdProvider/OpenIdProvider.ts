@@ -101,8 +101,14 @@ export class OpenIdProvider {
             throw new Error('The response_type must be "code".');
         }
 
+        console.log('request', request)
         if (request.code_challenge) {
-            if (request.code_challenge || !request.code_challenge_method) {
+            console.log('request.code_challenge', request.code_challenge)
+            console.log('request.code_challenge_method', request.code_challenge_method)
+            console.log('request.code_challenge && request.code_challenge_method', request.code_challenge && request.code_challenge_method)
+            console.log('request.code_challenge && request.code_challenge_method', request.code_challenge && !request.code_challenge_method)
+            if (request.code_challenge && !request.code_challenge_method) {
+                console.log("INSIDE")
                 throw new Error('Code challenge and code challenge method are required.');
             }
             if (request.code_challenge.length < 43 || request.code_challenge.length > 128) {

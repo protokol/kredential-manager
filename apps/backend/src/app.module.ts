@@ -44,6 +44,9 @@ import { CredentialOfferService } from "./credential-offer/credential-offer.serv
 import { DidModule } from "./student/did.module";
 import { EbsiConfigService } from "./network/ebsi-config.service";
 import { OfferController } from "./credential-offer/offer.controller";
+import { SchemaTemplateService } from "./schemas/schema-template.service";
+import { SchemaTemplateController } from "./schemas/schema-template.controller";
+import { SchemaTemplateModule } from "./schemas/schema-template.module";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -81,7 +84,8 @@ import { OfferController } from "./credential-offer/offer.controller";
         EnrollmentModule,
         CredentialOfferModule,
         ApiKeyModule,
-        DidModule
+        DidModule,
+        SchemaTemplateModule
     ],
     controllers: [
         AppController,
@@ -90,7 +94,8 @@ import { OfferController } from "./credential-offer/offer.controller";
         ProxyController,
         ApiKeyController,
         CredentialOfferController,
-        OfferController
+        OfferController,
+        SchemaTemplateController
     ],
     providers: [
         AppService,

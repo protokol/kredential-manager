@@ -73,6 +73,12 @@
       "cancel": "Cancel",
       "submit": "Yes, reject this request"
     },
+    "offer": {
+      "title": "Create credential",
+      "create_offer": "Create credential",
+      "create_offer_success": "You have successfully created a new credential!",
+      "create_offer_error": "Something went wrong while creating a new credential!"
+    },
     "approve": {
       "title": "Are you sure you want to approve?",
       "choose_a_student": "Choose a student",
@@ -81,6 +87,7 @@
       "enter_your_last_name": "Enter student's last name",
       "enter_your_nationality": "Enter your nationality",
       "email_placeholder": "example@gmail.com",
+      "enter_your_ebsi_id": "Enter your EBSI ID",
       "date_placeholder": "dd/mm/yyyy",
       "cancel": "Cancel",
       "submit": "Submit"

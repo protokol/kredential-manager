@@ -113,6 +113,8 @@ export class AuthService {
                     throw new Error('Issuer state has expired');
                 }
 
+                console.log({ decoded })
+                console.log({ request })
                 // Validate client_id matches
                 if (decoded.client_id !== request.client_id) {
                     throw new Error('Client ID mismatch in issuer state');

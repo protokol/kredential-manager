@@ -1,8 +1,8 @@
 {
-    "name": "@protokol/kredential-core",
+    "name": "@probeta/mp-core",
     "description": "Protokol Kredential Core",
-    "license": "SEE LICENSE IN https://github.com/protokol/kredential-manager/blob/master/README.md",
-    "version": "0.0.2",
+    "license": "",
+    "version": "0.0.57",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "type": "module",
@@ -14,14 +14,7 @@
         "dist",
         "README.md"
     ],
-    "keywords": [
-        "kredential-manager",
-        "wallet",
-        "credentials",
-        "verifiable-credentials",
-        "did",
-        "issuer"
-    ],
+    "keywords": [],
     "devDependencies": {
         "@types/jest": "^29.5.12",
         "jest": "^29.7.0",

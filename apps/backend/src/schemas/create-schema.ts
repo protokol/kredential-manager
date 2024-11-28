@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsObject, IsArray, ValidateNested, IsNumber, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsObject, IsArray, ValidateNested, IsNumber, IsOptional, IsBoolean, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ValidationRule {
@@ -32,24 +32,34 @@ export class ValidationRule {
     @IsString({ each: true })
     @IsOptional()
     enum?: string[];
-    // @ApiProperty()
-    // @IsString()
-    // type: string;
+}
 
-    // @ApiProperty({ required: false })
-    // required?: boolean;
+export class TrustFrameworkDto {
+    @ApiProperty()
+    @IsString()
+    name: string;
 
-    // @ApiProperty({ required: false })
-    // pattern?: string;
+    @ApiProperty()
+    @IsString()
+    type: string;
 
-    // @ApiProperty({ required: false })
-    // minLength?: number;
+    @ApiProperty()
+    @IsString()
+    uri: string;
+}
 
-    // @ApiProperty({ required: false })
-    // maxLength?: number;
+export class DisplayDto {
+    @ApiProperty({
+        example: "Template Organization Name"
+    })
+    @IsString()
+    name: string;
 
-    // @ApiProperty({ required: false })
-    // enum?: string[];
+    @ApiProperty({
+        example: "en"
+    })
+    @IsString()
+    locale: string;
 }
 
 export class CreateSchemaDto {
@@ -67,13 +77,22 @@ export class CreateSchemaDto {
 
     @ApiProperty({
         example: {
-            "@context": ["https://www.w3.org/2018/credentials/v1"],
-            type: ["VerifiableCredential", "UniversityDegree"],
-            credentialSubject: {
-                id: "{{did}}",
-                firstName: "{{firstName}}",
-                lastName: "{{lastName}}",
-                degree: "{{degree}}"
+            "@context": [
+                "https://www.w3.org/2018/credentials/v1"
+            ],
+            "id": "<uuid>",
+            "type": [
+                "VerifiableCredential",
+                "UniversityDegree"
+            ],
+            "issuer": {
+                "id": "<issuerDid>"
+            },
+            "issuanceDate": "<timestamp>",
+            "credentialSubject": {
+                "id": "<subjectDid>",
+                "firstName": "{{firstName}}",
+                "lastName": "{{lastName}}"
             }
         }
     })
@@ -82,11 +101,6 @@ export class CreateSchemaDto {
 
     @ApiProperty({
         example: {
-            did: {
-                type: "string",
-                required: true,
-                pattern: "^did:.*$"
-            },
             firstName: {
                 type: "string",
                 required: true,
@@ -96,23 +110,58 @@ export class CreateSchemaDto {
                 type: "string",
                 required: true,
                 minLength: 2
-            },
-            degree: {
-                type: "string",
-                required: true,
-                enum: ["Bachelor", "Master", "PhD"]
             }
         }
     })
+
     @IsObject()
     @ValidateNested({ each: true })
     @Type(() => ValidationRule)
     validationRules: Record<string, ValidationRule>;
 
+    @ApiProperty({
+        example: {
+            name: "Template Organization Name",
+            type: "Template Organization Type",
+            uri: "https://www.template-organization-uri.example"
+        }
+    })
+    @ValidateNested()
+    @Type(() => TrustFrameworkDto)
+    trust_framework: {
+        name: string;
+        type: string;
+        uri: string;
+    };
 
-    // @ApiProperty({
-    //     example: ["UniversityDegreeCredential"]
-    // })
-    // @IsArray()
-    // credentialTypes: string[];
+    @ApiProperty({ type: [DisplayDto] })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => DisplayDto)
+    display: {
+        name: string;
+        locale: string;
+    }[];
+
+    @ApiProperty({ example: "Template issuance criteria", required: false })
+    @IsString()
+    @IsOptional()
+    issuance_criteria?: string;
+
+    @ApiProperty({ example: ["Template Evidence Type 1", "Template Evidence Type 2"], required: false })
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    supported_evidence_types?: string[];
+
+    @ApiProperty({
+        example: "jwt_vc",
+        required: false,
+        description: "Credential format. Must be 'jwt_vc' if provided."
+    })
+
+    @IsString()
+    @IsOptional()
+    @IsIn(['jwt_vc'], { message: "format must be 'jwt_vc'" })
+    format?: string;
 }

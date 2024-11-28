@@ -214,11 +214,7 @@ export class VcService {
                 "credentialSchema": {
                     "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
                     "type": "FullJsonSchemaValidator2021"
-                },
-                // "termsOfUse": { // TODO: change to the correct issuer
-                //     "id": "https://api-conformance.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zjHZjJ4Sy7r92BxXzFGs7qD/attributes/bcdb6bc952c8c897ca1e605fce25f82604c76c16d479770014b7b262b93c0250",
-                //     "type": "IssuanceCertificate"
-                // }
+                }
             }
         };
 
@@ -280,11 +276,7 @@ export class VcService {
                 "credentialSchema": {
                     "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
                     "type": "FullJsonSchemaValidator2021"
-                }//,
-                // "termsOfUse": {
-                //     "id": "https://api-conformance.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zjHZjJ4Sy7r92BxXzFGs7qD/attributes/bcdb6bc952c8c897ca1e605fce25f82604c76c16d479770014b7b262b93c0250",
-                //     "type": "IssuanceCertificate"
-                // }
+                }
             }
         };
 

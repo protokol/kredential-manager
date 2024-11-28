@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JWK, JWT } from '@protokol/kredential-core';
 import { EnterpriseJwtUtil } from './jwt.util';
 import { v4 as uuidv4 } from 'uuid';
+import { handleError } from 'src/error/ebsi-error.util';
 @Injectable()
 export class IssuerService {
     private did: string;
@@ -30,8 +31,7 @@ export class IssuerService {
                 };
                 this.jwtUtil = new EnterpriseJwtUtil(this.privateKeyJwk);
             } catch (error) {
-                console.error('Error parsing JWKs:', error);
-                throw new Error('Error parsing JWKs');
+                throw handleError(error);
             }
         })();
     }

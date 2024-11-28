@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { OpenIdConfiguration, OpenIdIssuer, OpenIdProvider } from '@protokol/kredential-core';
 import { EnterpriseJwtUtil } from '../issuer/jwt.util';
+import { SchemaTemplateService } from 'src/schemas/schema-template.service';
+import { PresentationDefinitionService } from 'src/presentation/presentation-definition.service';
+import { PresentationDefinition } from '@entities/presentation-definition.entity';
 
 
-export function getOpenIdConfigMetadata(baseUrl: string): OpenIdConfiguration {
+export function getOpenIdConfigMetadata(baseUrl: string, presentationDefinitions: PresentationDefinition[]): OpenIdConfiguration {
     return {
         redirect_uris: [`${baseUrl}/direct_post`],
         issuer: `${baseUrl}`,
@@ -31,127 +34,49 @@ export function getOpenIdConfigMetadata(baseUrl: string): OpenIdConfiguration {
         subject_syntax_types_supported: ["did:key", "did:ebsi"],
         subject_trust_frameworks_supported: ["ebsi"],
         id_token_types_supported: [
-        ]
+        ],
+        presentation_definitions_supported: presentationDefinitions.map(def => ({
+            id: def.definition.id,
+            format: def.definition.format,
+            constraints: def.definition.input_descriptors.map(descriptor => ({
+                id: descriptor.id,
+                format: descriptor.format,
+                constraints: descriptor.constraints
+            }))
+        }))
     };
 }
 
-export function getOpenIdIssuerMetadata(baseUrl: string): OpenIdIssuer {
+export async function getOpenIdIssuerMetadata(baseUrl: string): Promise<OpenIdIssuer> {
     return {
         credential_issuer: `${baseUrl}`,
         authorization_server: `${baseUrl}/authorize`,
         credential_endpoint: `${baseUrl}/credential`,
         deferred_credential_endpoint: `${baseUrl}/credential_deferred`,
-        credentials_supported: [
-            {
-                format: 'jwt',
-                types: ['VerifiableCredential', 'UniversityDegree'],
-                trust_framework: {
-                    name: 'Evergreen Valley University',
-                    type: 'Accreditation',
-                    uri: 'https://evu.edu/accreditation'
-                },
-                display: [
-                    {
-                        name: 'University Degree',
-                        locale: 'en'
-                    }
-                ],
-                issuance_criteria: "Issuance criteria",
-                supported_evidence_types: ["Template Evidence Type 1", "Template Evidence Type 2"]
-            },
-            {
-                format: 'jwt',
-                types: ['VerifiableCredential', 'TemplateCredentialType2'],
-                trust_framework: {
-                    name: 'Template Organization Name',
-                    type: 'Template Organization Type',
-                    uri: 'https://www.template-organization-uri.example'
-                },
-                display: [
-                    {
-                        name: 'Template Credential Display Name 2',
-                        locale: 'en'
-                    }
-                ],
-                issuance_criteria: "Template issuance criteria 2",
-                supported_evidence_types: ["Template Evidence Type 3", "Template Evidence Type 4"]
-            },
-            {
-                format: 'jwt_vc',
-                types: [
-                    'VerifiableCredential',
-                    'VerifiableAttestation',
-                    'CTWalletSameAuthorisedInTime'
-                ],
-                trust_framework: {
-                    name: 'Template Organization Name',
-                    type: 'Template Organization Type',
-                    uri: 'https://www.template-organization-uri.example'
-                },
-                display: [],
-                issuance_criteria: "Template issuance criteria 3",
-                supported_evidence_types: []
-            },
-            {
-                format: 'jwt_vc',
-                types: [
-                    'VerifiableCredential',
-                    'VerifiableAttestation',
-                    'CTWalletSameAuthorisedDeferred'
-                ],
-                trust_framework: {
-                    name: 'Template Organization Name',
-                    type: 'Template Organization Type',
-                    uri: 'https://www.template-organization-uri.example'
-                },
-                display: [],
-                issuance_criteria: "Template issuance criteria 4",
-                supported_evidence_types: []
-            },
-            {
-                format: 'jwt_vc',
-                types: [
-                    'VerifiableCredential',
-                    'VerifiableAttestation',
-                    'CTWalletSamePreAuthorisedInTime'
-                ],
-                trust_framework: {
-                    name: 'Template Organization Name',
-                    type: 'Template Organization Type',
-                    uri: 'https://www.template-organization-uri.example'
-                },
-                display: [],
-                issuance_criteria: "Template issuance criteria 5",
-                supported_evidence_types: []
-            },
-            {
-                format: 'jwt_vc',
-                types: [
-                    'VerifiableCredential',
-                    'VerifiableAttestation',
-                    'CTWalletSamePreAuthorisedDeferred'
-                ],
-                trust_framework: {
-                    name: 'Template Organization Name',
-                    type: 'Template Organization Type',
-                    uri: 'https://www.template-organization-uri.example'
-                },
-                display: [],
-                issuance_criteria: "Template issuance criteria 6",
-                supported_evidence_types: []
-            },
-        ]
+        credentials_supported: []
     };
 }
 @Injectable()
 export class OpenIDProviderService {
     private provider: OpenIdProvider;
     private jwtUtil: EnterpriseJwtUtil;
+    private initialized: boolean = false;
 
-    constructor() {
+    constructor(private schemaTemplateService: SchemaTemplateService, private presentationDefinitionService: PresentationDefinitionService) { }
+
+    private async init() {
+        if (this.initialized) return;
+
         const HOST = process.env.ISSUER_BASE_URL || 'localhost:3000';
-        const issuerMetadata = getOpenIdIssuerMetadata(HOST);
-        const configMetadata = getOpenIdConfigMetadata(HOST);
+
+        const credentialsSupported = await this.schemaTemplateService.getCredentialsSupported();
+        const presentationDefinitions = await this.presentationDefinitionService.findAll();
+        const baseMetadata = await getOpenIdIssuerMetadata(HOST);
+        const issuerMetadata = {
+            ...baseMetadata,
+            credentials_supported: credentialsSupported
+        };
+        const configMetadata = getOpenIdConfigMetadata(HOST, presentationDefinitions);
 
 
         if (!process.env.ISSUER_PRIVATE_KEY_JWK || !process.env.ISSUER_PRIVATE_KEY_ID || !process.env.ISSUER_PUBLIC_KEY_JWK) {
@@ -166,14 +91,17 @@ export class OpenIDProviderService {
             };
 
             this.jwtUtil = new EnterpriseJwtUtil(privateKeyJwk);
+
             this.provider = new OpenIdProvider(issuerMetadata, configMetadata, privateKeyJwk, this.jwtUtil);
+            this.initialized = true;
         } catch (error) {
             console.error('Error parsing JWKs:', error);
             throw new Error('Error parsing JWKs');
         }
     }
 
-    getInstance() {
+    async getInstance(): Promise<OpenIdProvider> {
+        await this.init();
         return this.provider;
     }
 }

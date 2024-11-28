@@ -36,3 +36,8 @@ export interface SchemaResponseDto extends CreateSchemaDto {
     created_at: Date;
     updated_at: Date;
 }
+
+export type SchemaTemplateData = {
+    subjectDid: string;
+    [key: string]: any;
+};

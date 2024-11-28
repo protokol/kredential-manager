@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { State } from '@entities/state.entity';
 import { StateStep } from './enum/step.enum';
 import { StateStatus } from './enum/status.enum';
+import { CredentialOffer } from '@entities/credential-offer.entity';
 
 @Injectable()
 export class StateService {
@@ -12,7 +13,7 @@ export class StateService {
         private stateRepository: Repository<State>,
     ) { }
 
-    async createAuthState(clientId: string, codeChallenge: string, codeChallengeMethod: string, redirectUri: string, scope: string, responseType: string, serverDefinedState: string, serverDefinedNonce: string, walletDefinedState: string, walletDefinedNonce?: string, payload?: any) {
+    async createAuthState(clientId: string, codeChallenge: string, codeChallengeMethod: string, redirectUri: string, scope: string, responseType: string, serverDefinedState: string, serverDefinedNonce: string, walletDefinedState: string, walletDefinedNonce?: string, payload?: any, offer?: CredentialOffer) {
         const state = this.stateRepository.create({
             clientId,
             step: StateStep.AUTHORIZE,
@@ -26,7 +27,8 @@ export class StateService {
             serverDefinedNonce,
             walletDefinedState,
             walletDefinedNonce,
-            payload: payload ?? {}
+            payload: payload ?? {},
+            offer
         });
         try {
             await this.stateRepository.save(state);
@@ -100,6 +102,9 @@ export class StateService {
     }
 
     async validatePreAuthorisedAndPinCode(pinCode: string, preAuthorisedCode: string) {
+        console.log("VALIDATING PRE-AUTHORISED CODE AND PIN CODE")
+        console.log({ preAuthorisedCode })
+        console.log({ pinCode })
         const state = await this.stateRepository.findOne({
             where: { preAuthorisedCode: preAuthorisedCode, preAuthorisedCodePin: pinCode },
         });
@@ -109,7 +114,7 @@ export class StateService {
         return !state.preAuthorisedCodeIsUsed;
     }
 
-    async createPreAuthorisedAndPinCode(pinCode: string, preAuthorisedCode: string, did: string, requestedCredentials: string[]) {
+    async createPreAuthorisedAndPinCode(pinCode: string, preAuthorisedCode: string, did: string, requestedCredentials: string[], offer?: CredentialOffer) {
         const state = await this.stateRepository.findOne({
             where: { preAuthorisedCode: preAuthorisedCode, preAuthorisedCodePin: pinCode },
         });
@@ -132,6 +137,7 @@ export class StateService {
             preAuthorisedCode,
             preAuthorisedCodePin: pinCode,
             preAuthorisedCodeIsUsed: false,
+            offer: offer
         });
         try {
             await this.stateRepository.save(newState);
@@ -156,28 +162,10 @@ export class StateService {
     async getByField(fieldName: string, value: string, step: StateStep, status: StateStatus, clientId?: string): Promise<State | undefined> {
         const state = await this.stateRepository.findOne({
             where: { [fieldName]: value },
+            relations: ['offer', 'offer.credential_offer_data']
         });
 
         return state
-
-        if (state && state.step === step && state.status === status) {
-            // Don't update state status if it's a deferred request
-            if (step !== StateStep.DEFERRED_REQUEST) {
-                await this.updateStatus(state.id, StateStatus.CLAIMED);
-            }
-            if (clientId && state.clientId !== clientId) {
-                throw new Error('Invalid request');
-            }
-            return state;
-        }
-        switch (step) {
-            case StateStep.AUTHORIZE:
-                throw new Error('Invalid state');
-            case StateStep.AUTH_RESPONSE:
-                throw new Error('Invalid code');
-            case StateStep.TOKEN_REQUEST:
-                throw new Error('Invalid state');
-        }
     }
 
     async getByPreAuthorisedAndPinCode(pinCode: string, preAuthorisedCode: string,): Promise<State | undefined> {
@@ -189,4 +177,15 @@ export class StateService {
         await this.stateRepository.delete({ preAuthorisedCode, preAuthorisedCodePin: pinCode });
     }
 
+    async createVerificationState(clientId: string, nonce: string, redirectUri: string, scope: string, responseType: string, serverDefinedState: string, serverDefinedNonce: string, walletDefinedState: string, walletDefinedNonce: string, presentationUri: string) {
+        await this.stateRepository.save({
+            clientId, nonce, redirectUri, scope, responseType, serverDefinedState, serverDefinedNonce, walletDefinedState, walletDefinedNonce, presentationUri,
+            step: StateStep.VERIFICATION_REQUEST,
+            status: StateStatus.UNCLAIMED,
+        });
+    }
+
+    async getVerificationStateByState(state: string): Promise<State | undefined> {
+        return await this.stateRepository.findOne({ where: { serverDefinedState: state } });
+    }
 }

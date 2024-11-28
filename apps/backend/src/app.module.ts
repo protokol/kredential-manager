@@ -47,6 +47,12 @@ import { OfferController } from "./credential-offer/offer.controller";
 import { SchemaTemplateService } from "./schemas/schema-template.service";
 import { SchemaTemplateController } from "./schemas/schema-template.controller";
 import { SchemaTemplateModule } from "./schemas/schema-template.module";
+import { VpService } from "./vp/vp.service";
+import { PresentationDefinitionService } from "./presentation/presentation-definition.service";
+import { PresentationDefinitionController } from "./presentation/presentation-definition.controller";
+import { PresentationDefinitionModule } from "./presentation/presentation-definition.module";
+import { VerificationController } from "./verification/verification.controller";
+import { VerificationService } from "./verification/verification.service";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -85,7 +91,8 @@ import { SchemaTemplateModule } from "./schemas/schema-template.module";
         CredentialOfferModule,
         ApiKeyModule,
         DidModule,
-        SchemaTemplateModule
+        SchemaTemplateModule,
+        PresentationDefinitionModule
     ],
     controllers: [
         AppController,
@@ -95,7 +102,9 @@ import { SchemaTemplateModule } from "./schemas/schema-template.module";
         ApiKeyController,
         CredentialOfferController,
         OfferController,
-        SchemaTemplateController
+        SchemaTemplateController,
+        PresentationDefinitionController,
+        VerificationController
     ],
     providers: [
         AppService,
@@ -123,7 +132,10 @@ import { SchemaTemplateModule } from "./schemas/schema-template.module";
         ProxyService,
         ApiKeyService,
         CredentialOfferService,
-        EbsiConfigService
+        EbsiConfigService,
+        VpService,
+        PresentationDefinitionService,
+        VerificationService
     ],
     exports: [],
 })

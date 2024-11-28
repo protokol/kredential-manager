@@ -1,5 +1,6 @@
-import { CredentialOfferData, GrantType } from './../credential-offer/credential-offer.type';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { CredentialOfferDetails, GrantType } from './../credential-offer/credential-offer.type';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, JoinColumn, OneToOne } from 'typeorm';
+import { CredentialOfferData } from './credential-offer-data.entity';
 
 
 @Entity('credential_offers')
@@ -8,13 +9,17 @@ export class CredentialOffer {
     id: string;
 
     @Column()
-    did: string;
+    subject_did: string;
 
     @Column('simple-array')
     credential_types: string[];
 
     @Column({ type: 'jsonb' })
-    credential_offer: CredentialOfferData;
+    credential_offer_details: CredentialOfferDetails;
+
+    @OneToOne(() => CredentialOfferData, { nullable: true })
+    @JoinColumn()
+    credential_offer_data: CredentialOfferData;
 
     @Column({
         type: 'enum',
@@ -31,6 +36,9 @@ export class CredentialOffer {
         default: 'PENDING'
     })
     status: string;
+
+    @Column({ nullable: true })
+    issuer_state: string;
 
     @CreateDateColumn()
     created_at: Date;

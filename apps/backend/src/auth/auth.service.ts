@@ -1,6 +1,5 @@
 import {
     verifyCredentialJwt,
-    type VerifyCredentialOptions,
 } from "@cef-ebsi/verifiable-credential";
 import { Injectable } from '@nestjs/common';
 import { AuthorizeRequest, JHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString, VPPayload, JWT, VCJWT } from '@protokol/kredential-core';
@@ -16,11 +15,15 @@ import { ResolverService } from './../resolver/resolver.service';
 import { StateService } from './../state/state.service';
 import { StateStep } from './../state/enum/step.enum';
 import { StateStatus } from './../state/enum/status.enum';
-import { EbsiConfigService } from "./../network/ebsi-config.service";
 import { EbsiNetwork } from "src/network/ebsi-network.types";
-import { StudentService } from "src/student/student.service";
-import { CreateStudentDto } from "src/student/dto/create-student";
 import { Did } from "@entities/did.entity";
+import { CredentialOfferService } from "src/credential-offer/credential-offer.service";
+import { GrantType } from "src/credential-offer/credential-offer.type";
+import { SchemaTemplateService } from "src/schemas/schema-template.service";
+import { CredentialOffer } from "@entities/credential-offer.entity";
+import { handleError } from "src/error/ebsi-error.util";
+import { createError, EbsiError, ERROR_CODES } from "src/error/ebsi-error";
+import { VpService } from "src/vp/vp.service";
 
 const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 const MOCK_EBSI_PRE_AUTHORISED_DID = 'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kboj7g9PfXJxbbs4KYegyr7ELnFVnpDMzbJJDDNZjavX6jvtDmALMbXAGW67pdTgFea2FrGGSFs8Ejxi96oFLGHcL4P6bjLDPBJEvRRHSrG4LsPne52fczt2MWjHLLJBvhAC';
@@ -28,12 +31,6 @@ const MOCK_EBSI_PRE_AUTHORISED_IN_TIME_CREDENTIALS = ['CTWalletSamePreAuthorised
 const MOCK_EBSI_PRE_AUTHORISED_DEFERRED_CREDENTIALS = ['CTWalletSamePreAuthorisedDeferred'];
 const MOCK_EBSI_PRE_AUTHORISED_PIN_CODE = '1234';
 const MOCK_EBSI_PRE_AUTHORISED_CODE = 'conformance';
-interface PreAuthorisedCode {
-    code: string;
-    pinCode: string;
-    userDid: string;
-    isUsed: boolean;
-}
 
 @Injectable()
 export class AuthService {
@@ -53,15 +50,15 @@ export class AuthService {
      * @param didService An instance of DidService for managing Decentralized Identifiers (DIDs).
      */
     constructor(
-        private provider: OpenIDProviderService,
+        private openIDProviderService: OpenIDProviderService,
         private issuer: IssuerService,
-        private nonce: NonceService,
         private state: StateService,
         private vcService: VcService,
-        private studentService: StudentService,
         private didService: DidService,
         private resolverService: ResolverService,
-        private ebsiConfig: EbsiConfigService,
+        private credentialOfferService: CredentialOfferService,
+        private schemaTemplateService: SchemaTemplateService,
+        private vpService: VpService
     ) { }
 
     /**
@@ -97,16 +94,25 @@ export class AuthService {
      */
     async authorize(request: AuthorizeRequest): Promise<{ header?: JHeader, code: number, url?: string }> {
         console.log({ request })
+        const provider = await this.openIDProviderService.getInstance();
         try {
 
             if (!request.response_type || !request.client_id) {
-                throw new Error('Missing required parameters');
+                throw createError('INVALID_REQUEST', 'Missing required parameters');
             }
-
+            const issuer_state = request.issuer_state
+            let offer: CredentialOffer | null = null;
             // Add issuer state validation here
-            if (request.issuer_state) {
-                const decodedState = await this.issuer.decodeJWT(request.issuer_state);
+            if (issuer_state) {
+                const decodedState = await this.issuer.decodeJWT(issuer_state);
                 const decoded = decodedState.payload as any;
+
+                offer = await this.credentialOfferService.getOfferByIssuerState(issuer_state);
+                if (!offer) {
+                    throw new Error('Invalid or expired offer');
+                }
+
+                console.log({ offer })
 
                 // Validate expiration
                 if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
@@ -135,7 +141,6 @@ export class AuthService {
             }
 
             const redirectUri = `${process.env.ISSUER_BASE_URL}/direct_post`
-
             const isVPTokenTest = request.scope?.includes('ver_test:vp_token');
             const isIDTokenTest = request.scope?.includes('ver_test:id_token');
 
@@ -171,15 +176,15 @@ export class AuthService {
                     ]
                 };
             }
-            const { header, redirectUrl, authDetails, serverDefinedState, serverDefinedNonce } = await this.provider.getInstance().handleAuthorizationRequest(request, redirectUri, presentationDefinition);
+            const { header, redirectUrl, authDetails, serverDefinedState, serverDefinedNonce } = await provider.handleAuthorizationRequest(request, redirectUri, presentationDefinition);
 
             const payload = {
                 authorizationDetails: authDetails,
             }
-            await this.state.createAuthState(request.client_id, request.code_challenge, request.code_challenge_method, request.redirect_uri, request.scope, request.response_type, serverDefinedState, serverDefinedNonce, request.state, request.nonce, payload)
+            await this.state.createAuthState(request.client_id, request.code_challenge, request.code_challenge_method, request.redirect_uri, request.scope, request.response_type, serverDefinedState, serverDefinedNonce, request.state, request.nonce, payload, offer)
             return { header, code: 302, url: redirectUrl };
         } catch (error) {
-            throw error
+            throw handleError(error);
         }
     }
 
@@ -216,6 +221,7 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
      */
     private async handleVpTokenResponse(request: VpTokenRequest): Promise<{ header?: JHeader, code: number, url?: string }> {
+        const provider = await this.openIDProviderService.getInstance();
         try {
             const vpToken = request.vp_token;
             const presentationSubmission = JSON.parse(request.presentation_submission);
@@ -231,59 +237,70 @@ export class AuthService {
                 throw new Error('Missing redirect URI');
             }
 
-            const decoded = await this.provider.getInstance().decodeIdTokenResponse(vpToken);
+            const decoded = await provider.decodeIdTokenResponse(vpToken);
 
             if (!('vp' in decoded.payload)) {
                 throw new Error('Invalid token: Expected VP token structure');
             }
 
             const vpPayload = decoded.payload as VPPayload;
-            const vpHeader = decoded.header;
 
-            if (!vpPayload.vp.verifiableCredential || !Array.isArray(vpPayload.vp.verifiableCredential)) {
-                throw new Error('Invalid VP structure');
-            }
-            for (let i = 0; i < vpPayload.vp.verifiableCredential.length; i++) {
-                const vc = vpPayload.vp.verifiableCredential[i];
-                const descriptorId = presentationSubmission.descriptor_map[i]?.id;
-
-                try {
-                    const options = this.ebsiConfig.getVerifyCredentialOptions(
+            try {
+                await this.vpService.verifyVP(vpToken, presentationSubmission, vpPayload);
+            } catch (error) {
+                if (error instanceof EbsiError) {
+                    return this.createErrorResponse(
+                        redirectUri,
+                        error.error,
+                        error.error_description,
+                        stateData.walletDefinedState
                     );
-                    const verifiedVc = await verifyCredentialJwt(vc, options);
-                    // Check if credential is revoked based on credentialStatus
-                    if (verifiedVc.credentialStatus &&
-                        'statusPurpose' in verifiedVc.credentialStatus &&
-                        'statusListIndex' in verifiedVc.credentialStatus &&
-                        verifiedVc.credentialStatus.statusPurpose === 'revocation' &&
-                        verifiedVc.credentialStatus.statusListIndex === '7') {
-                        return this.createErrorResponse(redirectUri, 'invalid_request',
-                            `${descriptorId} is revoked`, stateData.walletDefinedState);
-                    }
-                } catch (error) {
-                    if (error.message.includes('expirationDate MUST be more recent than validFrom')) {
-                        return this.createErrorResponse(redirectUri, 'invalid_request',
-                            `${presentationSubmission.descriptor_map[i].id} is expired`, stateData.walletDefinedState);
-                    } else if (error.message.includes('not yet valid')) {
-                        return this.createErrorResponse(redirectUri, 'invalid_request',
-                            `${presentationSubmission.descriptor_map[i].id} is not yet valid`, stateData.walletDefinedState);
-                    } else {
-                        return this.createErrorResponse(redirectUri, 'invalid_request',
-                            `Error verifying credential ${presentationSubmission.descriptor_map[i].id}: ${error.message}`, stateData.walletDefinedState);
-                    }
                 }
+                throw error;
             }
+
+            // if (!vpPayload.vp.verifiableCredential || !Array.isArray(vpPayload.vp.verifiableCredential)) {
+            //     throw new Error('Invalid VP structure');
+            // }
+            // for (let i = 0; i < vpPayload.vp.verifiableCredential.length; i++) {
+            //     const vc = vpPayload.vp.verifiableCredential[i];
+            //     const descriptorId = presentationSubmission.descriptor_map[i]?.id;
+
+            //     try {
+            //         const options = this.ebsiConfig.getVerifyCredentialOptions(
+            //         );
+            //         const verifiedVc = await verifyCredentialJwt(vc, options);
+            //         // Check if credential is revoked based on credentialStatus
+            //         if (verifiedVc.credentialStatus &&
+            //             'statusPurpose' in verifiedVc.credentialStatus &&
+            //             'statusListIndex' in verifiedVc.credentialStatus &&
+            //             verifiedVc.credentialStatus.statusPurpose === 'revocation' &&
+            //             verifiedVc.credentialStatus.statusListIndex === '7') {
+            //             return this.createErrorResponse(redirectUri, 'invalid_request',
+            //                 `${descriptorId} is revoked`, stateData.walletDefinedState);
+            //         }
+            //     } catch (error) {
+            //         if (error.message.includes('expirationDate MUST be more recent than validFrom')) {
+            //             return this.createErrorResponse(redirectUri, 'invalid_request',
+            //                 `${presentationSubmission.descriptor_map[i].id} is expired`, stateData.walletDefinedState);
+            //         } else if (error.message.includes('not yet valid')) {
+            //             return this.createErrorResponse(redirectUri, 'invalid_request',
+            //                 `${presentationSubmission.descriptor_map[i].id} is not yet valid`, stateData.walletDefinedState);
+            //         } else {
+            //             return this.createErrorResponse(redirectUri, 'invalid_request',
+            //                 `Error verifying credential ${presentationSubmission.descriptor_map[i].id}: ${error.message}`, stateData.walletDefinedState);
+            //         }
+            //     }
+            // }
 
             const code = generateRandomString(32);
             const successUrl = new URL(redirectUri);
             successUrl.searchParams.append('code', code);
             successUrl.searchParams.append('state', stateData.walletDefinedState);
 
-            // await this.state.createAuthResponseNonce(stateData.id, code, request.vp_token);
             return { code: 302, url: successUrl.toString() };
-
         } catch (error) {
-            throw error;
+            throw handleError(error);
         }
     }
 
@@ -294,12 +311,13 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and redirect URL.
      */
     private async handleIdTokenResponse(request: IdTokenResponseRequest, headers: Record<string, string | string[]>): Promise<{ header?: JHeader, code: number, url?: string }> {
+        const provider = await this.openIDProviderService.getInstance();
         try {
             if (!request.id_token) {
                 throw new Error('Missing id_token parameter');
             }
 
-            const { payload, header } = await this.provider.getInstance().decodeIdTokenResponse(request.id_token);
+            const { payload, header } = await provider.decodeIdTokenResponse(request.id_token);
 
             const state = request.state
             if (!state) {
@@ -330,12 +348,11 @@ export class AuthService {
 
             // Update the state for the client, including the generated code and ID token.
             await this.state.createAuthResponseNonce(stateData.id, code, request.id_token);
-            const redirectUrl = await this.provider.getInstance().createAuthorizationRequest(code, walletDefinedState, redirectUri);
+            const redirectUrl = await provider.createAuthorizationRequest(code, walletDefinedState, redirectUri);
             return { header, code: 302, url: redirectUrl };
         } catch (error) {
-            throw error
+            throw handleError(error);
         }
-
     }
 
     /**
@@ -352,7 +369,7 @@ export class AuthService {
 
             return await this.handleIdTokenResponse(request, headers);
         } catch (error) {
-            throw error;
+            throw handleError(error);
         }
     }
 
@@ -363,13 +380,14 @@ export class AuthService {
      */
     async token(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
         try {
+            console.log('REQUEST', request)
             if (request.grant_type === 'urn:ietf:params:oauth:grant-type:pre-authorized_code') {
                 return await this.handlePreAuthorizedCode(request);
             }
 
             return await this.handleStandardTokenRequest(request);
         } catch (error) {
-            return { header: this.header, code: 400, response: error.message };
+            throw handleError(error);
         }
     }
 
@@ -379,6 +397,7 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
     private async handlePreAuthorizedCode(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
+        const provider = await this.openIDProviderService.getInstance();
         const pinCode = request.user_pin;
         const preAuthorisedCode = request['pre-authorized_code'];
 
@@ -395,21 +414,25 @@ export class AuthService {
             } else if (preAuthorisedCode.startsWith(`${MOCK_EBSI_PRE_AUTHORISED_CODE}Deferred`)) {
                 await this.state.createPreAuthorisedAndPinCode(pinCode, preAuthorisedCode, MOCK_EBSI_PRE_AUTHORISED_DID, MOCK_EBSI_PRE_AUTHORISED_DEFERRED_CREDENTIALS);
             } else {
-                throw new Error('Invalid pre-authorised code');
+                throw createError(
+                    'INVALID_REQUEST',
+                    'Invalid pre-authorised code or pin code'
+                );
             }
         }
         // ******************
 
-        await this.offerPreAuthorisedCredential(pinCode, preAuthorisedCode);
-
         const stateData = await this.state.getByPreAuthorisedAndPinCode(pinCode, preAuthorisedCode);
+        if (!stateData) {
+            throw createError('INVALID_REQUEST', 'Invalid pre-authorised code or pin code');
+        }
         const idToken = "";
         const authDetails = [];
         const cNonce = generateRandomString(20);
         const cNonceExpiresIn = 60 * 60; // seconds
 
         await this.state.createTokenRequestCNonce(stateData.id, cNonce, cNonceExpiresIn);
-        const response = await this.provider.getInstance().composeTokenResponse(idToken, cNonce, cNonceExpiresIn, authDetails);
+        const response = await provider.composeTokenResponse(idToken, cNonce, cNonceExpiresIn, authDetails);
         return { header: this.header, code: 200, response };
     }
 
@@ -419,6 +442,7 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
     private async handleStandardTokenRequest(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
+        const provider = await this.openIDProviderService.getInstance();
         const stateData = await this.state.getByField('code', request.code, StateStep.AUTH_RESPONSE, StateStatus.UNCLAIMED, request.client_id);
 
         const isCodeChallengeValid = await validateCodeChallenge(stateData.codeChallenge, request.code_verifier);
@@ -432,7 +456,7 @@ export class AuthService {
         const cNonceExpiresIn = 60 * 60; // seconds
 
         await this.state.createTokenRequestCNonce(stateData.id, cNonce, cNonceExpiresIn);
-        const response = await this.provider.getInstance().composeTokenResponse(idToken, cNonce, cNonceExpiresIn, authDetails);
+        const response = await provider.composeTokenResponse(idToken, cNonce, cNonceExpiresIn, authDetails);
 
         return { header: this.header, code: 200, response };
     }
@@ -444,98 +468,182 @@ export class AuthService {
      * @param request The request object containing the nonce and other necessary details.
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
+
     async credentail(request: any): Promise<{ header: any, code: number, response: any }> {
         try {
-            // Decode the request payload to retrieve the nonce and other details.
-            const decodedRequest = await this.provider.getInstance().decodeCredentialRequest(request);
-            const cNonce = decodedRequest.nonce;
-            // Retrieve the nonce data associated with the cNonce to ensure it exists and is unclaimed.
-            const stateData = await this.state.getByField('cNonce', cNonce, StateStep.TOKEN_REQUEST, StateStatus.UNCLAIMED, request.client_id);
+            // 1. Validate request and get state
+            const { stateData, cNonce } = await this.validateCredentialRequest(request);
+            console.log('STATE DATA', stateData)
+            console.log('-----------------')
 
-            // Validate the issuer of the request against the stored nonce data.
-            if (decodedRequest.iss !== stateData.clientId) {
-                throw new Error('Invalid issuer');
-            }
-
-            // Extract the requested credentials from the nonce payload.
+            // 2. Create a record for the credential
             const requestedCredentials = stateData.payload.authorizationDetails[0].types;
-            // Retrieve the DID of the client from the nonce data.
-            const did = stateData.clientId;
+            let credentialRecord = await this.handleCredentialCreation(stateData.clientId, requestedCredentials);
 
-            // Create the verifiable credential.
-            let cred = await this.handleCredentialCreation(did, requestedCredentials);
-            // Compose the deferred credential response.
-            const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS
-            const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
+            console.log('CREDENTIAL RECORD', credentialRecord)
 
-            console.log({ vcId: cred.vcId })
-
-            // TMP
-
-            console.log({ requestedCredentials })
-            console.log({ vcId: cred.vcId })
-            console.log({ stateData })
-            // const test = await this.studentService.findOne(1)
-            const createStudentDto = {
-                first_name: 'Marko',
-                last_name: 'Novak',
-                email: 'nina.novak@student.si',
-                date_of_birth: new Date('1990-01-01'),
-                nationality: 'Slovenian',
-                enrollment_date: new Date('2024-03-01'),
-                dids: [cred.did]
-            } as CreateStudentDto
-
-
-
-            await this.studentService.create(createStudentDto);
-            const signedCredential = await this.vcService.issueVerifiableCredential(cred.vcId);
-            if (!signedCredential) {
-                throw new Error('Failed to issue verifiable credential');
+            // 3. Conformance test
+            if (await this.isConformanceTest(requestedCredentials)) {
+                console.log('CONFORMANCE TEST')
+                return await this.createCredentialResponseConformance(stateData, { cNonce, requestedCredentials, vcId: credentialRecord.vcId });
             }
-            const inTimeCredentialResponse = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, signedCredential);
-            console.log({ inTimeCredentialResponse })
-            return { header: this.header, code: 200, response: inTimeCredentialResponse };
 
-            // ******************
-            // CONFORMANCE TEST
-            // ******************
-            // If CTWalletSameAuthorisedInTime or CTWalletSameAuthorisedDeferred
-            if (requestedCredentials.includes('CTWalletSameAuthorisedInTime') || requestedCredentials.includes('CTWalletSameAuthorisedDeferred') ||
-                requestedCredentials.includes('CTWalletSamePreAuthorisedInTime') || requestedCredentials.includes('CTWalletSamePreAuthorisedDeferred')) {
+            // 4. Generate and issue credential
+            const { signedCredential, credential } = await this.generateAndSignCredential(stateData);
 
-                // Issue the verifiable credential
-                const signedCredential = await this.vcService.CONFORMANCE_issueVerifiableCredential(cred.vcId, requestedCredentials, stateData.clientId);
-                if (!signedCredential) {
-                    throw new Error('Failed to issue verifiable credential');
+            console.log('SIGNED CREDENTIAL', signedCredential)
+            console.log({ credential })
+            // 5. Create and return response
+            return await this.createCredentialResponse(
+                stateData.offer.grant_type,
+                {
+                    cNonce,
+                    signedCredential,
+                    vcId: credentialRecord.vcId,
+                    stateId: stateData.id
                 }
-
-                // If in time requested, return in time response
-                if (requestedCredentials.includes('CTWalletSameAuthorisedInTime')) {
-                    const inTimeCredentialResponse = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, signedCredential);
-                    return { header: this.header, code: 200, response: inTimeCredentialResponse };
-                }
-
-                // If deferred requested, return the deferred response
-                if (requestedCredentials.includes('CTWalletSameAuthorisedDeferred')) {
-                    const deferredCredentialResponse = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, cred.vcId);
-                    return { header: this.header, code: 200, response: deferredCredentialResponse };
-                }
-            }
-            // ******************
-            // END CONFORMANCE TEST
-            // ******************
-
-            // Otherwise, compose the deferred credential response
-            const response = await this.provider.getInstance().composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, cred.vcId);
-            // Update the state for the client, including the acceptance token.
-            await this.state.createDeferredResoponse(stateData.id, response.acceptance_token);
-
-            return { header: this.header, code: 200, response };
+            );
         } catch (error) {
-            return { header: this.header, code: 400, response: 'Invalid request' };
+            throw handleError(error);
         }
     }
+
+    private async validateCredentialRequest(request: any): Promise<{
+        stateData: any,
+        cNonce: string
+    }> {
+
+        const provider = await this.openIDProviderService.getInstance();
+        const decodedRequest = await provider.decodeCredentialRequest(request);
+        const cNonce = decodedRequest.nonce;
+
+        const stateData = await this.state.getByField(
+            'cNonce',
+            cNonce,
+            StateStep.TOKEN_REQUEST,
+            StateStatus.UNCLAIMED,
+            request.client_id
+        );
+
+        if (decodedRequest.iss !== stateData.clientId) {
+            throw new Error('Invalid issuer');
+        }
+
+        if (!stateData.offer && (request.types.includes('CTWallet') && process.env.EBSI_NETWORK == EbsiNetwork.CONFORMANCE)) {
+            throw new Error('No credential offer found');
+        }
+
+        return { stateData, cNonce };
+    }
+
+    private async generateAndSignCredential(stateData: any): Promise<{
+        credential: any,
+        signedCredential: string
+    }> {
+        const { offer, clientId: subjectDid } = stateData;
+        const { templateData, schemaTemplateId } = offer.credential_offer_data;
+
+        // Generate credential from schema template
+        const credential = await this.schemaTemplateService.generateCredential(
+            schemaTemplateId,
+            templateData,
+            process.env.ISSUER_DID!,
+            subjectDid
+        );
+
+        const signedCredential = await this.issuer.issueCredential(credential, subjectDid, {});
+        return { credential, signedCredential };
+    }
+
+
+    private async createCredentialResponse(
+        grantType: GrantType,
+        params: {
+            cNonce: string,
+            signedCredential: string,
+            stateId: number,
+            vcId: number
+        }
+    ): Promise<{ header: any, code: number, response: any }> {
+        const provider = await this.openIDProviderService.getInstance();
+        const { cNonce, signedCredential, stateId, vcId } = params;
+        const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS;
+        const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS;
+
+        console.log('GRANT TYPE', grantType);
+        if (grantType === GrantType.PRE_AUTHORIZED_CODE) {
+            const response = await provider
+                .composeInTimeCredentialResponse(
+                    'jwt_vc',
+                    cNonce,
+                    cNonceExpiresIn,
+                    tokenExpiresIn,
+                    signedCredential
+                );
+            return { header: this.header, code: 200, response };
+        }
+
+        const response = await provider
+            .composeDeferredCredentialResponse(
+                'jwt_vc',
+                cNonce,
+                cNonceExpiresIn,
+                tokenExpiresIn,
+                vcId
+            );
+
+        await this.state.createDeferredResoponse(stateId, response.acceptance_token);
+        return { header: this.header, code: 200, response };
+    }
+
+    // ******************
+    // CONFORMANCE TEST
+    // ******************
+
+    public async isConformanceTest(requestedCredentials: string[]): Promise<boolean> {
+        return requestedCredentials.includes('CTWalletSameAuthorisedInTime') || requestedCredentials.includes('CTWalletSameAuthorisedDeferred') ||
+            requestedCredentials.includes('CTWalletSamePreAuthorisedInTime') || requestedCredentials.includes('CTWalletSamePreAuthorisedDeferred');
+    }
+
+    public async createCredentialResponseConformance(stateData: any, params: {
+        cNonce: string,
+        requestedCredentials: string[],
+        vcId: number
+    }): Promise<{ header: any, code: number, response: any }> {
+        const provider = await this.openIDProviderService.getInstance();
+        const { cNonce, requestedCredentials, vcId } = params;
+        const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS;
+        const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS;
+        console.log('REQUESTED CREDENTIALS', requestedCredentials)
+        // Issue the verifiable credential
+        const signedCredential = await this.vcService.CONFORMANCE_issueVerifiableCredential(vcId, requestedCredentials, stateData.clientId);
+        if (!signedCredential) {
+            console.log('FAILED TO ISSUE VERIFIABLE CREDENTIAL')
+            throw new Error('Failed to issue verifiable credential');
+        }
+
+        // If in time requested, return in time response
+        if (requestedCredentials.includes('CTWalletSameAuthorisedInTime') || requestedCredentials.includes('CTWalletSamePreAuthorisedInTime')) {
+            console.log('IN TIME RESPONSE')
+            const inTimeCredentialResponse = await provider.composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, signedCredential);
+            console.log('IN TIME RESPONSE', inTimeCredentialResponse)
+            return { header: this.header, code: 200, response: inTimeCredentialResponse };
+        }
+
+        // If deferred requested, return the deferred response
+        if (requestedCredentials.includes('CTWalletSameAuthorisedDeferred') || requestedCredentials.includes('CTWalletSamePreAuthorisedDeferred')) {
+            console.log('DEFERRED RESPONSE')
+            const deferredCredentialResponse = await provider.composeDeferredCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, vcId);
+            console.log('DEFERRED RESPONSE', deferredCredentialResponse)
+            return { header: this.header, code: 200, response: deferredCredentialResponse };
+        }
+        throw new EbsiError(ERROR_CODES.INVALID_REQUEST, 'No credential response', 400);
+    }
+
+    // ******************
+    // END CONFORMANCE TEST
+    // ******************
+
 
     /**
      * Handles the processing of a deferred credential response.
@@ -543,6 +651,7 @@ export class AuthService {
      * @returns A promise resolving to an object containing the header, HTTP status code, and response data.
      */
     async credentilDeferred(body: any, headers: any): Promise<{ header: any, code: number, response: any }> {
+        const provider = await this.openIDProviderService.getInstance();
         // Check if the request headers are defined
         if (!headers) {
             return { header: this.header, code: 400, response: 'Missing request headers' };
@@ -571,7 +680,7 @@ export class AuthService {
                 const cNonce = generateRandomString(25);
                 const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS // TODO: Update!!!
                 const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS
-                const response = await this.provider.getInstance().composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, credential.credential_signed);
+                const response = await provider.composeInTimeCredentialResponse('jwt_vc', cNonce, cNonceExpiresIn, tokenExpiresIn, credential.credential_signed);
                 return { header: this.header, code: 200, response: response };
             case VCStatus.PENDING:
                 return { header: this.header, code: 202, response: 'Credential status: pending' };
@@ -600,8 +709,7 @@ export class AuthService {
             await this.issuePreAuthorisedCredential(pinCode, preAuthorisedCode);
 
         } catch (error) {
-            console.error(error);
-            throw error
+            throw handleError(error);
         }
     }
 
@@ -616,7 +724,6 @@ export class AuthService {
     }
 
     /**
-     * Issues the CTWalletSamePreAuthorisedInTime credential synchronously.
      * @param preAuthorisedCode The pre-authorised code used in the Credential Offering.
      * @returns A promise resolving to an object containing the issued credential.
      */
@@ -644,8 +751,7 @@ export class AuthService {
             }
 
         } catch (error) {
-            console.error("IssuePreAuthorisedCredential:", error);
-            throw error;
+            throw handleError(error);
         }
     }
 }

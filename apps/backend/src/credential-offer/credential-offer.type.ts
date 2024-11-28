@@ -1,3 +1,8 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "ajv/dist/compile/util";
+import { IsEnum, IsNumber, IsObject, IsOptional, IsString, Validate, ValidateNested } from "class-validator";
+import { SchemaTemplateData } from "src/schemas/schema.types";
+
 export enum CredentialOfferStatus {
     PENDING = 'pending',
     ACCEPTED = 'accepted',
@@ -27,7 +32,7 @@ export interface PreAuthorizedCodeGrant {
     user_pin_required: boolean;
 }
 
-export interface CredentialOfferResponse {
+export interface CredentialOfferDetailsResponse {
     credential_issuer: string;
     credentials: CredentialFormat[];
     grants: {
@@ -38,7 +43,7 @@ export interface CredentialOfferResponse {
 
 export interface CreateOfferResponse {
     id: string;
-    credential_offer: CredentialOfferResponse;
+    credential_offer_details: CredentialOfferDetailsResponse;
     pin?: string;
 }
 
@@ -47,14 +52,18 @@ export enum GrantType {
     PRE_AUTHORIZED_CODE = 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
 }
 
-export interface CreateOfferDto {
-    schemaId: number;
-    data: {
-        did: string;
-        [key: string]: any;
-    };
-    grantType: GrantType;
-    trustFramework?: TrustFramework;
+export class TrustFrameworkDto {
+    @ApiProperty()
+    @IsString()
+    name: string;
+
+    @ApiProperty()
+    @IsString()
+    type: string;
+
+    @ApiProperty()
+    @IsString()
+    uri: string;
 }
 
 export interface AuthorizationCodeGrant {
@@ -66,7 +75,7 @@ export interface PreAuthorizedCodeGrant {
     user_pin_required: boolean;
 }
 
-export interface CredentialOfferData {
+export interface CredentialOfferDetails {
     credential_issuer: string;
     credentials: CredentialFormat[];
     grants: {

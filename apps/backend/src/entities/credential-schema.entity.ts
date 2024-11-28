@@ -29,6 +29,34 @@ export class CredentialSchema {
         }
     };
 
+    @Column()
+    format: string;
+
+    @Column('simple-array')
+    types: string[];
+
+    @Column('jsonb')
+    trust_framework: {
+        name: string;
+        type: string;
+        uri: string;
+    };
+
+    @Column('jsonb')
+    display: {
+        name: string;
+        locale: string;
+    }[];
+
+    @Column({ nullable: true })
+    issuance_criteria?: string;
+
+    @Column('simple-array', { nullable: true })
+    supported_evidence_types?: string[];
+
+    @Column({ default: true })
+    isActive: boolean;
+
     @CreateDateColumn()
     created_at: Date;
 

@@ -3,5 +3,6 @@ export enum StateStep {
     VP_REQUEST = 'vp_request',
     AUTH_RESPONSE = 'auth_response',
     TOKEN_REQUEST = 'token_request',
-    DEFERRED_REQUEST = 'deferred_request'
+    DEFERRED_REQUEST = 'deferred_request',
+    VERIFICATION_REQUEST = 'verification_request',
 }

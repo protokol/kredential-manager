@@ -12,6 +12,7 @@ export interface AuthorizeRequest {
     state?: string;
     authorization_details?: AuthorizationDetail[];
     nonce?: string;
+    request_uri?: string;
     code_challenge?: string;
     code_challenge_method?: string;
     client_metadata?: ClientMetadata;

@@ -3,8 +3,8 @@ import { Public } from 'nest-keycloak-connect';
 import { ApiTags, ApiHeader } from '@nestjs/swagger';
 import { ApiKeyGuard } from './../api-key/api-key.guard';
 import { CredentialOfferService } from './credential-offer.service';
-import { CreateOfferDto } from './credential-offer.type';
 import * as QRCode from 'qrcode';
+import { CreateOfferDto } from './dto/createOfferDto';
 
 @Controller('credential-offer')
 @ApiTags('Credential Offer')
@@ -25,8 +25,6 @@ export class CredentialOfferController {
 
         // Create the offer URI
         const offerUrl = `${process.env.ISSUER_BASE_URL}/credential-offer/${offer.id}`;
-        console.log({ offerUrl })
-        console.log({ offer })
         const encodedUrl = encodeURIComponent(offerUrl);
         const offerUri = `openid-credential-offer://?credential_offer_uri=${encodedUrl}`;
 

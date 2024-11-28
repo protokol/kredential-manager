@@ -108,6 +108,18 @@ export class AuthRequestComposer {
     }
 
     /**
+     * Sets the request URI for the authorization request.
+     * When using request_uri, most other parameters will be ignored as they should be
+     * contained in the referenced JSON document.
+     * @param requestUri - Pre-registered URI that points to the authorization request parameters
+     * @returns This instance for method chaining.
+     */
+    setRequestUri(requestUri: string): AuthRequestComposer {
+        this.request.request_uri = requestUri;
+        return this;
+    }
+
+    /**
      * Sets the issuer URL for the request.
      * @param issuerUrl - The URL of the issuer.
      * @returns This instance for method chaining.
@@ -126,6 +138,18 @@ export class AuthRequestComposer {
         if (!this.issuerUrl) {
             throw new Error('Issuer URL is missing.');
         }
+
+        // If request_uri is present, we only include essential parameters
+        if (this.request.request_uri) {
+            const essentialParams = {
+                client_id: this.request.client_id,
+                request_uri: this.request.request_uri
+            };
+
+            const queryParams = new URLSearchParams(essentialParams).toString();
+            return `${this.issuerUrl}?${queryParams}`;
+        }
+
         const req = { ...this.request } as any;
         req.authorization_details = JSON.stringify(req.authorization_details ?? []);
         req.client_metadata = JSON.stringify(req.client_metadata ?? {});

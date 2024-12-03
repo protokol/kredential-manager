@@ -1,4 +1,4 @@
-import { IsEnum } from "class-validator";
+import { IsEnum, IsString } from "class-validator";
 
 import { GrantType } from "../credential-offer.type";
 
@@ -15,6 +15,11 @@ export class OfferConfigurationDto {
     @ApiProperty({ enum: GrantType })
     @IsEnum(GrantType)
     grantType: GrantType;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    scope?: string;
 
     @ApiProperty({ required: false })
     @IsOptional()

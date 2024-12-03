@@ -3,6 +3,12 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SchemaTemplateService } from './schema-template.service';
 import { CreateSchemaDto } from './create-schema';
 import { Public } from 'nest-keycloak-connect';
+import { PaginationParams } from 'src/types/pagination/PaginationParams';
+import { FilteringParams } from 'src/types/pagination/FilteringParams';
+import { Filtering } from 'src/types/pagination/FilteringParams';
+import { SortingParams } from 'src/types/pagination/SortingParams';
+import { Pagination } from 'src/types/pagination/PaginationParams';
+import { Sorting } from 'src/types/pagination/SortingParams';
 
 @Public(true) // TODO TMP
 @ApiTags('Schema Templates')
@@ -21,13 +27,11 @@ export class SchemaTemplateController {
     @ApiOperation({ summary: 'Get all schema templates' })
     @ApiResponse({ status: 200, description: 'List of all schema templates' })
     async findAll(
-        @Query('page', ParseIntPipe) page: number = 1,
-        @Query('limit', ParseIntPipe) limit: number = 10
+        @PaginationParams() paginationParams: Pagination,
+        @SortingParams(["name"]) sort?: Sorting,
+        @FilteringParams(["name"]) filter?: Filtering
     ) {
-        if (page < 1 || limit < 1) {
-            throw new BadRequestException('Invalid pagination parameters');
-        }
-        return await this.schemaTemplateService.findAll(page, limit);
+        return await this.schemaTemplateService.findAll(paginationParams, sort, filter);
     }
 
     @Get(':id')

@@ -43,7 +43,8 @@ export class PresentationDefinitionController {
                             }
                         }
                     ]
-                }
+                },
+                "scope": "openid test"
             }
         }
     })
@@ -101,11 +102,11 @@ export class PresentationDefinitionController {
         }
     }
 
-    @Get('definition/:definitionId')
-    @ApiOperation({ summary: 'Get presentation definition by definition ID' })
-    async getDefinition(@Param('definitionId') definitionId: string) {
+    @Get('definition/:scope')
+    @ApiOperation({ summary: 'Get presentation definition by scope' })
+    async getDefinition(@Param('scope') scope: string) {
         try {
-            return await this.presentationDefinitionService.getDefinitionById(definitionId);
+            return await this.presentationDefinitionService.getByScope(scope);
         } catch (error) {
             throw handleError(error);
         }

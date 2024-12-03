@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, HttpStatus, HttpException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, HttpStatus, HttpException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CredentialSchema } from '../entities/credential-schema.entity';
@@ -9,7 +9,12 @@ import addFormats from 'ajv-formats';
 import { CreateSchemaDto } from './create-schema';
 import { isReservedVariable, RESERVED_TEMPLATE_VARIABLES } from './reserver-variables';
 import { EbsiNetwork } from 'src/network/ebsi-network.types';
-import { createError } from 'src/error/ebsi-error';
+import { getOrder } from 'src/helpers/Order';
+import { PaginatedResource } from 'src/types/pagination/dto/PaginatedResource';
+import { getWhere } from 'src/helpers/Order';
+import { Pagination } from 'src/types/pagination/PaginationParams';
+import { Filtering } from 'src/types/pagination/FilteringParams';
+import { Sorting } from 'src/types/pagination/SortingParams';
 
 @Injectable()
 export class SchemaTemplateService {
@@ -76,21 +81,26 @@ export class SchemaTemplateService {
         return await this.schemaTemplateRepository.findOne({ where: { id } });
     }
 
-    async findAll(page: number = 1, limit: number = 10) {
-        const [items, total] = await this.schemaTemplateRepository.findAndCount({
-            skip: (page - 1) * limit,
+    async findAll(
+        { page, limit, size, offset }: Pagination,
+        sort?: Sorting,
+        filter?: Filtering,
+    ): Promise<PaginatedResource<Partial<CredentialSchema>>> {
+        const where = getWhere(filter);
+        const order = getOrder(sort);
+
+        const [languages, total] = await this.schemaTemplateRepository.findAndCount({
+            where,
+            order,
             take: limit,
-            order: { id: 'DESC' }
+            skip: offset,
         });
 
         return {
-            items,
-            meta: {
-                total,
-                page,
-                limit,
-                pages: Math.ceil(total / limit)
-            }
+            totalItems: total,
+            items: languages,
+            page,
+            size,
         };
     }
 
@@ -102,7 +112,7 @@ export class SchemaTemplateService {
     async update(id: number, updateDto: Partial<CreateSchemaDto & { types: string[] }>) {
         const schema = await this.findOne(id);
         if (!schema) {
-            throw createError('INVALID_REQUEST', 'Schema template not found');
+            throw new ConflictException('Schema template not found');
         }
 
         // If schema is updated, extract and validate template variables
@@ -122,7 +132,7 @@ export class SchemaTemplateService {
     async remove(id: number) {
         const schema = await this.findOne(id);
         if (!schema) {
-            throw createError('INVALID_REQUEST', 'Schema template not found');
+            throw new ConflictException('Schema template not found');
         }
 
         await this.schemaTemplateRepository.remove(schema);
@@ -151,10 +161,9 @@ export class SchemaTemplateService {
 
     private validateTemplateVariables(templateVars: string[], validationRules: Record<string, any>) {
         const nonReservedVars = templateVars.filter(variable => !isReservedVariable(variable));
-
         for (const variable of nonReservedVars) {
             if (!validationRules[variable]) {
-                throw createError('INVALID_REQUEST', `Missing validation rule for template variable: ${variable}`);
+                throw new ConflictException(`Missing validation rule for template variable: ${variable}`);
             }
         }
     }
@@ -162,7 +171,7 @@ export class SchemaTemplateService {
     async validateData(schemaId: number, data: any): Promise<{ isValid: boolean; errors?: string[] }> {
         const schema = await this.schemaTemplateRepository.findOne({ where: { id: schemaId } });
         if (!schema) {
-            throw createError('INVALID_REQUEST', 'Schema not found');
+            throw new ConflictException('Schema template not found');
         }
 
         const errors: string[] = [];
@@ -178,10 +187,10 @@ export class SchemaTemplateService {
         };
     }
 
-    async generateCredential(schemaId: number, data: any, issuerDid: string, subjectDid: string) {
+    async generateCredential(issuerDid: string, subjectDid: string, schemaId: number, data: any) {
         const schema = await this.findOne(schemaId);
         if (!schema) {
-            throw createError('INVALID_REQUEST', 'Schema template not found');
+            throw new ConflictException('Schema template not found');
         }
 
         let credentialTemplate = this.replaceReservedVariables(
@@ -221,6 +230,54 @@ export class SchemaTemplateService {
             issuance_criteria: template.schema.issuance_criteria
         }));
     }
+
+    // // async getSchemaIdForScope(scope: string): Promise<number> {
+    // //     const mapping = await this.scopeSchemaMappingRepository.findOne({ where: { scope } });
+    // //     if (!mapping) {
+    // //         throw new ConflictException(`No schema found for scope: ${scope}`);
+    // //     }
+    // //     return mapping.schema.id;
+    // // }
+
+    // // async createScopeSchemaMapping(scope: string, schemaId: number) {
+    // //     console.log('AAAAA')
+    // //     const schema = await this.schemaTemplateRepository.findOne({ where: { id: schemaId } });
+    // //     if (!schema) {
+    // //         throw new ConflictException(`Mapping for scope '${scope}' already exists`);
+    // //     }
+
+    // //     const existingMapping = await this.scopeSchemaMappingRepository.findOne({ where: { scope } });
+    // //     if (existingMapping) {
+    // //         throw new Error(`Mapping for scope '${scope}' already exists`);
+    // //     }
+
+    // //     const mapping = this.scopeSchemaMappingRepository.create({ scope, schema });
+    // //     return await this.scopeSchemaMappingRepository.save(mapping);
+    // // }
+
+    // async updateScopeSchemaMapping(scope: string, schemaId: number) {
+    //     const mapping = await this.scopeSchemaMappingRepository.findOne({ where: { scope } });
+    //     if (!mapping) {
+    //         throw new ConflictException(`No mapping found for scope: ${scope}`);
+    //     }
+
+    //     const schema = await this.schemaTemplateRepository.findOne({ where: { id: schemaId } });
+    //     if (!schema) {
+    //         throw new ConflictException('Schema not found');
+    //     }
+
+    //     mapping.schema = schema;
+    //     return await this.scopeSchemaMappingRepository.save(mapping);
+    // }
+
+    // async deleteScopeSchemaMapping(scope: string) {
+    //     const mapping = await this.scopeSchemaMappingRepository.findOne({ where: { scope } });
+    //     if (!mapping) {
+    //         throw new Error(`No mapping found for scope: ${scope}`);
+    //     }
+
+    //     return await this.scopeSchemaMappingRepository.remove(mapping);
+    // }
 
     private getConformanceCredentials() {
         return [

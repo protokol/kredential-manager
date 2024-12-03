@@ -61,8 +61,8 @@ export class VcController {
     ): Promise<any> {
         if (updatePayload.status == VCStatus.ISSUED) {
             try {
-                const response = await this.vcService.issueVerifiableCredential(id);
-                return { message: response };
+                await this.vcService.issueVerifiableCredential(id);
+                return { message: 'Issued' };
             } catch (error) {
                 throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
             }

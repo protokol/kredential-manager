@@ -14,15 +14,30 @@ export class PresentationDefinitionService {
         private presentationDefinitionRepo: Repository<PresentationDefinition>
     ) { }
 
+
+
     async create(dto: CreatePresentationDefinitionDto): Promise<PresentationDefinition> {
-        const definition = this.presentationDefinitionRepo.create({
-            ...dto,
-            definition: {
-                ...dto.definition,
-                id: generateRandomString(32) // Ensure unique ID
+        try {
+            const scopeParts = dto.scope.split(':');
+            if (scopeParts.length !== 2 || scopeParts[0] !== 'openid') {
+                throw new Error('Invalid scope format. Scope must start with "openid" and consist of two words.');
             }
-        });
-        return await this.presentationDefinitionRepo.save(definition);
+            const id = `${dto.scope.replace(':', '-')}-presentation`;
+            const definition = this.presentationDefinitionRepo.create({
+                ...dto,
+                definition: {
+                    ...dto.definition,
+                    id: id
+                },
+                scope: id
+            });
+            return await this.presentationDefinitionRepo.save(definition);
+        } catch (error) {
+            if (error.code === '23505') {
+                throw new Error(`Scope "${dto.scope}" already exists.`);
+            }
+            throw error;
+        }
     }
 
     async findAll(): Promise<PresentationDefinition[]> {
@@ -53,13 +68,12 @@ export class PresentationDefinitionService {
         await this.presentationDefinitionRepo.save(definition);
     }
 
-    // Method to expose definition through presentation_definition_uri
-    async getDefinitionById(definitionId: string): Promise<any> {
-        console.log('definitionId', definitionId);
+    async getByScope(scope: string): Promise<any> {
+        const id = `${scope.replace(':', '-')}-presentation`;
         const definition = await this.presentationDefinitionRepo.findOne({
             where: {
                 isActive: true,
-                definition: Raw(alias => `${alias} ->> 'id' = :definitionId`, { definitionId })
+                scope: id
             }
         });
         if (!definition) {
@@ -69,5 +83,11 @@ export class PresentationDefinitionService {
             );
         }
         return definition.definition;
+    }
+
+    async getUniqueScopes(): Promise<string[]> {
+        const definitions = await this.presentationDefinitionRepo.find();
+        const scopes = definitions.map(def => def.scope);
+        return Array.from(new Set(scopes));
     }
 }

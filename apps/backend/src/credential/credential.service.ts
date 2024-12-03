@@ -17,10 +17,10 @@ export class CredentialService {
         const issuerDid = process.env.ISSUER_DID;
         // Generate credential from template
         const credential = await this.schemaTemplateService.generateCredential(
-            schemaId,
-            credentialData,
             issuerDid,
-            subjectDid
+            subjectDid,
+            schemaId,
+            credentialData
         );
 
         // Sign the credential

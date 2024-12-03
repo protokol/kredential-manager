@@ -3,10 +3,8 @@ import { Public } from 'nest-keycloak-connect';
 import { ApiTags } from '@nestjs/swagger';
 import { CredentialOfferService } from './credential-offer.service';
 import { StudentService } from 'src/student/student.service';
-import { CreateStudentDto } from 'src/student/dto/create-student';
 import { VcService } from 'src/vc/vc.service';
 import { DidService } from 'src/student/did.service';
-import { VCStatus } from 'src/types/VC';
 import { CreateOfferDto } from './dto/createOfferDto';
 
 

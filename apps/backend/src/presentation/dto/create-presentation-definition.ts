@@ -30,4 +30,8 @@ export class CreatePresentationDefinitionDto {
             };
         }>;
     };
+
+    @IsString()
+    @IsNotEmpty()
+    scope: string;
 }

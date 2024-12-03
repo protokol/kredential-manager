@@ -28,8 +28,8 @@ export class AuthController {
         return provider.getIssuerMetadata();
     }
 
-    // @Get('authorize/.well-known/openid-configuration')
-    @Get('.well-known/openid-configuration')
+    @Get('authorize/.well-known/openid-configuration')
+    // @Get('.well-known/openid-configuration')
     @Public(true)
     async getConfigMetadata() {
         const provider = await this.provider.getInstance();
@@ -113,6 +113,7 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
+            console.log('CREDENTIALS REQUEST')
             const { code, response } = await this.auth.credentilDeferred(req, headers);
             return res.status(code).json(response);
         } catch (error) {

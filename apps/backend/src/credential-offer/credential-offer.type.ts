@@ -25,11 +25,13 @@ export interface CredentialFormat {
 
 export interface AuthorizationCodeGrant {
     issuer_state: string;
+    scope?: string;
 }
 
 export interface PreAuthorizedCodeGrant {
     'pre-authorized_code': string;
     user_pin_required: boolean;
+    scope?: string;
 }
 
 export interface CredentialOfferDetailsResponse {

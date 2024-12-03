@@ -2,7 +2,6 @@ import { CredentialOfferDetails, GrantType } from './../credential-offer/credent
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, JoinColumn, OneToOne } from 'typeorm';
 import { CredentialOfferData } from './credential-offer-data.entity';
 
-
 @Entity('credential_offers')
 export class CredentialOffer {
     @PrimaryGeneratedColumn('uuid')
@@ -11,13 +10,16 @@ export class CredentialOffer {
     @Column()
     subject_did: string;
 
-    @Column('simple-array')
+    @Column('simple-array', { nullable: true })
     credential_types: string[];
+
+    @Column('simple-array', { nullable: true })
+    scopes: string[];
 
     @Column({ type: 'jsonb' })
     credential_offer_details: CredentialOfferDetails;
 
-    @OneToOne(() => CredentialOfferData, { nullable: true })
+    @OneToOne(() => CredentialOfferData)
     @JoinColumn()
     credential_offer_data: CredentialOfferData;
 

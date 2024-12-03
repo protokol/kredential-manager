@@ -21,10 +21,23 @@ async function bootstrap() {
         forbidNonWhitelisted: true,
         errorHttpStatusCode: HttpStatus.BAD_REQUEST,
         exceptionFactory: (errors) => {
+            console.log('Validation errors:', errors);
+
+            if (!errors || errors.length === 0) {
+                throw new Error('Validation failed: No errors provided.');
+            }
+
+            const firstError = errors[0];
+            const constraints = firstError.constraints;
+
+            if (!constraints || Object.keys(constraints).length === 0) {
+                throw new Error('Validation failed: No constraints provided.');
+            }
+
             return new HttpException(
                 createError(
                     'INVALID_REQUEST',
-                    Object.values(errors[0].constraints)[0]
+                    Object.values(constraints)[0] // Safely access the first constraint message
                 ),
                 HttpStatus.BAD_REQUEST
             );

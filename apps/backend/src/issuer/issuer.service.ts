@@ -113,7 +113,7 @@ export class IssuerService {
     }): Promise<string> {
         const nowDate = new Date();
         const nowUnix = Math.floor(Date.now() / 1000);
-        const vcId = `vc:ebsi:untitled#${options?.vcId ?? this.generateRandomJti()}`;
+        const vcId = `vc:ebsi#${options?.vcId ?? this.generateRandomJti()}`;
         const extendedUnsignedCredential = {
             ...payload,
             jti: vcId,

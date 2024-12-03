@@ -51,8 +51,8 @@ import { VpService } from "./vp/vp.service";
 import { PresentationDefinitionService } from "./presentation/presentation-definition.service";
 import { PresentationDefinitionController } from "./presentation/presentation-definition.controller";
 import { PresentationDefinitionModule } from "./presentation/presentation-definition.module";
-import { VerificationController } from "./verification/verification.controller";
-import { VerificationService } from "./verification/verification.service";
+import { RequestUriController } from "./request-uri/requestUri.controller";
+import { RequestUriService } from "./request-uri/requestUri.service";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -104,7 +104,7 @@ import { VerificationService } from "./verification/verification.service";
         OfferController,
         SchemaTemplateController,
         PresentationDefinitionController,
-        VerificationController
+        RequestUriController
     ],
     providers: [
         AppService,
@@ -135,7 +135,8 @@ import { VerificationService } from "./verification/verification.service";
         EbsiConfigService,
         VpService,
         PresentationDefinitionService,
-        VerificationService
+        RequestUriService,
+        SchemaTemplateService
     ],
     exports: [],
 })
@@ -144,6 +145,7 @@ export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer): void {
         consumer.apply((req, res, next) => {
             // console.log('req', req);
+            console.log('req', req.url)
             next();
         }).forRoutes('*');
         consumer.apply(LoggerMiddleware).forRoutes('*');

@@ -146,7 +146,7 @@ export class StateService {
         }
     }
 
-    private async updateStatus(id: number, status: StateStatus): Promise<Boolean> {
+    async updateStatus(id: number, status: StateStatus): Promise<Boolean> {
         const nonce = await this.stateRepository.findOne({
             where: { id: id },
         });
@@ -162,7 +162,7 @@ export class StateService {
     async getByField(fieldName: string, value: string, step: StateStep, status: StateStatus, clientId?: string): Promise<State | undefined> {
         const state = await this.stateRepository.findOne({
             where: { [fieldName]: value },
-            relations: ['offer', 'offer.credential_offer_data']
+            relations: ['offer']
         });
 
         return state
@@ -187,5 +187,9 @@ export class StateService {
 
     async getVerificationStateByState(state: string): Promise<State | undefined> {
         return await this.stateRepository.findOne({ where: { serverDefinedState: state } });
+    }
+
+    async getVerificationStateByWalletState(state: string): Promise<State | undefined> {
+        return await this.stateRepository.findOne({ where: { walletDefinedState: state } });
     }
 }

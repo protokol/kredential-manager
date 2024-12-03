@@ -1,11 +1,52 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsObject, IsArray, ValidateNested, IsNumber, IsOptional, IsBoolean, IsIn } from 'class-validator';
+import { IsString, IsObject, IsArray, ValidateNested, IsNumber, IsOptional, IsBoolean, IsIn, ValidationArguments, ValidationOptions, registerDecorator } from 'class-validator';
 import { Type } from 'class-transformer';
+
+
+export function IsValidationRuleMap(validationOptions?: ValidationOptions) {
+    return function (object: Object, propertyName: string) {
+        registerDecorator({
+            name: 'isValidationRuleMap',
+            target: object.constructor,
+            propertyName: propertyName,
+            options: validationOptions,
+            validator: {
+                validate(value: any, args: ValidationArguments) {
+                    if (typeof value !== 'object' || value === null) {
+                        return false;
+                    }
+                    // Iterate over each key-value pair in the object
+                    for (const key in value) {
+                        if (Object.prototype.hasOwnProperty.call(value, key)) {
+                            const item = value[key];
+                            console.log('Validating item:', item);
+                            if (typeof item !== 'object' || item === null) {
+                                return false;
+                            }
+                            if (typeof item.type !== 'string' ||
+                                (item.required !== undefined && typeof item.required !== 'boolean') ||
+                                (item.pattern !== undefined && typeof item.pattern !== 'string') ||
+                                (item.minLength !== undefined && typeof item.minLength !== 'number') ||
+                                (item.maxLength !== undefined && typeof item.maxLength !== 'number') ||
+                                (item.enum !== undefined && (!Array.isArray(item.enum) || !item.enum.every(e => typeof e === 'string')))) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                },
+                defaultMessage(args: ValidationArguments) {
+                    return `${args.property} must be a map of ValidationRule objects`;
+                }
+            }
+        });
+    };
+}
 
 export class ValidationRule {
     @ApiProperty()
     @IsString()
-    // type: string;
+    type: string;
 
     @ApiProperty({ required: false })
     @IsBoolean()
@@ -114,9 +155,13 @@ export class CreateSchemaDto {
         }
     })
 
+    // @IsObject()
+    // @ValidateNested({ each: true })
+    // @Type(() => ValidationRule)
+    // validationRules: Record<string, ValidationRule>;
+
     @IsObject()
-    @ValidateNested({ each: true })
-    @Type(() => ValidationRule)
+    @IsValidationRuleMap()
     validationRules: Record<string, ValidationRule>;
 
     @ApiProperty({

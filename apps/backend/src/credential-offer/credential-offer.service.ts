@@ -4,13 +4,14 @@ import { Repository } from 'typeorm';
 import { CredentialOffer } from '../entities/credential-offer.entity';
 import * as QRCode from 'qrcode';
 import { v4 as uuidv4 } from 'uuid';
-import { CreateOfferResponse, CredentialOfferDetailsResponse, GrantType } from './credential-offer.type';
+import { CreateOfferResponse, CredentialOfferDetailsResponse, CredentialOfferStatus, GrantType } from './credential-offer.type';
 import { IssuerService } from './../issuer/issuer.service';
 import { SchemaTemplateService } from 'src/schemas/schema-template.service';
 import { CreateOfferDto } from './dto/createOfferDto';
 import { StateService } from 'src/state/state.service';
 import { StateStatus } from 'src/state/enum/status.enum';
 import { OfferConfigurationDto } from './dto/offerConfigurationDto';
+import { PresentationDefinitionService } from 'src/presentation/presentation-definition.service';
 import { CredentialOfferData } from '@entities/credential-offer-data.entity';
 
 @Injectable()
@@ -23,7 +24,8 @@ export class CredentialOfferService {
         private readonly issuerService: IssuerService,
         private readonly state: StateService,
         @InjectRepository(CredentialOfferData)
-        private readonly credentialOfferDataRepository: Repository<CredentialOfferData>
+        private readonly credentialOfferDataRepository: Repository<CredentialOfferData>,
+        private readonly presentationDefinitionService: PresentationDefinitionService,
     ) { }
 
     private generatePin(): string {
@@ -41,10 +43,17 @@ export class CredentialOfferService {
         credentialData: Record<string, any>,
         offerConfiguration: OfferConfigurationDto
     ): Promise<CredentialOffer> {
+        console.log('[generateOffer]')
         const { subjectDid } = credentialData;
-        const { grantType, expiresIn } = offerConfiguration;
+        const { grantType, expiresIn, scope } = offerConfiguration;
         const credentialTypes = schema.schema.type;
         const trustFramework = await this.schemaTemplateService.getTrustFramework(schema.id);
+        if (scope) {
+            const scopeExists = await this.presentationDefinitionService.getByScope(scope);
+            if (!scopeExists) {
+                throw new BadRequestException('Invalid scope');
+            }
+        }
 
         const offerId = uuidv4();
         const pin = grantType === GrantType.PRE_AUTHORIZED_CODE ? '1' : null; // TODO: this.generatePin();
@@ -52,8 +61,6 @@ export class CredentialOfferService {
         const currentTimeInSeconds = Math.floor(Date.now() / 1000);
         const expiresAtInSeconds = currentTimeInSeconds + expirationInSeconds;
         let issuerState: string | null = null;
-
-
 
         // Create base credential offer
         const credentialOffer: CredentialOfferDetailsResponse = {
@@ -71,11 +78,12 @@ export class CredentialOfferService {
             const preAuthCode = await this.createPreAuthCode(subjectDid, credentialTypes, expiresIn);
             credentialOffer.grants['urn:ietf:params:oauth:grant-type:pre-authorized_code'] = {
                 'pre-authorized_code': preAuthCode,
-                user_pin_required: true
+                user_pin_required: true,
+                scope
             };
         } else {
-            issuerState = await this.createIssuerState(subjectDid, credentialTypes, expiresIn);
-            credentialOffer.grants.authorization_code = { issuer_state: issuerState };
+            issuerState = await this.createIssuerState(subjectDid, credentialTypes, scope, expiresIn);
+            credentialOffer.grants.authorization_code = { issuer_state: issuerState, scope };
         }
 
         console.log('SCHEMA', schema)
@@ -176,8 +184,7 @@ export class CredentialOfferService {
      */
     async getOfferByIssuerState(issuerState: string): Promise<CredentialOffer> {
         const offer = await this.credentialOfferRepository.findOne({
-            where: { issuer_state: issuerState },
-            relations: ['credential_offer_data']
+            where: { issuer_state: issuerState }
         });
 
         if (!offer) {
@@ -187,106 +194,6 @@ export class CredentialOfferService {
         return offer;
     }
 
-    /**
-     * Creates an offer
-     * @param createOfferDto 
-     * @returns 
-     */
-    async createOfferOLD(createOfferDto: CreateOfferDto): Promise<CreateOfferResponse> {
-        const { schemaTemplateId, credentialData, offerConfiguration } = createOfferDto;
-        const { subjectDid } = credentialData;
-        const { grantType, expiresIn } = offerConfiguration;
-
-        const validationResult = await this.schemaTemplateService.validateData(schemaTemplateId, credentialData);
-        if (!validationResult.isValid) {
-            throw new BadRequestException(validationResult.errors);
-        }
-
-        const schema = await this.schemaTemplateService.findOne(schemaTemplateId)
-        const trustFramework = await this.schemaTemplateService.getTrustFramework(schema.id);
-        const credentialTypes = schema.schema.type
-
-        const offerId = uuidv4();
-        const pin = '1'; //this.generatePin();
-        const effectiveGrantType = grantType || this.determineGrantType(credentialTypes);
-
-        // Create base credential offer
-        const credentialOffer: CredentialOfferDetailsResponse = {
-            credential_issuer: process.env.ISSUER_BASE_URL,
-            credentials: [{
-                format: 'jwt_vc',
-                types: credentialTypes,
-                trust_framework: trustFramework
-            }],
-            grants: {}
-        };
-
-        let responsePin: string | undefined;
-        // Add appropriate grant based on type
-        if (grantType === GrantType.AUTHORIZATION_CODE) {
-            const issuerState = await this.createJWT({
-                iat: Math.floor(Date.now() / 1000),
-                exp: Math.floor(Date.now() / 1000) + (expiresIn ?? this.DEFAULT_EXPIRATION_TIME),
-                client_id: subjectDid,
-                credential_types: credentialTypes,
-                iss: process.env.ISSUER_URL,
-                aud: process.env.AUTH_URL,
-                sub: subjectDid
-            });
-
-            credentialOffer.grants.authorization_code = {
-                issuer_state: issuerState
-            };
-        } else {
-            // For pre-authorized code, include the PIN in the JWT
-            const preAuthCode = await this.createJWT({
-                iat: Math.floor(Date.now() / 1000),
-                exp: Math.floor(Date.now() / 1000) + (expiresIn ?? this.DEFAULT_EXPIRATION_TIME),
-                client_id: subjectDid,
-                authorization_details: [{
-                    type: 'openid_credential',
-                    format: 'jwt_vc',
-                    locations: [process.env.ISSUER_URL],
-                    types: credentialTypes
-                }],
-                iss: process.env.ISSUER_URL,
-                aud: process.env.AUTH_URL,
-                sub: subjectDid
-            });
-
-            await this.state.createPreAuthorisedAndPinCode(pin, preAuthCode, subjectDid, credentialTypes);
-
-            credentialOffer.grants['urn:ietf:params:oauth:grant-type:pre-authorized_code'] = {
-                'pre-authorized_code': preAuthCode,
-                user_pin_required: true
-            };
-
-            responsePin = pin;
-        }
-
-        const expirationInSeconds = expiresIn ?? this.DEFAULT_EXPIRATION_TIME;
-        // Save the offer with PIN
-        const offer = this.credentialOfferRepository.create({
-            id: offerId,
-            subject_did: subjectDid,
-            credential_types: credentialTypes,
-            credential_offer_details: credentialOffer,
-            grant_type: effectiveGrantType,
-            pin: pin,
-            status: 'PENDING',
-            expires_at: new Date(Date.now() + expirationInSeconds * 1000)
-        });
-
-        // Save the offer
-        await this.credentialOfferRepository.save(offer);
-
-        // Return the offer and PIN (if pre-authorized)
-        return {
-            id: offerId,
-            credential_offer_details: credentialOffer,
-            pin: effectiveGrantType === GrantType.PRE_AUTHORIZED_CODE ? pin : undefined
-        };
-    }
 
     async verifyPreAuthorizedCodeAndPin(preAuthorizedCode: string, pin: string): Promise<boolean> {
         const offer = await this.credentialOfferRepository.findOne({
@@ -346,11 +253,18 @@ export class CredentialOfferService {
         return offer.pin === providedPin;
     }
 
+    async getById(id: string): Promise<CredentialOffer> {
+        return await this.credentialOfferRepository.findOne({
+            where: {
+                id
+            }
+        });
+    }
+
     async getOfferById(id: string): Promise<CredentialOfferDetailsResponse> {
         const offer = await this.credentialOfferRepository.findOne({
             where: {
-                id,
-                status: 'PENDING'
+                id
             }
         });
 
@@ -370,6 +284,7 @@ export class CredentialOfferService {
     private async createIssuerState(
         subjectDid: string,
         credentialTypes: string[],
+        scope: string,
         expiresIn?: number
     ): Promise<string> {
         return await this.createJWT({
@@ -377,6 +292,7 @@ export class CredentialOfferService {
             exp: Math.floor(Date.now() / 1000) + (expiresIn ?? this.DEFAULT_EXPIRATION_TIME),
             client_id: subjectDid,
             credential_types: credentialTypes,
+            scope,
             iss: process.env.ISSUER_URL,
             aud: process.env.AUTH_URL,
             sub: subjectDid

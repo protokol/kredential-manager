@@ -10,6 +10,9 @@ import { PaginatedResource } from "src/types/pagination/dto/PaginatedResource";
 import { getOrder, getWhere } from "src/helpers/Order";
 import { VCStatus } from "src/types/VC";
 import { IssuerService } from "src/issuer/issuer.service";
+import { AuthService } from "src/auth/auth.service";
+import { SchemaTemplateData } from "src/schemas/schema.types";
+import { SchemaTemplateService } from "src/schemas/schema-template.service";
 
 @Injectable()
 export class VcService {
@@ -19,14 +22,15 @@ export class VcService {
         private vcRepository: Repository<VerifiableCredential>,
         @InjectRepository(Did)
         private didRepository: Repository<Did>,
-        private issuerService: IssuerService
+        private issuer: IssuerService,
+        private schemaTemplateService: SchemaTemplateService,
     ) { }
 
     async findOne(id: number): Promise<VerifiableCredential | null> {
         try {
             const vc = await this.vcRepository.findOne({
                 where: { id },
-                relations: ["did", "did.student"],
+                relations: ["did", "did.student", "offer", "offer.credential_offer_data"],
             });
             if (vc === null) {
                 throw new BadRequestException("No record found.");
@@ -104,7 +108,6 @@ export class VcService {
                 "credential_signed",
                 "status",
                 "role",
-                "type",
                 "created_at",
                 "updated_at",
                 "issued_at",
@@ -137,13 +140,13 @@ export class VcService {
     private async findVerifiableCredentialById(id: number): Promise<VerifiableCredential | null> {
         return await this.vcRepository.findOne({
             where: { id },
-            relations: ["did", "did.student"],
+            relations: ["did", "did.student", "offer", "offer.credential_offer_data"],
         });
     }
 
     // Equals
     private arraysAreEqual(array1: string[], array2: string[]): boolean {
-        if (array1.length !== array2.length) return false; // If lengths are not equal, arrays are not equal
+        if (array1.length !== array2.length) return false;
         const sortedArray1 = array1.sort();
         const sortedArray2 = array2.sort();
         for (let i = 0; i < array1.length; i++) {
@@ -178,11 +181,11 @@ export class VcService {
         exp?: number,
         iat?: number
     }): Promise<string> {
-        return await this.issuerService.issueCredential(credential, clientId, options);
+        return await this.issuer.issueCredential(credential, clientId, options);
     }
 
     // Update the verifiable credential
-    private async updateVerifiableCredential(id: number, credential: object, signedCredential: string): Promise<void> {
+    async updateVerifiableCredential(id: number, credential: object, signedCredential: string): Promise<void> {
         await this.vcRepository.update(
             id,
             {
@@ -194,37 +197,25 @@ export class VcService {
         );
     }
 
-    async issueVerifiableCredential(id: number, credentialI?: string): Promise<string> {
+    async issueVerifiableCredential(id: number): Promise<{ signedCredential: string, credential: any }> {
         const vc = await this.findVerifiableCredentialById(id);
-        console.log({ vc })
+        const subjectDid = vc.did.identifier;
         const { isValid, errorMessage } = await this.validateVerifiableCredential(vc, id);
-
         if (!isValid) {
-            console.log({ errorMessage })
             throw new Error(errorMessage);
         }
+        const { schemaTemplateId, templateData } = vc.offer.credential_offer_data;
+        const { signedCredential, credential } = await this.generateAndSignCredential(
+            this.issuer.getDid(),
+            subjectDid,
+            schemaTemplateId,
+            templateData
+        );
 
-        const credential = {
-            "vc": {
-                "@context": ["https://www.w3.org/2018/credentials/v1"],
-                "type": vc.requested_credentials,
-                "credentialSubject": {
-                    "id": vc.did.identifier
-                },
-                "credentialSchema": {
-                    "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
-                    "type": "FullJsonSchemaValidator2021"
-                }
-            }
-        };
+        // Update the status of the credential
+        await this.updateVerifiableCredential(vc.id, credential, "{}"); // don't save the signed credential
 
-        const signedCredential = await this.issueCredential(credential, vc.did.identifier);
-
-        console.log({ signedCredential })
-        console.log({ credentialI })
-        await this.updateVerifiableCredential(id, credential, signedCredential);
-
-        return signedCredential;
+        return { signedCredential, credential };
     }
 
     async CONFORMANCE_issueVerifiableCredential(id: number, requestedCredentials: string[], clientId: string) {
@@ -284,5 +275,22 @@ export class VcService {
         await this.updateVerifiableCredential(id, credential, signedCredential);
 
         return signedCredential
+    }
+
+    async generateAndSignCredential(
+        issuerDid: string,
+        subjectDid: string,
+        schemaTemplateId: number,
+        templateData: SchemaTemplateData
+    ): Promise<{ credential: any, signedCredential: string }> {
+        const credential = await this.schemaTemplateService.generateCredential(
+            issuerDid,
+            subjectDid,
+            schemaTemplateId,
+            templateData
+        );
+        const signedCredential = await this.issuer.issueCredential(credential, subjectDid, {});
+
+        return { credential, signedCredential };
     }
 }

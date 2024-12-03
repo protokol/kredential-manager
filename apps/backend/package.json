@@ -27,7 +27,8 @@
     "migration:generate": "npm run typeorm -- -d ./src/db/typeorm.config.ts migration:generate ./src/db/migrations/$npm_config_name",
     "migration:create": "npm run typeorm -- migration:create ./src/db/migrations/$npm_config_name",
     "migration:revert": "npm run typeorm -- -d ./src/db/typeorm.config.ts migration:revert",
-    "migration:show": "npm run typeorm -- migration:show -d ./src/db/typeorm.config.ts"
+    "migration:show": "npm run typeorm -- migration:show -d ./src/db/typeorm.config.ts",
+    "migration:dev": "pnpm migration:revert && pnpm migration:generate && mkdir -p ./src/db/migrations/ && mv ./src/db/[0-9]*-*.ts ./src/db/migrations/ && pnpm migration:run"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.1.0",

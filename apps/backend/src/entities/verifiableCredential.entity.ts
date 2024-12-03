@@ -7,7 +7,10 @@ import {
     UpdateDateColumn,
     Relation,
     ManyToOne,
+    JoinColumn,
+    OneToOne,
 } from "typeorm";
+import { CredentialOffer } from "./credential-offer.entity";
 
 @Entity()
 export class VerifiableCredential {
@@ -20,6 +23,10 @@ export class VerifiableCredential {
     @Column({ type: "jsonb", default: {}, nullable: true })
     requested_credentials: Record<string, any>;
 
+    @OneToOne(() => CredentialOffer, { nullable: true })
+    @JoinColumn()
+    offer: CredentialOffer;
+
     @Column({ nullable: true })
     credential: string;
 
@@ -27,13 +34,6 @@ export class VerifiableCredential {
         default: {}, nullable: true
     })
     credential_signed: string;
-
-    @Column({
-        type: "enum",
-        enum: VCSupportedTypes,
-        nullable: false,
-    })
-    type: VCSupportedTypes;
 
     @Column({
         type: "enum",

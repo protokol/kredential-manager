@@ -9,7 +9,7 @@ export class CredentialOfferData {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column('jsonb')
+    @Column('jsonb', { nullable: true })
     templateData: SchemaTemplateData;
 
     @Column()

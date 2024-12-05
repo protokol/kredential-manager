@@ -101,7 +101,7 @@ export class IssuerService {
      * @returns A promise that resolves to the signed credential.
      */
 
-    async issueCredential(payload: object, clientId: string, options?: {
+    async issueCredential(vc: object, clientId: string, options?: {
         expirationDate?: Date,
         validFrom?: Date,
         vcId?: string,
@@ -115,7 +115,7 @@ export class IssuerService {
         const nowUnix = Math.floor(Date.now() / 1000);
         const vcId = `vc:ebsi#${options?.vcId ?? this.generateRandomJti()}`;
         const extendedUnsignedCredential = {
-            ...payload,
+            // ...payload,
             jti: vcId,
             sub: clientId,
             iss: this.did,
@@ -123,7 +123,7 @@ export class IssuerService {
             exp: options?.exp ?? nowUnix + 86400, // Default to 24 hours from now
             iat: options?.iat ?? nowUnix,
             vc: {
-                ...payload['vc'],
+                ...vc,
                 id: vcId, // Must be the same as the jti
                 issuer: this.did,
                 issuanceDate: nowDate.toISOString(),

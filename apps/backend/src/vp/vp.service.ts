@@ -25,7 +25,7 @@ export class VpService {
         }
 
         const definition = await this.presentationDefinitionService.getByScope(presentationSubmission.definition_id);
-        const submissionRequirements = definition.definition.submission_requirements || [];
+        const submissionRequirements = definition?.definition?.submission_requirements || [];
 
         for (const requirement of submissionRequirements) {
             const descriptors = presentationSubmission.descriptor_map.filter(descriptor => descriptor.id === requirement.from);
@@ -44,13 +44,17 @@ export class VpService {
 
         for (let i = 0; i < vpPayload.vp.verifiableCredential.length; i++) {
             const vc = vpPayload.vp.verifiableCredential[i];
+            console.log("VC")
+            console.log(vc)
             const descriptorId = presentationSubmission.descriptor_map[i]?.id;
+            console.log("DESCRIPTOR ID")
+            console.log(descriptorId)
 
             await this.verifyCredential(vc, descriptorId);
         }
     }
 
-    private async verifyCredential(vc: string, descriptorId: string): Promise<void> {
+    async verifyCredential(vc: string, descriptorId: string): Promise<void> {
         try {
             const options = this.ebsiConfig.getVerifyCredentialOptions();
             const verifiedVc = await verifyCredentialJwt(vc, options);

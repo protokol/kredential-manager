@@ -13,6 +13,7 @@ import { StateStatus } from 'src/state/enum/status.enum';
 import { OfferConfigurationDto } from './dto/offerConfigurationDto';
 import { PresentationDefinitionService } from 'src/presentation/presentation-definition.service';
 import { CredentialOfferData } from '@entities/credential-offer-data.entity';
+import { VerificationService } from 'src/verification/verification.service';
 
 @Injectable()
 export class CredentialOfferService {
@@ -26,6 +27,7 @@ export class CredentialOfferService {
         @InjectRepository(CredentialOfferData)
         private readonly credentialOfferDataRepository: Repository<CredentialOfferData>,
         private readonly presentationDefinitionService: PresentationDefinitionService,
+        private readonly verificationService: VerificationService
     ) { }
 
     private generatePin(): string {
@@ -41,7 +43,8 @@ export class CredentialOfferService {
     private async generateOffer(
         schema: any,
         credentialData: Record<string, any>,
-        offerConfiguration: OfferConfigurationDto
+        offerConfiguration: OfferConfigurationDto,
+        status: string = 'PENDING'
     ): Promise<CredentialOffer> {
         console.log('[generateOffer]')
         const { subjectDid } = credentialData;
@@ -86,13 +89,10 @@ export class CredentialOfferService {
             credentialOffer.grants.authorization_code = { issuer_state: issuerState, scope };
         }
 
-        console.log('SCHEMA', schema)
-        console.log('CREDENTIAL DATA', credentialData)
-
         const credentialOfferData = await this.credentialOfferDataRepository.save(
             this.credentialOfferDataRepository.create({
                 templateData: credentialData,
-                schemaTemplateId: schema.id
+                schemaTemplateId: schema.id,
             })
         );
 
@@ -105,7 +105,7 @@ export class CredentialOfferService {
                 credential_offer_details: credentialOffer,
                 grant_type: grantType,
                 pin,
-                status: 'PENDING',
+                status: status,
                 expires_at: new Date(expiresAtInSeconds * 1000),
                 credential_offer_data: credentialOfferData,
                 issuer_state: issuerState
@@ -147,7 +147,7 @@ export class CredentialOfferService {
         });
     }
 
-    async createOffer(createOfferDto: CreateOfferDto): Promise<CreateOfferResponse> {
+    async createOffer(createOfferDto: CreateOfferDto): Promise<CredentialOffer> {
         const { schemaTemplateId, credentialData, offerConfiguration } = createOfferDto;
 
         // Validate and get schema
@@ -156,11 +156,7 @@ export class CredentialOfferService {
         // Generate and store the offer
         const offer = await this.generateOffer(schema, credentialData, offerConfiguration);
 
-        return {
-            id: offer.id,
-            credential_offer_details: offer.credential_offer_details,
-            pin: offer.pin
-        };
+        return offer;
     }
 
     /**
@@ -170,7 +166,7 @@ export class CredentialOfferService {
      * @returns 
      */
     private async validateAndGetSchema(schemaTemplateId: number, data: Record<string, any>) {
-        const validationResult = await this.schemaTemplateService.validateData(schemaTemplateId, data);
+        const validationResult = await this.verificationService.validateData(schemaTemplateId, data);
         if (!validationResult.isValid) {
             throw new BadRequestException(validationResult.errors);
         }
@@ -268,8 +264,6 @@ export class CredentialOfferService {
             }
         });
 
-        console.log({ offer })
-
         if (!offer) {
             throw new BadRequestException('Offer not found');
         }
@@ -306,9 +300,6 @@ export class CredentialOfferService {
     private isOfferExpired(offer: CredentialOffer): boolean {
         const nowInSeconds = Math.floor(Date.now() / 1000);
         const expiresAtInSeconds = Math.floor(offer.expires_at.getTime() / 1000);
-
-        console.log(expiresAtInSeconds, '<', nowInSeconds)
-
         return expiresAtInSeconds <= nowInSeconds;
     }
 }

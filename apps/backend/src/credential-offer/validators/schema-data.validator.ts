@@ -1,25 +1,23 @@
 import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 import { Injectable } from '@nestjs/common';
 import { SchemaTemplateService } from '../../schemas/schema-template.service';
+import { VerificationService } from 'src/verification/verification.service';
 
 @ValidatorConstraint({ name: 'isSchemaDataValid', async: true })
 @Injectable()
 export class IsSchemaDataValid implements ValidatorConstraintInterface {
-    constructor(private schemaTemplateService: SchemaTemplateService) { }
+    constructor(
+        private readonly verificationService: VerificationService
+    ) { }
 
 
     async validate(credentialData: Record<string, any>, args: ValidationArguments) {
         const { schemaTemplateId } = args.object as any;
 
-        console.log(schemaTemplateId)
-        console.log(credentialData)
-
         try {
-            const validationResult = await this.schemaTemplateService.validateData(schemaTemplateId, credentialData);
+            const validationResult = await this.verificationService.validateData(schemaTemplateId, credentialData);
             return validationResult.isValid;
         } catch (error) {
-            console.log("ERROR VALIDATING SCHEMA DATA")
-            console.log(error)
             return false;
         }
     }

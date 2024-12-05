@@ -23,7 +23,7 @@ export class VerifiableCredential {
     @Column({ type: "jsonb", default: {}, nullable: true })
     requested_credentials: Record<string, any>;
 
-    @OneToOne(() => CredentialOffer, { nullable: true })
+    @OneToOne(() => CredentialOffer, { nullable: true, onDelete: 'CASCADE' })
     @JoinColumn()
     offer: CredentialOffer;
 

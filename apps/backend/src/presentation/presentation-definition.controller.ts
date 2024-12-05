@@ -6,7 +6,6 @@ import { UpdatePresentationDefinitionDto } from './dto/update-presentation-defin
 import { handleError } from '../error/ebsi-error.util';
 import { Public } from 'nest-keycloak-connect';
 
-@Public() // TODO: Remove this when we have a proper auth mechanism
 @ApiTags('Presentation Definitions')
 @Controller('presentation-definitions')
 export class PresentationDefinitionController {
@@ -44,7 +43,7 @@ export class PresentationDefinitionController {
                         }
                     ]
                 },
-                "scope": "openid test"
+                "scope": "openid:test"
             }
         }
     })

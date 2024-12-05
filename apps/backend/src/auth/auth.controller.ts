@@ -113,7 +113,6 @@ export class AuthController {
         @Headers() headers: Record<string, string | string[]>
     ) {
         try {
-            console.log('CREDENTIALS REQUEST')
             const { code, response } = await this.auth.credentilDeferred(req, headers);
             return res.status(code).json(response);
         } catch (error) {

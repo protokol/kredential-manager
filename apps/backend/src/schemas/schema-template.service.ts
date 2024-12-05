@@ -15,14 +15,15 @@ import { getWhere } from 'src/helpers/Order';
 import { Pagination } from 'src/types/pagination/PaginationParams';
 import { Filtering } from 'src/types/pagination/FilteringParams';
 import { Sorting } from 'src/types/pagination/SortingParams';
-
+import { IssuerService } from 'src/issuer/issuer.service';
+import { VpService } from 'src/vp/vp.service';
 @Injectable()
 export class SchemaTemplateService {
     private ajv: Ajv;
 
     constructor(
         @InjectRepository(CredentialSchema)
-        private schemaTemplateRepository: Repository<CredentialSchema>
+        private schemaTemplateRepository: Repository<CredentialSchema>,
     ) {
         this.ajv = new Ajv({ allErrors: true });
         addFormats(this.ajv);
@@ -65,8 +66,16 @@ export class SchemaTemplateService {
 
     async create(createDto: CreateSchemaDto) {
         const templateVars = this.extractTemplateVariables(createDto.schema);
+        const existingSchemas = await this.schemaTemplateRepository.find();
 
         this.validateTemplateVariables(templateVars, createDto.validationRules);
+
+        // Check if any existing schema has the same type
+        for (const schema of existingSchemas) {
+            if (this.arraysAreEqual(schema.types, createDto.schema.type)) {
+                throw new Error('A schema with the same type already exists.');
+            }
+        }
 
         const schema = this.schemaTemplateRepository.create({
             ...createDto,
@@ -75,6 +84,16 @@ export class SchemaTemplateService {
         });
 
         return await this.schemaTemplateRepository.save(schema);
+    }
+
+    private arraysAreEqual(array1: string[], array2: string[]): boolean {
+        if (array1.length !== array2.length) return false;
+        const sortedArray1 = array1.sort();
+        const sortedArray2 = array2.sort();
+        for (let i = 0; i < array1.length; i++) {
+            if (sortedArray1[i] !== sortedArray2[i]) return false;
+        }
+        return true;
     }
 
     async findOne(id: number) {
@@ -89,7 +108,7 @@ export class SchemaTemplateService {
         const where = getWhere(filter);
         const order = getOrder(sort);
 
-        const [languages, total] = await this.schemaTemplateRepository.findAndCount({
+        const [items, total] = await this.schemaTemplateRepository.findAndCount({
             where,
             order,
             take: limit,
@@ -98,7 +117,7 @@ export class SchemaTemplateService {
 
         return {
             totalItems: total,
-            items: languages,
+            items: items,
             page,
             size,
         };
@@ -168,25 +187,6 @@ export class SchemaTemplateService {
         }
     }
 
-    async validateData(schemaId: number, data: any): Promise<{ isValid: boolean; errors?: string[] }> {
-        const schema = await this.schemaTemplateRepository.findOne({ where: { id: schemaId } });
-        if (!schema) {
-            throw new ConflictException('Schema template not found');
-        }
-
-        const errors: string[] = [];
-        for (const [field, rule] of Object.entries(schema.validationRules)) {
-            if (rule.required && !data[field]) {
-                errors.push(`Missing required field: ${field}`);
-            }
-        }
-
-        return {
-            isValid: errors.length === 0,
-            errors: errors.length > 0 ? errors : undefined
-        };
-    }
-
     async generateCredential(issuerDid: string, subjectDid: string, schemaId: number, data: any) {
         const schema = await this.findOne(schemaId);
         if (!schema) {
@@ -199,14 +199,18 @@ export class SchemaTemplateService {
             subjectDid
         );
 
-        for (const [key, value] of Object.entries(data)) {
-            if (!isReservedVariable(key)) {
-                credentialTemplate = JSON.parse(
-                    JSON.stringify(credentialTemplate).replace(
-                        new RegExp(`{{${key}}}`, 'g'),
-                        value as string
-                    )
-                );
+        // If there are template variables, replace them with the data
+        if (schema.templateVariables.length > 0) {
+            console.log({ subjectDid })
+            for (const [key, value] of Object.entries(data)) {
+                if (!isReservedVariable(key)) {
+                    credentialTemplate = JSON.parse(
+                        JSON.stringify(credentialTemplate).replace(
+                            new RegExp(`{{${key}}}`, 'g'),
+                            value as string
+                        )
+                    );
+                }
             }
         }
 
@@ -230,54 +234,6 @@ export class SchemaTemplateService {
             issuance_criteria: template.schema.issuance_criteria
         }));
     }
-
-    // // async getSchemaIdForScope(scope: string): Promise<number> {
-    // //     const mapping = await this.scopeSchemaMappingRepository.findOne({ where: { scope } });
-    // //     if (!mapping) {
-    // //         throw new ConflictException(`No schema found for scope: ${scope}`);
-    // //     }
-    // //     return mapping.schema.id;
-    // // }
-
-    // // async createScopeSchemaMapping(scope: string, schemaId: number) {
-    // //     console.log('AAAAA')
-    // //     const schema = await this.schemaTemplateRepository.findOne({ where: { id: schemaId } });
-    // //     if (!schema) {
-    // //         throw new ConflictException(`Mapping for scope '${scope}' already exists`);
-    // //     }
-
-    // //     const existingMapping = await this.scopeSchemaMappingRepository.findOne({ where: { scope } });
-    // //     if (existingMapping) {
-    // //         throw new Error(`Mapping for scope '${scope}' already exists`);
-    // //     }
-
-    // //     const mapping = this.scopeSchemaMappingRepository.create({ scope, schema });
-    // //     return await this.scopeSchemaMappingRepository.save(mapping);
-    // // }
-
-    // async updateScopeSchemaMapping(scope: string, schemaId: number) {
-    //     const mapping = await this.scopeSchemaMappingRepository.findOne({ where: { scope } });
-    //     if (!mapping) {
-    //         throw new ConflictException(`No mapping found for scope: ${scope}`);
-    //     }
-
-    //     const schema = await this.schemaTemplateRepository.findOne({ where: { id: schemaId } });
-    //     if (!schema) {
-    //         throw new ConflictException('Schema not found');
-    //     }
-
-    //     mapping.schema = schema;
-    //     return await this.scopeSchemaMappingRepository.save(mapping);
-    // }
-
-    // async deleteScopeSchemaMapping(scope: string) {
-    //     const mapping = await this.scopeSchemaMappingRepository.findOne({ where: { scope } });
-    //     if (!mapping) {
-    //         throw new Error(`No mapping found for scope: ${scope}`);
-    //     }
-
-    //     return await this.scopeSchemaMappingRepository.remove(mapping);
-    // }
 
     private getConformanceCredentials() {
         return [

@@ -2,25 +2,30 @@ import { Controller, Post, Get, Put, Delete, Body, Param, Query, ParseIntPipe, B
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SchemaTemplateService } from './schema-template.service';
 import { CreateSchemaDto } from './create-schema';
-import { Public } from 'nest-keycloak-connect';
 import { PaginationParams } from 'src/types/pagination/PaginationParams';
 import { FilteringParams } from 'src/types/pagination/FilteringParams';
 import { Filtering } from 'src/types/pagination/FilteringParams';
 import { SortingParams } from 'src/types/pagination/SortingParams';
 import { Pagination } from 'src/types/pagination/PaginationParams';
 import { Sorting } from 'src/types/pagination/SortingParams';
+import { VerificationService } from 'src/verification/verification.service';
 
-@Public(true) // TODO TMP
 @ApiTags('Schema Templates')
 @Controller('schema-templates')
 export class SchemaTemplateController {
-    constructor(private schemaTemplateService: SchemaTemplateService) { }
+    constructor(private schemaTemplateService: SchemaTemplateService,
+        private verificationService: VerificationService
+    ) { }
 
     @Post()
     @ApiOperation({ summary: 'Create a new schema template' })
     @ApiResponse({ status: 201, description: 'Schema template created successfully' })
     async create(@Body() createDto: CreateSchemaDto) {
-        return await this.schemaTemplateService.create(createDto);
+        try {
+            return await this.schemaTemplateService.create(createDto);
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
     }
 
     @Get()
@@ -31,7 +36,11 @@ export class SchemaTemplateController {
         @SortingParams(["name"]) sort?: Sorting,
         @FilteringParams(["name"]) filter?: Filtering
     ) {
-        return await this.schemaTemplateService.findAll(paginationParams, sort, filter);
+        try {
+            return await this.schemaTemplateService.findAll(paginationParams, sort, filter);
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
     }
 
     @Get(':id')
@@ -39,7 +48,11 @@ export class SchemaTemplateController {
     @ApiResponse({ status: 200, description: 'Schema template found' })
     @ApiResponse({ status: 404, description: 'Schema template not found' })
     async findOne(@Param('id', ParseIntPipe) id: number) {
-        return await this.schemaTemplateService.findOne(id);
+        try {
+            return await this.schemaTemplateService.findOne(id);
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
     }
 
     @Put(':id')
@@ -50,7 +63,11 @@ export class SchemaTemplateController {
         @Param('id', ParseIntPipe) id: number,
         @Body() updateDto: Partial<CreateSchemaDto>
     ) {
-        return await this.schemaTemplateService.update(id, updateDto);
+        try {
+            return await this.schemaTemplateService.update(id, updateDto);
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
     }
 
     @Delete(':id')
@@ -58,7 +75,11 @@ export class SchemaTemplateController {
     @ApiResponse({ status: 200, description: 'Schema template deleted successfully' })
     @ApiResponse({ status: 404, description: 'Schema template not found' })
     async remove(@Param('id', ParseIntPipe) id: number) {
-        return await this.schemaTemplateService.remove(id);
+        try {
+            return await this.schemaTemplateService.remove(id);
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
     }
 
     @Post(':id/validate')
@@ -68,6 +89,23 @@ export class SchemaTemplateController {
         @Param('id', ParseIntPipe) id: number,
         @Body() data: any
     ) {
-        return await this.schemaTemplateService.validateData(id, data);
+        try {
+            return await this.verificationService.validateData(id, data);
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
+    }
+    @Post(':id/verify')
+    @ApiOperation({ summary: 'Create a credential from a schema template and validate' })
+    @ApiResponse({ status: 200, description: 'Data validation result' })
+    async tester(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() data: any
+    ) {
+        try {
+            return await this.verificationService.verifyCredential(id, data);
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
     }
 }

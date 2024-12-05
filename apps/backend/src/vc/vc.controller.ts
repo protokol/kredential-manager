@@ -52,7 +52,6 @@ export class VcController {
         }
     }
 
-    // @Public()
     @Patch(":id/status")
     @HttpCode(HttpStatus.OK)
     async updateStatus(
@@ -91,7 +90,6 @@ export class VcController {
         }
     }
 
-    // @Public()
     @Get()
     @HttpCode(HttpStatus.OK)
     async getAll(

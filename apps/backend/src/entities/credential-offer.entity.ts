@@ -13,13 +13,13 @@ export class CredentialOffer {
     @Column('simple-array', { nullable: true })
     credential_types: string[];
 
-    @Column('simple-array', { nullable: true })
-    scopes: string[];
+    @Column({ nullable: true })
+    scope: string;
 
     @Column({ type: 'jsonb' })
     credential_offer_details: CredentialOfferDetails;
 
-    @OneToOne(() => CredentialOfferData)
+    @OneToOne(() => CredentialOfferData, { cascade: true, eager: true })
     @JoinColumn()
     credential_offer_data: CredentialOfferData;
 

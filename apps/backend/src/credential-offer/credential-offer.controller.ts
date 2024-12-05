@@ -31,8 +31,11 @@ export class CredentialOfferController {
         // Generate QR code
         const qrCode = await QRCode.toDataURL(offerUri);
 
+
         return {
-            ...offer,
+            id: offer.id,
+            credential_offer_details: offer.credential_offer_details,
+            pin: offer.pin,
             offer_uri: offerUri,
             qr_code: qrCode
         };

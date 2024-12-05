@@ -290,7 +290,6 @@ export class VcService {
             templateData
         );
         const signedCredential = await this.issuer.issueCredential(credential, subjectDid, {});
-
         return { credential, signedCredential };
     }
 }

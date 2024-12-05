@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Raw, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { PresentationDefinition } from '@entities/presentation-definition.entity';
 import { EbsiError } from '../error/ebsi-error';
-import { generateRandomString } from 'src/credential-offer/random';
 import { CreatePresentationDefinitionDto } from './dto/create-presentation-definition';
 import { UpdatePresentationDefinitionDto } from './dto/update-presentation-definition';
 
@@ -14,15 +13,13 @@ export class PresentationDefinitionService {
         private presentationDefinitionRepo: Repository<PresentationDefinition>
     ) { }
 
-
-
     async create(dto: CreatePresentationDefinitionDto): Promise<PresentationDefinition> {
         try {
             const scopeParts = dto.scope.split(':');
             if (scopeParts.length !== 2 || scopeParts[0] !== 'openid') {
-                throw new Error('Invalid scope format. Scope must start with "openid" and consist of two words.');
+                throw new Error('Invalid scope format. Scope must start with "openid" with a ":" in between.');
             }
-            const id = `${dto.scope.replace(':', '-')}-presentation`;
+            const id = `${dto.scope.replace(':', '_')}_presentation`;
             const definition = this.presentationDefinitionRepo.create({
                 ...dto,
                 definition: {
@@ -42,11 +39,12 @@ export class PresentationDefinitionService {
 
     async findAll(): Promise<PresentationDefinition[]> {
         return await this.presentationDefinitionRepo.find({
-            where: { isActive: true }
         });
     }
 
     async findOne(id: number): Promise<PresentationDefinition> {
+        console.log("FINDING PRESENTATION DEFINITION")
+        console.log(id)
         const definition = await this.presentationDefinitionRepo.findOne({
             where: { id, isActive: true }
         });
@@ -63,13 +61,16 @@ export class PresentationDefinitionService {
     }
 
     async remove(id: number): Promise<void> {
-        const definition = await this.findOne(id);
-        definition.isActive = false;
-        await this.presentationDefinitionRepo.save(definition);
+        await this.presentationDefinitionRepo.delete(id);
     }
 
     async getByScope(scope: string): Promise<any> {
-        const id = `${scope.replace(':', '-')}-presentation`;
+        if (scope.concat('_presentation')) {
+            scope = scope.replace('_presentation', '');
+        }
+        const id = `${scope.replace(':', '_')}_presentation`;
+        console.log("GETTING PRESENTATION DEFINITION BY SCOPE")
+        console.log(id)
         const definition = await this.presentationDefinitionRepo.findOne({
             where: {
                 isActive: true,
@@ -83,11 +84,5 @@ export class PresentationDefinitionService {
             );
         }
         return definition.definition;
-    }
-
-    async getUniqueScopes(): Promise<string[]> {
-        const definitions = await this.presentationDefinitionRepo.find();
-        const scopes = definitions.map(def => def.scope);
-        return Array.from(new Set(scopes));
     }
 }

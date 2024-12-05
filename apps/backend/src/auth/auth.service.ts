@@ -1,11 +1,7 @@
-import {
-    verifyCredentialJwt,
-} from "@cef-ebsi/verifiable-credential";
 import { Injectable } from '@nestjs/common';
 import { AuthorizeRequest, JHeader, TokenRequestBody, IdTokenResponseRequest, generateRandomString, VPPayload, JWT, VCJWT } from '@protokol/kredential-core';
 import { OpenIDProviderService } from './../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
-import { NonceService } from './../nonce/nonce.service';
 import { extractBearerToken, arraysAreEqual } from './auth.utils';
 import { VcService } from './../vc/vc.service';
 import { DidService } from './../student/did.service';
@@ -25,11 +21,12 @@ import { handleError } from "src/error/ebsi-error.util";
 import { createError, EbsiError, ERROR_CODES } from "src/error/ebsi-error";
 import { VpService } from "src/vp/vp.service";
 import { PresentationDefinitionService } from "src/presentation/presentation-definition.service";
-import { CredentialOfferData } from "@entities/credential-offer-data.entity";
 import { State } from "@entities/state.entity";
 import { StudentService } from "src/student/student.service";
-import { CreateStudentDto } from "src/student/dto/create-student";
-import { SchemaTemplateData } from "src/schemas/schema.types";
+import { CreateStudentDto } from "src/student/dto/create-student"
+import { ScopeCredentialMappingService } from 'src/scope-mapping/scope-mapping.service';
+import { CredentialOfferData } from '@entities/credential-offer-data.entity';
+import { CreateOfferDto } from 'src/credential-offer/dto/createOfferDto';
 
 const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 const MOCK_EBSI_PRE_AUTHORISED_DID = 'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kboj7g9PfXJxbbs4KYegyr7ELnFVnpDMzbJJDDNZjavX6jvtDmALMbXAGW67pdTgFea2FrGGSFs8Ejxi96oFLGHcL4P6bjLDPBJEvRRHSrG4LsPne52fczt2MWjHLLJBvhAC';
@@ -87,8 +84,8 @@ export class AuthService {
         private didService: DidService,
         private resolverService: ResolverService,
         private credentialOfferService: CredentialOfferService,
-        private schemaTemplateService: SchemaTemplateService,
         private presentationDefinitionService: PresentationDefinitionService,
+        private scopeCredentialMappingService: ScopeCredentialMappingService,
         private studentService: StudentService,
         private vpService: VpService,
         private vcService: VcService
@@ -152,7 +149,7 @@ export class AuthService {
             const scope = request.scope;
             let offer: CredentialOffer | null = null;
             // Add issuer state validation here
-            if (issuer_state) {
+            if (scope == 'openid' && issuer_state) {
                 const decodedState = await this.issuer.decodeJWT(issuer_state);
                 const decoded = decodedState.payload as any;
 
@@ -183,6 +180,22 @@ export class AuthService {
                         throw new Error('Credential types mismatch');
                     }
                 }
+            } else {
+                // Manually create the offer in order to save the schemaTemplateId that will be use to create the VC
+                try {
+                    const template = await this.scopeCredentialMappingService.getCredentialSchemaByScope(scope);
+                    const createOfferDto: CreateOfferDto = {
+                        schemaTemplateId: template.id,
+                        credentialData: {},
+                        offerConfiguration: {
+                            grantType: GrantType.AUTHORIZATION_CODE
+                        }
+                    }
+                    offer = await this.credentialOfferService.createOffer(createOfferDto);
+                } catch (error) {
+                    throw createError('INVALID_REQUEST', 'Invalid scope');
+                }
+
             }
 
             const redirectUri = `${process.env.ISSUER_BASE_URL}/direct_post`
@@ -198,6 +211,7 @@ export class AuthService {
             if (isVPTokenTest) {
                 presentationDefinition = MOCK_EBSI_PRESENTATION_DEFINITION;
             } else if (scope !== 'openid') {
+                console.log('GETTING PRESENTATION DEFINITION')
                 presentationDefinition = await this.presentationDefinitionService.getByScope(scope);
                 console.log({ presentationDefinition })
             }
@@ -248,6 +262,8 @@ export class AuthService {
      */
     private async handleVpTokenResponse(request: VpTokenRequest): Promise<{ header?: JHeader, code: number, url?: string }> {
         const provider = await this.openIDProviderService.getInstance();
+        console.log('INSIDE HANDLE VP TOKEN RESPONSE')
+        // console.log({ request })
         try {
             const vpToken = request.vp_token;
             const presentationSubmission = JSON.parse(request.presentation_submission);
@@ -268,15 +284,18 @@ export class AuthService {
                 throw new Error('Missing redirect URI');
             }
 
-            const decoded = await provider.decodeIdTokenResponse(vpToken);
+            const { payload, header } = await provider.decodeIdTokenResponse(vpToken);
 
-            console.log({ decoded })
+            console.log({ payload, header })
 
-            if (!('vp' in decoded.payload)) {
+            if (!('vp' in payload)) {
                 throw new Error('Invalid token: Expected VP token structure');
             }
 
-            const vpPayload = decoded.payload as VPPayload;
+            const vpPayload = payload as VPPayload;
+
+            console.log("VP PAYLOAD")
+            console.log(vpPayload)
 
             try {
                 await this.vpService.verifyVP(vpToken, presentationSubmission, vpPayload);
@@ -296,12 +315,20 @@ export class AuthService {
             }
 
             const code = generateRandomString(32);
+            const walletDefinedState = stateData.walletDefinedState;
             const successUrl = new URL(redirectUri);
             console.log({ successUrl })
             successUrl.searchParams.append('code', code);
             successUrl.searchParams.append('state', stateData.walletDefinedState);
 
             console.log({ successUrl: successUrl.toString() })
+
+            // Update the state for the client, including the generated code and ID token.
+            await this.state.createAuthResponseNonce(stateData.id, code, request.vp_token);
+            const redirectUrl = await provider.createAuthorizationRequest(code, walletDefinedState, redirectUri);
+
+            console.log({ redirectUrl: redirectUrl.toString() })
+            return { header, code: 302, url: redirectUrl };
 
             return { code: 302, url: successUrl.toString() };
         } catch (error) {
@@ -450,8 +477,14 @@ export class AuthService {
      */
     private async handleStandardTokenRequest(request: TokenRequestBody): Promise<{ header: any, code: number, response: any }> {
         const provider = await this.openIDProviderService.getInstance();
+        console.log('REQUEST [handleStandardTokenRequest]', request)
+        console.log('CLIENT ID [handleStandardTokenRequest]', request.client_id)
         const stateData = await this.state.getByField('code', request.code, StateStep.AUTH_RESPONSE, StateStatus.UNCLAIMED, request.client_id);
-
+        console.log('STATE DATA [handleStandardTokenRequest]')
+        console.log({ stateData })
+        if (!stateData) {
+            throw new Error('Invalid code');
+        }
         const isCodeChallengeValid = await validateCodeChallenge(stateData.codeChallenge, request.code_verifier);
         if (!isCodeChallengeValid) {
             throw new Error('Invalid code challenge.');
@@ -481,19 +514,54 @@ export class AuthService {
             // 1. Validate request and get state
             console.log({ request })
             const { stateData, cNonce } = await this.validateCredentialRequest(request);
-            const requestedCredentials = stateData.payload.authorizationDetails[0].types;
+
+            console.log('OUTSIDE TRY 1')
+            console.log({ stateData })
+            // Get the requested credentials
+            let requestedCredentials: string[];
+
+            let offerData = stateData.offer;
+            try {
+                requestedCredentials = this.getRequestedCredentials(stateData);
+                console.log({ requestedCredentials })
+                if (requestedCredentials.length === 0) {
+                    const scope = stateData.scope;
+                    if (scope) {
+                        const schema = (await this.scopeCredentialMappingService.getCredentialSchemaByScope(scope));
+                        console.log({ schema })
+                        requestedCredentials = schema.types;
+                        console.log({ offerData })
+                        if (!offerData) {
+                            // await this.state.updateStateWithOffer(stateData.id, schema.id);
+                        }
+                    } else {
+                        throw new Error('No requested credentials found');
+                    }
+                }
+            } catch (error) {
+                console.error('Error retrieving requested credentials:', error.message);
+                throw new Error('Error retrieving requested credentials');
+            }
+
+            console.log('OUTSIDE TRY 2')
+            // const requestedCredentials = stateData.payload.authorizationDetails[0].types;
             // Create the credential record
-            const offerData = stateData.offer;
+
             const credentialRecord = await this.createVerifiableCredentialRecord(stateData.clientId, requestedCredentials, offerData);
 
+            console.log('OUTSIDE TRY 3')
             // 2. Handle conformance test
             if (await this.isConformanceTest(requestedCredentials)) {
                 return await this.createCredentialResponseConformance(stateData, { cNonce, requestedCredentials, vcId: credentialRecord.vcId });
             }
 
             // 3. Create the credential response
+            const grantType = stateData.offer?.grant_type ?? GrantType.AUTHORIZATION_CODE;
+            console.log('GRANT TYPE', grantType)
+            console.log({ stateData })
+            console.log("Credential ID", credentialRecord.vcId)
             return await this.createCredentialResponse(
-                stateData.offer.grant_type,
+                grantType,
                 {
                     cNonce,
                     stateData,
@@ -527,15 +595,12 @@ export class AuthService {
         if (decodedRequest.iss !== stateData.clientId) {
             throw new Error('Invalid issuer');
         }
-
-        if (!stateData.offer && (request.types.includes('CTWallet') && process.env.EBSI_NETWORK == EbsiNetwork.CONFORMANCE)) {
+        if (!stateData.offer && Array.isArray(request.types) && request.types.includes('CTWallet') && process.env.EBSI_NETWORK === EbsiNetwork.CONFORMANCE) {
             throw new Error('No credential offer found');
         }
 
         return { stateData, cNonce };
     }
-
-
 
 
     private async createCredentialResponse(
@@ -551,9 +616,9 @@ export class AuthService {
         const { offer, clientId: subjectDid } = stateData;
         const cNonceExpiresIn = ONE_HOUR_IN_MILLISECONDS;
         const tokenExpiresIn = ONE_HOUR_IN_MILLISECONDS;
-
-        console.log('GRANT TYPE', grantType);
-        if (grantType === GrantType.PRE_AUTHORIZED_CODE) {
+        console.log('INSIDE CREATE CREDENTIAL RESPONSE')
+        console.log({ grantType })
+        if (grantType === GrantType.PRE_AUTHORIZED_CODE || stateData.scope !== 'openid') {
             console.log('[generateAndSignCredential]')
             console.log({ offer })
             // Generate and sign the credential
@@ -567,6 +632,11 @@ export class AuthService {
                     tokenExpiresIn,
                     signedCredential
                 );
+
+            console.log("SIGNED CREDENTIAL")
+            console.log(signedCredential)
+            console.log("CREDENTIAL")
+            console.log(credential)
             // Update the status of the credential
             await this.vcService.updateVerifiableCredential(vcId, credential, "{}"); // don't save the signed credential
             // Update the status of the state
@@ -592,6 +662,9 @@ export class AuthService {
     // ******************
 
     public async isConformanceTest(requestedCredentials: string[]): Promise<boolean> {
+        if (!Array.isArray(requestedCredentials)) {
+            return false;
+        }
         return requestedCredentials.includes('CTWalletSameAuthorisedInTime') || requestedCredentials.includes('CTWalletSameAuthorisedDeferred') ||
             requestedCredentials.includes('CTWalletSamePreAuthorisedInTime') || requestedCredentials.includes('CTWalletSamePreAuthorisedDeferred');
     }
@@ -710,6 +783,29 @@ export class AuthService {
     //         throw handleError(error);
     //     }
     // }
+
+    private getRequestedCredentials(stateData: any): string[] {
+        const authorizationDetails = stateData?.payload?.authorizationDetails;
+
+        // Check if authorizationDetails is an array and has at least one element
+        if (Array.isArray(authorizationDetails) && authorizationDetails.length > 0) {
+            const firstDetail = authorizationDetails[0];
+
+            // Check if 'types' exists in the first element and is an array
+            if (firstDetail && Array.isArray(firstDetail.types)) {
+                return firstDetail.types;
+            } else {
+                // Handle the case where 'types' is not present
+                console.error('Types not found in authorization details');
+                // throw new Error('Missing types in authorization details');
+
+                return [];
+            }
+        }
+
+        return [];
+    }
+
 
     /**
     * Validates the pre-authorised code and pin-code.

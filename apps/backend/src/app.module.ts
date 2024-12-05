@@ -53,6 +53,10 @@ import { PresentationDefinitionController } from "./presentation/presentation-de
 import { PresentationDefinitionModule } from "./presentation/presentation-definition.module";
 import { RequestUriController } from "./request-uri/requestUri.controller";
 import { RequestUriService } from "./request-uri/requestUri.service";
+import { VerificationService } from "./verification/verification.service";
+import { ScopeCredentialMappingService } from "./scope-mapping/scope-mapping.service";
+import { ScopeCredentialMappingController } from "./scope-mapping/scope-mapping.controller";
+import { ScopeMappingModule } from "./scope-mapping/scope-mapping.module";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -92,7 +96,8 @@ import { RequestUriService } from "./request-uri/requestUri.service";
         ApiKeyModule,
         DidModule,
         SchemaTemplateModule,
-        PresentationDefinitionModule
+        PresentationDefinitionModule,
+        ScopeMappingModule
     ],
     controllers: [
         AppController,
@@ -104,7 +109,8 @@ import { RequestUriService } from "./request-uri/requestUri.service";
         OfferController,
         SchemaTemplateController,
         PresentationDefinitionController,
-        RequestUriController
+        RequestUriController,
+        ScopeCredentialMappingController
     ],
     providers: [
         AppService,
@@ -136,7 +142,9 @@ import { RequestUriService } from "./request-uri/requestUri.service";
         VpService,
         PresentationDefinitionService,
         RequestUriService,
-        SchemaTemplateService
+        SchemaTemplateService,
+        VerificationService,
+        ScopeCredentialMappingService
     ],
     exports: [],
 })

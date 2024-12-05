@@ -1,16 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getRepository, Repository, UpdateResult } from 'typeorm';
 import { State } from '@entities/state.entity';
 import { StateStep } from './enum/step.enum';
 import { StateStatus } from './enum/status.enum';
 import { CredentialOffer } from '@entities/credential-offer.entity';
+import { CredentialOfferData } from '@entities/credential-offer-data.entity';
 
 @Injectable()
 export class StateService {
     constructor(
         @InjectRepository(State)
         private stateRepository: Repository<State>,
+        @InjectRepository(CredentialOffer)
+        private credentialOfferRepository: Repository<CredentialOffer>,
+        @InjectRepository(CredentialOfferData)
+        private credentialOfferDataRepository: Repository<CredentialOfferData>,
     ) { }
 
     async createAuthState(clientId: string, codeChallenge: string, codeChallengeMethod: string, redirectUri: string, scope: string, responseType: string, serverDefinedState: string, serverDefinedNonce: string, walletDefinedState: string, walletDefinedNonce?: string, payload?: any, offer?: CredentialOffer) {

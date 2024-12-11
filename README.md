@@ -45,11 +45,74 @@ Currently, contains working directories for:
 
 For CI/CD we are currently using GitHub Actions.
 
-## Installation guide
-
 ### Prerequisites
 The organisation running this system needs to be onboarded to EBSI first. That means it needs to have a DID created and the DID document needs to be registered to EBSI. Details on this can be found here:
 [EBSI-Hub Onboard](https://hub.ebsi.eu/tools/cli/onboard)
+
+## Quick Start Guide
+
+This guide will help you quickly set up and run the Kredential Manager project, which includes a backend service using NestJS, a PostgreSQL database, and Keycloak for identity and access management.
+
+### Prerequisites
+
+Ensure you have the following installed on your machine:
+
+- **Node.js** and **pnpm**: For running the backend and frontend applications.
+- **Docker** and **Docker Compose**: For running PostgreSQL and Keycloak services.
+- **Git**: For cloning the repository.
+
+### Steps
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/protokol/kredential-manager.git
+   cd kredential-manager
+   ```
+
+2. **Set Up Environment Variables**
+
+   Create a `.env` file in the root directory and populate it with the necessary environment variables. You can use the `.env.example` file as a template.
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Start Docker Services**
+
+   ```bash
+   pnpm docker:up
+   ```
+
+4. **Install Dependencies**
+
+   Navigate to the backend directory and install the necessary dependencies using `pnpm`:
+
+   ```bash
+   cd apps/backend
+   pnpm install
+   ```
+
+5. **Run the Backend Application**
+
+   ```bash
+   pnpm run start:dev
+   ```
+
+6. **Access Keycloak**
+
+   Access the Keycloak Admin Console at `http://localhost:8080/auth/admin/` and log in using the admin credentials specified in your `.env` file.
+
+7. **Verify the Setup**
+
+   - **Backend**: Access the API documentation at `http://localhost:3000/api`.
+   - **Keycloak**: Ensure you can log in to the Keycloak Admin Console.
+
+8. **Additional Configuration**
+
+   - **Database Migrations**: Run any necessary database migrations using the provided scripts in the backend package.json.
+   - **Frontend**: If applicable, set up and run the frontend application following similar steps.
+
 
 ## Documentation
 - [Keycloak Setup Guide](./docs/keycloak-setup.md)

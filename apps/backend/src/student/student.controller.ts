@@ -8,6 +8,7 @@ import {
     Delete,
     HttpStatus,
     HttpCode,
+    BadRequestException,
 } from "@nestjs/common";
 import { StudentService } from "./student.service";
 import { CreateStudentDto } from "./dto/create-student";
@@ -23,7 +24,7 @@ import {
     FilteringParams,
 } from "./../types/pagination/FilteringParams";
 import { PaginatedResource } from "./../types/pagination/dto/PaginatedResource";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 @Controller("students")
 @ApiTags('Students')
@@ -31,13 +32,13 @@ export class StudentController {
     constructor(private readonly studentService: StudentService) { }
 
     @Post()
-    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Create a new student' })
     create(@Body() createStudentDto: CreateStudentDto): Promise<Student> {
         return this.studentService.create(createStudentDto);
     }
 
     @Get()
-    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Get all students' })
     async getAll(
         @PaginationParams() paginationParams: Pagination,
         @SortingParams(["first_name"]) sort?: Sorting,
@@ -51,13 +52,13 @@ export class StudentController {
     }
 
     @Get(":id")
-    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Get a student by ID' })
     async view(@Param("id") id: string): Promise<Student> {
         return this.studentService.findOne(+id);
     }
 
     @Put(":id")
-    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Update a student' })
     update(
         @Param("id") id: string,
         @Body() updateStudentDto: CreateStudentDto,
@@ -66,7 +67,7 @@ export class StudentController {
     }
 
     @Post(":id/dids")
-    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Add a DID to a student' })
     async addDidToStudent(
         @Param("id") id: string,
         @Body() attachDidDto: AttachDidDto,
@@ -78,7 +79,7 @@ export class StudentController {
     }
 
     @Delete(":studentId/dids/:didId")
-    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Remove a DID from a student' })
     async removeDidFromStudent(
         @Param("studentId") studentId: string,
         @Param("didId") didId: string,
@@ -87,8 +88,13 @@ export class StudentController {
     }
 
     @Delete(":id")
-    @HttpCode(HttpStatus.NO_CONTENT)
-    async deleteStudent(@Param("id") id: string): Promise<void> {
-        await this.studentService.delete(+id);
+    @ApiOperation({ summary: 'Delete a student' })
+    async deleteStudent(@Param("id") id: string): Promise<{ message: string }> {
+        try {
+            await this.studentService.delete(+id);
+            return { message: 'Student deleted successfully' };
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
     }
 }

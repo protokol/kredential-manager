@@ -1,0 +1,18 @@
+version: "3.8" # Specify the version of Docker Compose
+
+services:
+  # PostgreSQL service
+  postgres:
+    image: "postgres:alpine" # Use the Alpine version for a smaller image size
+    container_name: postgres # Name the container for easy reference
+    ports:
+      - "127.0.0.1:5432:5432" # Bind PostgreSQL to localhost for security
+    volumes:
+      - "postgres:/var/lib/postgresql/data" # Persist data in a named volume
+    environment:
+      POSTGRES_PASSWORD: ${KM_DB_PASSWORD} # Set the database password
+      POSTGRES_DB: ${KM_DB_NAME} # Set the database name
+      POSTGRES_USER: ${KM_DB_USERNAME} # Set the database username
+
+volumes:
+  postgres: # Define a named volume for PostgreSQL data

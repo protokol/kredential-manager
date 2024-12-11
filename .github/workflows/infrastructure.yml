@@ -1,0 +1,75 @@
+# .github/workflows/infrastructure.yml
+name: Infrastructure Deployment
+
+on:
+  push:
+    paths:
+      - "apps/cdk/**"
+      - "apps/backend/**"
+      - "apps/kredential-rpc/**"
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-cdk
+
+jobs:
+  cdk-deploy:
+    environment: Production
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Print environment variables
+        run: |
+          echo "STAGE: ${{ vars.SAGE }}"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "latest"
+
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run cdk deploy
+        env:
+          STAGE: ${{ vars.STAGE }}
+          ISSUER_PRIVATE_KEY_ID: ${{ secrets.ISSUER_PRIVATE_KEY_ID }}
+          ISSUER_PRIVATE_KEY_JWK: ${{ secrets.ISSUER_PRIVATE_KEY_JWK }}
+          ISSUER_PUBLIC_KEY_JWK: ${{ secrets.ISSUER_PUBLIC_KEY_JWK }}
+          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
+          AWS_PUBLIC_HOSTED_ZONE_ID: ${{ secrets.AWS_PUBLIC_HOSTED_ZONE_ID }}
+          AWS_PUBLIC_HOSTED_ZONE_NAME: ${{ secrets.AWS_PUBLIC_HOSTED_ZONE_NAME }}
+          ISSUER_DID: ${{ vars.ISSUER_DID }}
+          KM_DB_NAME: ${{ vars.KM_DB_NAME }}
+          KM_DB_SCHEMA: ${{ vars.KM_DB_SCHEMA }}
+          KC_DB_NAME: ${{ vars.KC_DB_NAME }}
+          KC_DB_SCHEMA: ${{ vars.KC_DB_SCHEMA }}
+          KC_ADMIN_USERNAME: ${{ vars.KC_ADMIN_USERNAME }}
+          KC_ADMIN_PASSWORD: ${{ vars.KC_ADMIN_PASSWORD }}
+          KM_DB_PORT: ${{ vars.KM_DB_PORT }}
+          KC_DB_PORT: ${{ vars.KC_DB_PORT }}
+          KC_VERSION: ${{ vars.KC_VERSION }}
+          KC_PORT: ${{ vars.KC_PORT }}
+          KC_REALM_NAME: ${{ vars.KC_REALM_NAME }}
+          KC_CLIENT_ID: ${{ vars.KC_CLIENT_ID }}
+          KC_REALM_PUBLIC_KEY: ${{ secrets.KC_REALM_PUBLIC_KEY }}
+        run: cd apps/cdk && pnpm run cdk deploy --all --require-approval never

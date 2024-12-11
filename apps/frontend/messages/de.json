@@ -1,0 +1,16 @@
+{
+  "navigation": {
+    "title": "Enterprise G",
+    "dashboard": "Dashboard",
+    "credentials": "Credentials",
+    "overall": "Overall",
+    "pending": "Pending",
+    "students": "Students",
+    "integrations": "Integrations",
+    "sources": "Sources",
+    "admin": "Admin",
+    "users": "Users",
+    "help": "Help",
+    "sign_out": "Sign out"
+  }
+}

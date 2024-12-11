@@ -1,0 +1,52 @@
+version: '3.8' # Specify the version of Docker Compose
+
+# Logging configuration
+x-logging: &logging
+  driver: "json-file"
+  options:
+    max-size: "10m" # Maximum size of log file before it is rotated
+    max-file: "3" # Maximum number of log files to retain
+
+services:
+  # PostgreSQL service
+  postgres:
+    image: postgres:16.1
+    restart: unless-stopped
+    ports:
+      - "5432:5432" # Expose PostgreSQL port
+    environment:
+      POSTGRES_DB: ${KM_DB_NAME} # Database name
+      POSTGRES_USER: ${KC_DB_USERNAME} # Database username
+      POSTGRES_PASSWORD: ${KM_DB_PASSWORD} # Database password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persist data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Initialize database
+    logging: *logging
+
+  # Keycloak service
+  keycloak:
+    image: quay.io/keycloak/keycloak:${KC_VERSION}
+    command: [ "start-dev" ] # Start Keycloak in development mode
+    # restart: unless-stopped  # Uncomment to enable restart policy
+    environment:
+      KC_DB: postgres
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KC_DB_SCHEMA: ${KC_DB_SCHEMA}
+      KC_DB_URL: "jdbc:postgresql://postgres:${KC_DB_PORT}/${KC_DB_NAME}"
+      KC_METRICS_ENABLED: true
+      KC_LOG_LEVEL: ${KC_LOG_LEVEL}
+      KC_REALM_NAME: ${KC_REALM_NAME}
+      KC_CLIENT_ID: ${KC_CLIENT_ID}
+      KEYCLOAK_ADMIN: ${KC_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+    ports:
+      - "${KC_PORT}:8080" # Expose Keycloak port
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro # Import realm configuration
+    logging: *logging
+    depends_on:
+      - postgres # Ensure PostgreSQL starts before Keycloak
+
+volumes:
+  postgres_data: {} # Define a named volume for PostgreSQL data

@@ -3,7 +3,7 @@ import { Response } from 'express';
 import {
     Public,
 } from 'nest-keycloak-connect';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ProxyService } from './proxy.service';
 
 
@@ -16,6 +16,7 @@ export class ProxyController {
 
     @Get('params')
     @Public(true)
+    @ApiOperation({ summary: 'Get query params' })
     async getQueryParams(
         @Query() req: any,
         @Res() res: Response
@@ -31,6 +32,7 @@ export class ProxyController {
 
     @Get('redirect')
     @Public(true)
+    @ApiOperation({ summary: 'Get redirect location' })
     async getRedirect(@Query('url') url: string): Promise<string> {
         return this.proxyService.getRedirectLocation(url);
     }

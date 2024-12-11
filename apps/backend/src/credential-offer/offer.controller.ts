@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { Public } from 'nest-keycloak-connect';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CredentialOfferService } from './credential-offer.service';
 import { StudentService } from 'src/student/student.service';
 import { VcService } from 'src/vc/vc.service';
@@ -14,6 +14,7 @@ export class OfferController {
     constructor(private credentialOfferService: CredentialOfferService, private studentService: StudentService, private vcService: VcService, private didService: DidService) { }
 
     @Post()
+    @ApiOperation({ summary: 'Create a credential offer' })
     async createOffer(@Body() createOfferDto: CreateOfferDto) {
         const offer = await this.credentialOfferService.createOffer(createOfferDto);
         return {

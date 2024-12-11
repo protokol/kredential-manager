@@ -6,7 +6,7 @@ import {
 import { OpenIDProviderService } from '../openId/openId.service';
 import { IssuerService } from './../issuer/issuer.service';
 import { AuthorizeRequest, JWK, TokenRequestBody } from '@protokol/kredential-core';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { handleError } from 'src/error/ebsi-error.util';
 
@@ -23,14 +23,15 @@ export class AuthController {
 
     @Get('.well-known/openid-credential-issuer')
     @Public(true)
+    @ApiOperation({ summary: 'Get issuer metadata' })
     async getIssuerMetadata() {
         const provider = await this.provider.getInstance();
         return provider.getIssuerMetadata();
     }
 
     @Get('authorize/.well-known/openid-configuration')
-    // @Get('.well-known/openid-configuration')
     @Public(true)
+    @ApiOperation({ summary: 'Get configuration metadata' })
     async getConfigMetadata() {
         const provider = await this.provider.getInstance();
         return provider.getConfigMetadata();
@@ -38,6 +39,7 @@ export class AuthController {
 
     @Get('jwks')
     @Public(true)
+    @ApiOperation({ summary: 'Get JWKS' })
     getJwks(): JWKS {
         const keyWithKid = this.issuer.getPublicKeyJwk();
         return {
@@ -47,6 +49,7 @@ export class AuthController {
 
     @Get('authorize')
     @Public(true)
+    @ApiOperation({ summary: 'Authorize' })
     async authorize(
         @Query() req: AuthorizeRequest,
         @Res() res: Response,
@@ -61,6 +64,7 @@ export class AuthController {
 
     @Get('verifier')
     @Public(true)
+    @ApiOperation({ summary: 'Verifier' })
     async verifier(
         @Query() req: AuthorizeRequest,
         @Res() res: Response,
@@ -76,6 +80,7 @@ export class AuthController {
 
     @Post('direct_post')
     @Public(true)
+    @ApiOperation({ summary: 'Direct Post' })
     async directPost(
         @Body() req: any,
         @Res() res: Response,
@@ -92,6 +97,7 @@ export class AuthController {
 
     @Post('token')
     @Public(true)
+    @ApiOperation({ summary: 'Token Request' })
     async tokenRequest(
         @Body() req: TokenRequestBody,
         @Res() res: Response,
@@ -107,6 +113,7 @@ export class AuthController {
 
     @Post('credential')
     @Public(true)
+    @ApiOperation({ summary: 'Credentials Request' })
     async credentialsRequest(
         @Body() req: any,
         @Res() res: Response,
@@ -122,6 +129,7 @@ export class AuthController {
 
     @Post('credential_deferred')
     @Public(true)
+    @ApiOperation({ summary: 'Credentials Deferred Request' })
     async credentialsDeferredRequest(
         @Body() req: any,
         @Res() res: Response,

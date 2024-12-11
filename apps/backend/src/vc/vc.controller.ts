@@ -4,7 +4,6 @@ import {
     Get,
     Param,
     Patch,
-    HttpCode,
     HttpStatus,
     HttpException,
     ParseIntPipe
@@ -37,7 +36,7 @@ export class VcController {
 
     // Note: Count needs to be defined before :id route
     @Get("/count")
-    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Get count of verifiable credentials by status' })
     async getCountByStatus(
         @FilteringParams(["status"]) filter?: Filtering,
     ): Promise<{ count: number }> {
@@ -53,7 +52,7 @@ export class VcController {
     }
 
     @Patch(":id/status")
-    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Update the status of a verifiable credential' })
     async updateStatus(
         @Param("id") id: number,
         @Body() updatePayload: UpdateStatusDto,
@@ -76,8 +75,6 @@ export class VcController {
 
     @Get(':id')
     @ApiOperation({ summary: 'Get a verifiable credential by ID' })
-    @ApiResponse({ status: 200, description: 'Credential found' })
-    @ApiResponse({ status: 404, description: 'Credential not found' })
     async findOne(@Param('id', ParseIntPipe) id: number) {
         try {
             const credential = await this.vcService.findOne(id);
@@ -91,7 +88,7 @@ export class VcController {
     }
 
     @Get()
-    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Get all verifiable credentials' })
     async getAll(
         @PaginationParams() paginationParams: Pagination,
         @SortingParams(["displayName", "created_at", "role", "status"])

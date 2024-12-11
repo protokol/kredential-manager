@@ -64,7 +64,6 @@ export class OpenIdProvider {
                 throw new Error('Invalid authorization detail type.');
             }
 
-            console.log('this.issuer.credentials_supported', this.issuer.credentials_supported)
             for (const credential of this.issuer.credentials_supported) {
                 const isMatch = credential.types.length === authDetail.types.length &&
                     credential.types.every(type => authDetail.types.includes(type)) &&
@@ -176,8 +175,6 @@ export class OpenIdProvider {
         const serverDefinedState = generateRandomString(16);
         const serverDefinedNonce = generateRandomString(25);
 
-        console.log('prepareIDTokenRequest', redirectUri)
-
         const idToken = {
             iss: this.metadata.issuer,
             aud: request.client_id,
@@ -209,7 +206,6 @@ export class OpenIdProvider {
             state: serverDefinedState
         }).toString()}`;
 
-        console.log('ID: redirectUrl', redirectUrl)
         return {
             header,
             redirectUrl,
@@ -220,7 +216,6 @@ export class OpenIdProvider {
     }
 
     private async prepareRedirectUrl(redirectUri: string) {
-        console.log('prepareRedirectUrl', redirectUri)
         if (!redirectUri) {
             return `openid://`;
         }
@@ -278,8 +273,6 @@ export class OpenIdProvider {
         const isIDTokenTest = request.scope?.includes('ver_test:id_token');
         const isOpenId = request.scope === 'openid';
         if (isVPTokenTest) {
-            console.log("INSIDE VP TOKEN TEST")
-            console.log({ redirectUri })
             return this.prepareVPTokenRequest(request, redirectUri, presentationDefinition);
         } else if (isIDTokenTest) {
             return this.prepareIDTokenRequest(request, redirectUri);

@@ -19,8 +19,6 @@ export class CredentialOfferController {
         description: 'API key for credential offer generation'
     })
     async createOffer(@Body() createOfferDto: CreateOfferDto) {
-        console.log('createOfferDto', createOfferDto)
-        console.log({ createOfferDto })
         const offer = await this.credentialOfferService.createOffer(createOfferDto);
 
         // Create the offer URI

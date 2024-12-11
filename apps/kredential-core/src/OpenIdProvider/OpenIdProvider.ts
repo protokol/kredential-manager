@@ -64,6 +64,7 @@ export class OpenIdProvider {
                 throw new Error('Invalid authorization detail type.');
             }
 
+            console.log('this.issuer.credentials_supported', this.issuer.credentials_supported)
             for (const credential of this.issuer.credentials_supported) {
                 const isMatch = credential.types.length === authDetail.types.length &&
                     credential.types.every(type => authDetail.types.includes(type)) &&
@@ -80,7 +81,7 @@ export class OpenIdProvider {
             }
         }
         if (!isCredentialFound) {
-            throw new Error('Requested credentials are not supported by the issuer.');
+            throw new Error('Requested credentials are not supported.');
         }
     }
 
@@ -97,18 +98,8 @@ export class OpenIdProvider {
             throw new Error('The scope must include "openid".');
         }
 
-        if (request.response_type !== 'code') {
-            throw new Error('The response_type must be "code".');
-        }
-
-        console.log('request', request)
         if (request.code_challenge) {
-            console.log('request.code_challenge', request.code_challenge)
-            console.log('request.code_challenge_method', request.code_challenge_method)
-            console.log('request.code_challenge && request.code_challenge_method', request.code_challenge && request.code_challenge_method)
-            console.log('request.code_challenge && request.code_challenge_method', request.code_challenge && !request.code_challenge_method)
             if (request.code_challenge && !request.code_challenge_method) {
-                console.log("INSIDE")
                 throw new Error('Code challenge and code challenge method are required.');
             }
             if (request.code_challenge.length < 43 || request.code_challenge.length > 128) {
@@ -147,7 +138,7 @@ export class OpenIdProvider {
             scope: 'openid',
             nonce: serverDefinedNonce,
             iat: Math.floor(Date.now() / 1000),
-            presentation_definition: presentationDefinition
+            presentation_definition: presentationDefinition,
         };
 
         const header: JHeader = {
@@ -158,7 +149,7 @@ export class OpenIdProvider {
 
         const signedRequest = await this.jwtUtil.sign(vpRequest, header, this.privateKey);
 
-        const redirectUrl = `openid://?${new URLSearchParams({
+        const redirectUrl = await this.prepareRedirectUrl(request.redirect_uri) + `${new URLSearchParams({
             client_id: vpRequest.client_id,
             response_type: vpRequest.response_type,
             response_mode: vpRequest.response_mode,
@@ -185,6 +176,8 @@ export class OpenIdProvider {
         const serverDefinedState = generateRandomString(16);
         const serverDefinedNonce = generateRandomString(25);
 
+        console.log('prepareIDTokenRequest', redirectUri)
+
         const idToken = {
             iss: this.metadata.issuer,
             aud: request.client_id,
@@ -206,7 +199,7 @@ export class OpenIdProvider {
 
         const signedRequest = await this.jwtUtil.sign(idToken, header, this.privateKey);
 
-        const redirectUrl = `openid://?${new URLSearchParams({
+        const redirectUrl = await this.prepareRedirectUrl(request.redirect_uri) + `${new URLSearchParams({
             client_id: this.metadata.issuer,
             response_type: idToken.response_type,
             response_mode: idToken.response_mode,
@@ -216,6 +209,7 @@ export class OpenIdProvider {
             state: serverDefinedState
         }).toString()}`;
 
+        console.log('ID: redirectUrl', redirectUrl)
         return {
             header,
             redirectUrl,
@@ -223,6 +217,17 @@ export class OpenIdProvider {
             serverDefinedState,
             serverDefinedNonce
         };
+    }
+
+    private async prepareRedirectUrl(redirectUri: string) {
+        console.log('prepareRedirectUrl', redirectUri)
+        if (!redirectUri) {
+            return `openid://`;
+        }
+        if (redirectUri.endsWith(':')) {
+            return `${redirectUri}//}`;
+        }
+        return `${redirectUri}?`;
     }
 
 
@@ -269,13 +274,17 @@ export class OpenIdProvider {
     }
 
     async handleAuthorizationRequest(request: AuthorizeRequestSigned, redirectUri: string, presentationDefinition?: any): Promise<({ header: JHeader, redirectUrl: string, authDetails: AuthorizationDetail[], serverDefinedState: string, serverDefinedNonce: string })> {
-        const isVPTokenTest = request.scope?.includes('ver_test:vp_token');
+        const isVPTokenTest = request.scope?.includes('ver_test:vp_token') || request.scope?.includes('vp_token');
         const isIDTokenTest = request.scope?.includes('ver_test:id_token');
-
+        const isOpenId = request.scope === 'openid';
         if (isVPTokenTest) {
+            console.log("INSIDE VP TOKEN TEST")
+            console.log({ redirectUri })
             return this.prepareVPTokenRequest(request, redirectUri, presentationDefinition);
         } else if (isIDTokenTest) {
             return this.prepareIDTokenRequest(request, redirectUri);
+        } else if (!isOpenId) {
+            return this.prepareVPTokenRequest(request, redirectUri, presentationDefinition);
         } else {
             return this.prepareCredentialRequest(request, redirectUri);
         }

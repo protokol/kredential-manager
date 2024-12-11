@@ -107,9 +107,6 @@ export class StateService {
     }
 
     async validatePreAuthorisedAndPinCode(pinCode: string, preAuthorisedCode: string) {
-        console.log("VALIDATING PRE-AUTHORISED CODE AND PIN CODE")
-        console.log({ preAuthorisedCode })
-        console.log({ pinCode })
         const state = await this.stateRepository.findOne({
             where: { preAuthorisedCode: preAuthorisedCode, preAuthorisedCodePin: pinCode },
         });

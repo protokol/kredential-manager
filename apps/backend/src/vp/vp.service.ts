@@ -4,6 +4,7 @@ import { EbsiConfigService } from '../network/ebsi-config.service';
 import { PresentationSubmission, VPPayload } from '@protokol/kredential-core';
 import { EbsiError } from '../error/ebsi-error';
 import { PresentationDefinitionService } from 'src/presentation/presentation-definition.service';
+import { PresentationDefinition } from '@entities/presentation-definition.entity';
 
 @Injectable()
 export class VpService {
@@ -14,8 +15,9 @@ export class VpService {
 
     async verifyVP(
         vpToken: string,
+        presentationDefinition: PresentationDefinition,
         presentationSubmission: PresentationSubmission,
-        vpPayload: VPPayload
+        vpPayload: VPPayload,
     ): Promise<void> {
         if (!vpPayload.vp.verifiableCredential || !Array.isArray(vpPayload.vp.verifiableCredential)) {
             throw new EbsiError(
@@ -24,8 +26,8 @@ export class VpService {
             );
         }
 
-        const definition = await this.presentationDefinitionService.getByScope(presentationSubmission.definition_id);
-        const submissionRequirements = definition?.definition?.submission_requirements || [];
+
+        const submissionRequirements = presentationDefinition?.definition?.submission_requirements || [];
 
         for (const requirement of submissionRequirements) {
             const descriptors = presentationSubmission.descriptor_map.filter(descriptor => descriptor.id === requirement.from);
@@ -44,12 +46,7 @@ export class VpService {
 
         for (let i = 0; i < vpPayload.vp.verifiableCredential.length; i++) {
             const vc = vpPayload.vp.verifiableCredential[i];
-            console.log("VC")
-            console.log(vc)
             const descriptorId = presentationSubmission.descriptor_map[i]?.id;
-            console.log("DESCRIPTOR ID")
-            console.log(descriptorId)
-
             await this.verifyCredential(vc, descriptorId);
         }
     }

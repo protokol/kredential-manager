@@ -43,8 +43,6 @@ export class PresentationDefinitionService {
     }
 
     async findOne(id: number): Promise<PresentationDefinition> {
-        console.log("FINDING PRESENTATION DEFINITION")
-        console.log(id)
         const definition = await this.presentationDefinitionRepo.findOne({
             where: { id, isActive: true }
         });
@@ -69,8 +67,6 @@ export class PresentationDefinitionService {
             scope = scope.replace('_presentation', '');
         }
         const id = `${scope.replace(':', '_')}_presentation`;
-        console.log("GETTING PRESENTATION DEFINITION BY SCOPE")
-        console.log(id)
         const definition = await this.presentationDefinitionRepo.findOne({
             where: {
                 isActive: true,

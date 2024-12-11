@@ -15,16 +15,13 @@ services:
       POSTGRES_USER: ${KC_DB_USERNAME}
       POSTGRES_PASSWORD: ${KM_DB_PASSWORD}
     volumes:
-      - type: tmpfs
-        target: /var/lib/postgresql/data
-        tmpfs:
-          size: 100000000
+      - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     logging: *logging
 
   keycloak:
     image: quay.io/keycloak/keycloak:${KC_VERSION}
-    command: [ "start-dev", "--import-realm" ]
+    command: [ "start-dev" ]
     # restart: unless-stopped
     environment:
       KC_DB: postgres
@@ -45,3 +42,6 @@ services:
     logging: *logging
     depends_on:
       - postgres
+
+volumes:
+  postgres_data: {}

@@ -39,8 +39,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.2(@nestjs/common@10.4.7(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/core@10.4.7)(reflect-metadata@0.1.14)(rxjs@7.8.1)(typeorm@0.3.20(pg@8.13.1)(ts-node@10.9.2(@types/node@20.17.6)(typescript@5.6.3)))
       '@protokol/kredential-core':
-        specifier: ^0.0.2
-        version: link:../kredential-core
+        specifier: ^0.0.3
+        version: 0.0.3(typescript@5.6.3)
       ajv:
         specifier: ^8.12.0
         version: 8.17.1
@@ -793,6 +793,9 @@ packages:
     resolution: {integrity: sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
+  '@protokol/kredential-core@0.0.3':
+    resolution: {integrity: sha512-+/Qh+mV+UWyHiF9XBpwe/bTiosZag7UpD/NKIRGfLXQgk9P0SfNy5FWSELukCnprnCE3lWwBdbpDnWCd7R9DSw==}
+
   '@scure/base@1.1.9':
     resolution: {integrity: sha512-8YKhl8GHiNI/pU2VMaofa2Tor7PJRAjwQLBBuilkJ9L5+13yVbC7JO/wS7piioAvPSwR3JKM1IJ/u4xQzbcXKg==}
 
@@ -1332,8 +1335,8 @@ packages:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
     engines: {node: '>=6.0'}
 
-  chromedriver@131.0.0:
-    resolution: {integrity: sha512-ukYmdCox2eRsjpCYUB4AOLV1fSfWQ1ZPfcUc0PIUWZKoyjyXKEl8i4DJ14bcNzNbEvaVx2Z2pnx/nLK2CM+ruQ==}
+  chromedriver@131.0.2:
+    resolution: {integrity: sha512-Z3oZmleJP3UEBKCz7XLZoZSbYRnApFmUL4GGmLHxw/NJqcZpEnCNFlwdVKuRlntCPxgdfvYInQCPmZxXyrGE+w==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -4687,6 +4690,13 @@ snapshots:
 
   '@pkgr/core@0.1.1': {}
 
+  '@protokol/kredential-core@0.0.3(typescript@5.6.3)':
+    dependencies:
+      tslib: 2.8.1
+      typescript-transformer-esm: 1.1.0(typescript@5.6.3)
+    transitivePeerDependencies:
+      - typescript
+
   '@scure/base@1.1.9': {}
 
   '@segment/ajv-human-errors@2.14.0(ajv@8.17.1)':
@@ -5346,7 +5356,7 @@ snapshots:
 
   chrome-trace-event@1.0.4: {}
 
-  chromedriver@131.0.0:
+  chromedriver@131.0.2:
     dependencies:
       '@testim/chrome-version': 1.1.4
       axios: 1.7.7
@@ -6839,7 +6849,7 @@ snapshots:
     dependencies:
       jwk-to-pem: 2.0.6
     optionalDependencies:
-      chromedriver: 131.0.0
+      chromedriver: 131.0.2
     transitivePeerDependencies:
       - debug
       - supports-color

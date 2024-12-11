@@ -35,3 +35,15 @@ export function arraysAreEqual(arr1: string[], arr2: string[]): boolean {
     if (arr1.length !== arr2.length) return false;
     return arr1.every((value, index) => value === arr2[index]);
 }
+
+export function isVPTokenTest(scope: string): boolean {
+    return scope?.includes('ver_test:vp_token');
+}
+
+export function isIDTokenTest(scope: string): boolean {
+    return scope?.includes('ver_test:id_token');
+}
+
+export function isConformanceTestScope(scope: string): { isVPTokenTest: boolean, isIDTokenTest: boolean } {
+    return { isVPTokenTest: isVPTokenTest(scope), isIDTokenTest: isIDTokenTest(scope) };
+}

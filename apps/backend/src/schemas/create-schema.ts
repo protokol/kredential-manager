@@ -19,7 +19,6 @@ export function IsValidationRuleMap(validationOptions?: ValidationOptions) {
                     for (const key in value) {
                         if (Object.prototype.hasOwnProperty.call(value, key)) {
                             const item = value[key];
-                            console.log('Validating item:', item);
                             if (typeof item !== 'object' || item === null) {
                                 return false;
                             }
@@ -124,7 +123,8 @@ export class CreateSchemaDto {
             "id": "<uuid>",
             "type": [
                 "VerifiableCredential",
-                "UniversityDegree"
+                "VerifiableAttestation",
+                "AccessCredential"
             ],
             "issuer": {
                 "id": "<issuerDid>"

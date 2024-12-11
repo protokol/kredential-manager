@@ -66,7 +66,10 @@ export class OpenIDProviderService {
 
     private async init() {
         if (this.initialized) return;
+        await this.initializeProvider();
+    }
 
+    private async initializeProvider() {
         const HOST = process.env.ISSUER_BASE_URL || 'localhost:3000';
 
         const credentialsSupported = await this.schemaTemplateService.getCredentialsSupported();
@@ -99,9 +102,12 @@ export class OpenIDProviderService {
             throw new Error('Error parsing JWKs');
         }
     }
-
     async getInstance(): Promise<OpenIdProvider> {
         await this.init();
         return this.provider;
+    }
+
+    async refreshCredentialsSupported() {
+        await this.initializeProvider();
     }
 }

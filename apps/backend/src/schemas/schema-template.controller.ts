@@ -9,12 +9,15 @@ import { SortingParams } from 'src/types/pagination/SortingParams';
 import { Pagination } from 'src/types/pagination/PaginationParams';
 import { Sorting } from 'src/types/pagination/SortingParams';
 import { VerificationService } from 'src/verification/verification.service';
+import { OpenIDProviderService } from 'src/openId/openId.service';
 
 @ApiTags('Schema Templates')
 @Controller('schema-templates')
 export class SchemaTemplateController {
-    constructor(private schemaTemplateService: SchemaTemplateService,
-        private verificationService: VerificationService
+    constructor(
+        private schemaTemplateService: SchemaTemplateService,
+        private verificationService: VerificationService,
+        private openIdService: OpenIDProviderService
     ) { }
 
     @Post()
@@ -22,7 +25,9 @@ export class SchemaTemplateController {
     @ApiResponse({ status: 201, description: 'Schema template created successfully' })
     async create(@Body() createDto: CreateSchemaDto) {
         try {
-            return await this.schemaTemplateService.create(createDto);
+            const schema = await this.schemaTemplateService.create(createDto);
+            await this.openIdService.refreshCredentialsSupported();
+            return schema;
         } catch (error) {
             throw new BadRequestException(error.message);
         }
@@ -76,7 +81,9 @@ export class SchemaTemplateController {
     @ApiResponse({ status: 404, description: 'Schema template not found' })
     async remove(@Param('id', ParseIntPipe) id: number) {
         try {
-            return await this.schemaTemplateService.remove(id);
+            const schema = await this.schemaTemplateService.remove(id)
+            await this.openIdService.refreshCredentialsSupported();
+            return schema;
         } catch (error) {
             throw new BadRequestException(error.message);
         }

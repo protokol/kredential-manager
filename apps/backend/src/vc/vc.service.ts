@@ -160,7 +160,7 @@ export class VcService {
         if (!vc) {
             return { isValid: false, errorMessage: `VC with ID ${id} not found.` };
         }
-        console.log({ vc })
+
         if (!vc.did || !vc.did.student) {
             return { isValid: false, errorMessage: `Student not found for VC with ID ${id}.` };
         }
@@ -258,16 +258,14 @@ export class VcService {
             throw new Error('Invalid credential types');
         }
         const credential = {
-            "vc": {
-                "@context": ["https://www.w3.org/2018/credentials/v1"],
-                "type": credentialTypes,
-                "credentialSubject": {
-                    "id": clientId
-                },
-                "credentialSchema": {
-                    "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
-                    "type": "FullJsonSchemaValidator2021"
-                }
+            "@context": ["https://www.w3.org/2018/credentials/v1"],
+            "type": credentialTypes,
+            "credentialSubject": {
+                "id": clientId
+            },
+            "credentialSchema": {
+                "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
+                "type": "FullJsonSchemaValidator2021"
             }
         };
 

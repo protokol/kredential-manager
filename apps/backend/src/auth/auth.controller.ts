@@ -59,6 +59,21 @@ export class AuthController {
         }
     }
 
+    @Get('verifier')
+    @Public(true)
+    async verifier(
+        @Query() req: AuthorizeRequest,
+        @Res() res: Response,
+    ) {
+        try {
+            const { code, url } = await this.auth.authorize(req);
+            return res.redirect(code, url);
+        } catch (error) {
+            throw handleError(error);
+        }
+    }
+
+
     @Post('direct_post')
     @Public(true)
     async directPost(

@@ -1,4 +1,3 @@
-import { ScopeType } from "../types/scope.type";
 import { AuthorizeRequest } from "../interfaces/authorize-request.interface";
 import { ResponseType } from "../types/response-type.type";
 import { ClientMetadata } from "../interfaces/client-metadata.interface";
@@ -21,7 +20,7 @@ export class AuthRequestComposer {
         responseType: ResponseType,
         clientId: string,
         redirectUri: string,
-        scope: ScopeType = "openid"
+        scope: string = "openid"
     ) {
         this.request = {
             response_type: responseType,
@@ -59,7 +58,7 @@ export class AuthRequestComposer {
      * @param scope - The scopes for which the application is requesting access.
      * @returns This instance for method chaining.
      */
-    setScope(scope: ScopeType): AuthRequestComposer {
+    setScope(scope: string): AuthRequestComposer {
         this.request.scope = scope;
         return this;
     }

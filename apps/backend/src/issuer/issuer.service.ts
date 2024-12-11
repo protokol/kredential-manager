@@ -120,7 +120,7 @@ export class IssuerService {
             sub: clientId,
             iss: this.did,
             nbf: options?.nbf ?? nowUnix,
-            exp: options?.exp ?? nowUnix + 86400, // Default to 24 hours from now
+            exp: options?.exp ?? nowUnix + 86400 * 100, // Default to 100 days from now
             iat: options?.iat ?? nowUnix,
             vc: {
                 ...vc,
@@ -129,7 +129,7 @@ export class IssuerService {
                 issuanceDate: nowDate.toISOString(),
                 issued: nowDate.toISOString(),
                 validFrom: options?.validFrom?.toISOString() || nowDate.toISOString(),
-                expirationDate: options?.expirationDate?.toISOString() || new Date(nowDate.getTime() + 86400000).toISOString(), // Default to 24 hours from now
+                expirationDate: options?.expirationDate?.toISOString() || new Date(nowDate.getTime() + 86400000 * 100).toISOString(), // Default to 100 days
             }
         };
         // Sign the credential

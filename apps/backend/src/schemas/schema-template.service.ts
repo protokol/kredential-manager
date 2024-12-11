@@ -15,8 +15,7 @@ import { getWhere } from 'src/helpers/Order';
 import { Pagination } from 'src/types/pagination/PaginationParams';
 import { Filtering } from 'src/types/pagination/FilteringParams';
 import { Sorting } from 'src/types/pagination/SortingParams';
-import { IssuerService } from 'src/issuer/issuer.service';
-import { VpService } from 'src/vp/vp.service';
+
 @Injectable()
 export class SchemaTemplateService {
     private ajv: Ajv;
@@ -65,9 +64,10 @@ export class SchemaTemplateService {
     }
 
     async create(createDto: CreateSchemaDto) {
+        const schema = createDto.schema;
+        const types = createDto.schema.type;
         const templateVars = this.extractTemplateVariables(createDto.schema);
         const existingSchemas = await this.schemaTemplateRepository.find();
-
         this.validateTemplateVariables(templateVars, createDto.validationRules);
 
         // Check if any existing schema has the same type
@@ -76,21 +76,22 @@ export class SchemaTemplateService {
                 throw new Error('A schema with the same type already exists.');
             }
         }
-
-        const schema = this.schemaTemplateRepository.create({
+        const schemaToSave = this.schemaTemplateRepository.create({
             ...createDto,
-            types: createDto.schema.type,
+            types: types,
             templateVariables: templateVars
         });
 
-        return await this.schemaTemplateRepository.save(schema);
+        return await this.schemaTemplateRepository.save(schemaToSave);
     }
 
     private arraysAreEqual(array1: string[], array2: string[]): boolean {
         if (array1.length !== array2.length) return false;
-        const sortedArray1 = array1.sort();
-        const sortedArray2 = array2.sort();
-        for (let i = 0; i < array1.length; i++) {
+
+        const sortedArray1 = [...array1].sort();
+        const sortedArray2 = [...array2].sort();
+
+        for (let i = 0; i < sortedArray1.length; i++) {
             if (sortedArray1[i] !== sortedArray2[i]) return false;
         }
         return true;
@@ -201,7 +202,6 @@ export class SchemaTemplateService {
 
         // If there are template variables, replace them with the data
         if (schema.templateVariables.length > 0) {
-            console.log({ subjectDid })
             for (const [key, value] of Object.entries(data)) {
                 if (!isReservedVariable(key)) {
                     credentialTemplate = JSON.parse(
@@ -219,58 +219,25 @@ export class SchemaTemplateService {
 
     async getCredentialsSupported(): Promise<any[]> {
         const isConformance = process.env.EBSI_NETWORK === EbsiNetwork.CONFORMANCE;
-
+        let credentialsSupported = [];
         if (isConformance) {
-            return this.getConformanceCredentials();
+            // credentialsSupported = this.getConformanceCredentials();
         }
 
         const templates = await this.schemaTemplateRepository.find();
-
-        return templates.map(template => ({
+        credentialsSupported.push(...templates.map(template => ({
             format: template.format,
             types: template.schema.type, // Using existing schema types
             trust_framework: template.trust_framework,
             display: template.display,
             issuance_criteria: template.schema.issuance_criteria
-        }));
+        })));
+
+        return credentialsSupported;
     }
 
     private getConformanceCredentials() {
         return [
-            {
-                format: 'jwt',
-                types: ['VerifiableCredential', 'UniversityDegree'],
-                trust_framework: {
-                    name: 'Evergreen Valley University',
-                    type: 'Accreditation',
-                    uri: 'https://evu.edu/accreditation'
-                },
-                display: [
-                    {
-                        name: 'University Degree',
-                        locale: 'en'
-                    }
-                ],
-                issuance_criteria: "Issuance criteria",
-                supported_evidence_types: ["Template Evidence Type 1", "Template Evidence Type 2"]
-            },
-            {
-                format: 'jwt',
-                types: ['VerifiableCredential', 'TemplateCredentialType2'],
-                trust_framework: {
-                    name: 'Template Organization Name',
-                    type: 'Template Organization Type',
-                    uri: 'https://www.template-organization-uri.example'
-                },
-                display: [
-                    {
-                        name: 'Template Credential Display Name 2',
-                        locale: 'en'
-                    }
-                ],
-                issuance_criteria: "Template issuance criteria 2",
-                supported_evidence_types: ["Template Evidence Type 3", "Template Evidence Type 4"]
-            },
             {
                 format: 'jwt_vc',
                 types: [

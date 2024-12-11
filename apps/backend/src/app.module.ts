@@ -153,7 +153,7 @@ export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer): void {
         consumer.apply((req, res, next) => {
             // console.log('req', req);
-            console.log('req', req.url)
+            // console.log('req', req.url)
             next();
         }).forRoutes('*');
         consumer.apply(LoggerMiddleware).forRoutes('*');

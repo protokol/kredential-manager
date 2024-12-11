@@ -7,7 +7,7 @@ export class CredentialOffer {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
+    @Column({ nullable: true })
     subject_did: string;
 
     @Column('simple-array', { nullable: true })

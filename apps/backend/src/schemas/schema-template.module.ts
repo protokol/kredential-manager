@@ -12,12 +12,13 @@ import { EbsiConfigService } from 'src/network/ebsi-config.service';
 import { PresentationDefinitionService } from 'src/presentation/presentation-definition.service';
 import { VerifiableCredential } from '@entities/verifiableCredential.entity';
 import { Did } from '@entities/did.entity';
+import { OpenIDProviderService } from 'src/openId/openId.service';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([CredentialSchema, PresentationDefinition, VerifiableCredential, Did])
     ],
-    providers: [SchemaTemplateService, IssuerService, VerificationService, VpService, VcService, EbsiConfigService, PresentationDefinitionService],
+    providers: [SchemaTemplateService, IssuerService, VerificationService, VpService, VcService, EbsiConfigService, PresentationDefinitionService, OpenIDProviderService],
     controllers: [SchemaTemplateController],
     exports: [SchemaTemplateService]
 })

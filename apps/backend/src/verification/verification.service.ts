@@ -26,12 +26,9 @@ export class VerificationService {
         const validationResult = await this.validateData(schemaId, data);
 
         const { credential, signedCredential } = await this.vcService.generateAndSignCredential(issuerDid, MOCK_SUBJECT_DID, schemaId, data);
-        console.log({ credential })
-        console.log({ signedCredential })
 
         const verifiedCredential = await this.vpService.verifyCredential(signedCredential, 'test-descriptor');
 
-        console.log({ validationResult })
         return {
             validationResult,
             credential,
@@ -47,14 +44,14 @@ export class VerificationService {
         }
 
         const errors: string[] = [];
-        console.log("VALIDATION RULES", schema.validationRules)
-        if (schema.validationRules) {
+        if (Object.entries(schema.validationRules).length > 0) {
             for (const [field, rule] of Object.entries(schema.validationRules)) {
                 if (rule.required && !data[field]) {
                     errors.push(`Missing required field: ${field}`);
                 }
             }
         }
+
 
         return {
             isValid: errors.length === 0,

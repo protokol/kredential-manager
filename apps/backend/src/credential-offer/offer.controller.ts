@@ -15,8 +15,6 @@ export class OfferController {
 
     @Post()
     async createOffer(@Body() createOfferDto: CreateOfferDto) {
-        console.log('createOfferDto', createOfferDto)
-        console.log({ createOfferDto })
         const offer = await this.credentialOfferService.createOffer(createOfferDto);
         return {
             id: offer.id,

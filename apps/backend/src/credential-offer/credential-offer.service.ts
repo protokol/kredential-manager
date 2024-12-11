@@ -2,14 +2,12 @@ import { Injectable, BadRequestException, UnauthorizedException, NotFoundExcepti
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CredentialOffer } from '../entities/credential-offer.entity';
-import * as QRCode from 'qrcode';
 import { v4 as uuidv4 } from 'uuid';
-import { CreateOfferResponse, CredentialOfferDetailsResponse, CredentialOfferStatus, GrantType } from './credential-offer.type';
+import { CredentialOfferDetailsResponse, CredentialOfferStatus, GrantType } from './credential-offer.type';
 import { IssuerService } from './../issuer/issuer.service';
 import { SchemaTemplateService } from 'src/schemas/schema-template.service';
 import { CreateOfferDto } from './dto/createOfferDto';
 import { StateService } from 'src/state/state.service';
-import { StateStatus } from 'src/state/enum/status.enum';
 import { OfferConfigurationDto } from './dto/offerConfigurationDto';
 import { PresentationDefinitionService } from 'src/presentation/presentation-definition.service';
 import { CredentialOfferData } from '@entities/credential-offer-data.entity';
@@ -35,7 +33,6 @@ export class CredentialOfferService {
     }
 
     private determineGrantType(credentialTypes: string[]): GrantType {
-        console.log({ credentialTypes })
         const hasPreAuthorised = credentialTypes.some(type => type.includes('PreAuthorised'));
         return hasPreAuthorised ? GrantType.PRE_AUTHORIZED_CODE : GrantType.AUTHORIZATION_CODE;
     }
@@ -46,7 +43,6 @@ export class CredentialOfferService {
         offerConfiguration: OfferConfigurationDto,
         status: string = 'PENDING'
     ): Promise<CredentialOffer> {
-        console.log('[generateOffer]')
         const { subjectDid } = credentialData;
         const { grantType, expiresIn, scope } = offerConfiguration;
         const credentialTypes = schema.schema.type;
@@ -59,7 +55,7 @@ export class CredentialOfferService {
         }
 
         const offerId = uuidv4();
-        const pin = grantType === GrantType.PRE_AUTHORIZED_CODE ? '1' : null; // TODO: this.generatePin();
+        const pin = grantType === GrantType.PRE_AUTHORIZED_CODE ? this.generatePin() : null;
         const expirationInSeconds = expiresIn ?? this.DEFAULT_EXPIRATION_TIME;
         const currentTimeInSeconds = Math.floor(Date.now() / 1000);
         const expiresAtInSeconds = currentTimeInSeconds + expirationInSeconds;
@@ -147,14 +143,14 @@ export class CredentialOfferService {
         });
     }
 
-    async createOffer(createOfferDto: CreateOfferDto): Promise<CredentialOffer> {
+    async createOffer(createOfferDto: CreateOfferDto, offerStatus: string = 'PENDING'): Promise<CredentialOffer> {
         const { schemaTemplateId, credentialData, offerConfiguration } = createOfferDto;
 
         // Validate and get schema
         const schema = await this.validateAndGetSchema(schemaTemplateId, credentialData);
 
         // Generate and store the offer
-        const offer = await this.generateOffer(schema, credentialData, offerConfiguration);
+        const offer = await this.generateOffer(schema, credentialData, offerConfiguration, offerStatus);
 
         return offer;
     }

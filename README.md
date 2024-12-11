@@ -51,6 +51,9 @@ For CI/CD we are currently using GitHub Actions.
 The organisation running this system needs to be onboarded to EBSI first. That means it needs to have a DID created and the DID document needs to be registered to EBSI. Details on this can be found here:
 [EBSI-Hub Onboard](https://hub.ebsi.eu/tools/cli/onboard)
 
+## Documentation
+- [Keycloak Setup Guide](./docs/keycloak-setup.md)
+
 ## License
 This project is licensed under a dual license model. For use with the EBSI Vector Pilot project, it is available under the GNU Affero General Public License v3.0 (AGPL-3.0). For all other uses, a commercial license is required. Please refer to the [AGPL-3.0 license text](https://www.gnu.org/licenses/agpl-3.0.en.html#license-text) for more details on the terms and conditions. For commercial licensing inquiries, please contact us at info@protokol.com.
 

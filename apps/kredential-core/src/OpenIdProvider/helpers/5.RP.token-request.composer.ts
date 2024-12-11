@@ -1,6 +1,6 @@
 import { JHeader, TokenRequestBody } from '../interfaces';
 import { TokenRequest } from '../interfaces/token-request.interface';
-import { JwtUtil } from 'src';
+import { JwtUtil } from './../../Signer';
 
 interface JWK {
     kid?: string;

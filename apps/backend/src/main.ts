@@ -1,7 +1,10 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import { ValidationPipe } from "@nestjs/common";
+import { HttpException, HttpStatus, ValidationPipe } from "@nestjs/common";
+import { useContainer } from "class-validator";
+import { EbsiExceptionFilter } from "./error/ebsi-exception.filter";
+import { createError } from "./error/ebsi-error";
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -12,7 +15,38 @@ async function bootstrap() {
         .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup("api", app, document);
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: true,
+        errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+        exceptionFactory: (errors) => {
+            console.log('Validation errors:', errors);
+
+            if (!errors || errors.length === 0) {
+                throw new Error('Validation failed: No errors provided.');
+            }
+
+            const firstError = errors[0];
+            const constraints = firstError.constraints;
+
+            if (!constraints || Object.keys(constraints).length === 0) {
+                throw new Error('Validation failed: No constraints provided.');
+            }
+
+            return new HttpException(
+                createError(
+                    'INVALID_REQUEST',
+                    Object.values(constraints)[0] // Safely access the first constraint message
+                ),
+                HttpStatus.BAD_REQUEST
+            );
+        }
+    }));
+    app.useGlobalFilters(new EbsiExceptionFilter());
+
+    // Use the container for class-validator
+    useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
     app.enableCors({
         origin: "*",

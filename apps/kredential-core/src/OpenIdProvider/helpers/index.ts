@@ -5,6 +5,4 @@ export * from './5.RP.token-request.composer';
 export * from './6.OP.token-response.composer';
 export * from './7.RP.credential-request.composer';
 export * from './8.OP.credential-response.composer';
-
-
-
+export * from './6.OP.VP-token-response.composer';

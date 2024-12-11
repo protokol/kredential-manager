@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { CredentialOffer } from './credential-offer.entity';
 
 @Entity()
 export class State {
@@ -61,6 +62,13 @@ export class State {
 
     @Column({ nullable: true })
     preAuthorisedCodeIsUsed: boolean;
+
+    @ManyToOne(() => CredentialOffer, { nullable: true, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'offerId' })
+    offer: CredentialOffer;
+
+    @Column({ nullable: true })
+    presentationUri: string;
 
     @Column('json', { nullable: true })
     payload: any;

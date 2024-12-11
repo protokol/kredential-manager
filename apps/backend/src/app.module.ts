@@ -35,6 +35,28 @@ import { LoggerMiddleware } from "./logger/LoggerMiddleware";
 import { StateService } from "./state/state.service";
 import { State } from "@entities/state.entity";
 import { ProxyService } from "./proxy/proxy.service";
+import { ApiKeyController } from "./api-key/api-key.controller";
+import { ApiKeyService } from "./api-key/api-key.service";
+import { ApiKeyModule } from "./api-key/api-key.module";
+import { CredentialOfferModule } from "./credential-offer/credential-offer.module";
+import { CredentialOfferController } from "./credential-offer/credential-offer.controller";
+import { CredentialOfferService } from "./credential-offer/credential-offer.service";
+import { DidModule } from "./student/did.module";
+import { EbsiConfigService } from "./network/ebsi-config.service";
+import { OfferController } from "./credential-offer/offer.controller";
+import { SchemaTemplateService } from "./schemas/schema-template.service";
+import { SchemaTemplateController } from "./schemas/schema-template.controller";
+import { SchemaTemplateModule } from "./schemas/schema-template.module";
+import { VpService } from "./vp/vp.service";
+import { PresentationDefinitionService } from "./presentation/presentation-definition.service";
+import { PresentationDefinitionController } from "./presentation/presentation-definition.controller";
+import { PresentationDefinitionModule } from "./presentation/presentation-definition.module";
+import { RequestUriController } from "./request-uri/requestUri.controller";
+import { RequestUriService } from "./request-uri/requestUri.service";
+import { VerificationService } from "./verification/verification.service";
+import { ScopeCredentialMappingService } from "./scope-mapping/scope-mapping.service";
+import { ScopeCredentialMappingController } from "./scope-mapping/scope-mapping.controller";
+import { ScopeMappingModule } from "./scope-mapping/scope-mapping.module";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -69,13 +91,26 @@ import { ProxyService } from "./proxy/proxy.service";
         ProgramModule,
         CourseModule,
         DiplomaModule,
-        EnrollmentModule
+        EnrollmentModule,
+        CredentialOfferModule,
+        ApiKeyModule,
+        DidModule,
+        SchemaTemplateModule,
+        PresentationDefinitionModule,
+        ScopeMappingModule
     ],
     controllers: [
         AppController,
         VcController,
         AuthController,
-        ProxyController
+        ProxyController,
+        ApiKeyController,
+        CredentialOfferController,
+        OfferController,
+        SchemaTemplateController,
+        PresentationDefinitionController,
+        RequestUriController,
+        ScopeCredentialMappingController
     ],
     providers: [
         AppService,
@@ -100,19 +135,25 @@ import { ProxyService } from "./proxy/proxy.service";
         OpenIDProviderService,
         IssuerService,
         AuthService,
-        ProxyService
+        ProxyService,
+        ApiKeyService,
+        CredentialOfferService,
+        EbsiConfigService,
+        VpService,
+        PresentationDefinitionService,
+        RequestUriService,
+        SchemaTemplateService,
+        VerificationService,
+        ScopeCredentialMappingService
     ],
     exports: [],
 })
 
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer): void {
-        console.log("!!!!!!!!!!AppModule");
-        console.log(process.env.KC_CLIENT_ID);
         consumer.apply((req, res, next) => {
-            console.log('Auth Debug:');
-            console.log('Public Key:', process.env.KC_REALM_PUBLIC_KEY);
-            console.log('Token:', req.headers.authorization);
+            // console.log('req', req);
+            // console.log('req', req.url)
             next();
         }).forRoutes('*');
         consumer.apply(LoggerMiddleware).forRoutes('*');

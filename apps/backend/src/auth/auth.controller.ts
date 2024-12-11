@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Res, Headers, Inject } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Res, Headers, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 import {
     Public,
@@ -8,6 +8,7 @@ import { IssuerService } from './../issuer/issuer.service';
 import { AuthorizeRequest, JWK, TokenRequestBody } from '@protokol/kredential-core';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { handleError } from 'src/error/ebsi-error.util';
 
 
 interface JWKS {
@@ -22,14 +23,17 @@ export class AuthController {
 
     @Get('.well-known/openid-credential-issuer')
     @Public(true)
-    getIssuerMetadata() {
-        return this.provider.getInstance().getIssuerMetadata();
+    async getIssuerMetadata() {
+        const provider = await this.provider.getInstance();
+        return provider.getIssuerMetadata();
     }
 
-    @Get('.well-known/openid-configuration')
+    @Get('authorize/.well-known/openid-configuration')
+    // @Get('.well-known/openid-configuration')
     @Public(true)
-    getConfigMetadata() {
-        return this.provider.getInstance().getConfigMetadata();
+    async getConfigMetadata() {
+        const provider = await this.provider.getInstance();
+        return provider.getConfigMetadata();
     }
 
     @Get('jwks')
@@ -51,9 +55,24 @@ export class AuthController {
             const { code, url } = await this.auth.authorize(req);
             return res.redirect(code, url);
         } catch (error) {
-            return res.status(400).json({ message: error.message });
+            throw handleError(error);
         }
     }
+
+    @Get('verifier')
+    @Public(true)
+    async verifier(
+        @Query() req: AuthorizeRequest,
+        @Res() res: Response,
+    ) {
+        try {
+            const { code, url } = await this.auth.authorize(req);
+            return res.redirect(code, url);
+        } catch (error) {
+            throw handleError(error);
+        }
+    }
+
 
     @Post('direct_post')
     @Public(true)
@@ -64,9 +83,10 @@ export class AuthController {
     ) {
         try {
             const { code, url } = await this.auth.directPost(req, headers);
+
             return res.redirect(code, url);
         } catch (error) {
-            return res.status(400).json({ message: error.message });
+            throw handleError(error);
         }
     }
 
@@ -81,7 +101,7 @@ export class AuthController {
             const { header, code, response } = await this.auth.token(req);
             return res.status(code).json(response);
         } catch (error) {
-            return res.status(400).json({ message: error.message });
+            throw handleError(error);
         }
     }
 
@@ -96,7 +116,7 @@ export class AuthController {
             const { code, response } = await this.auth.credentail(req);
             return res.status(code).json(response);
         } catch (error) {
-            return res.status(400).json({ message: error.message });
+            throw handleError(error);
         }
     }
 
@@ -111,7 +131,7 @@ export class AuthController {
             const { code, response } = await this.auth.credentilDeferred(req, headers);
             return res.status(code).json(response);
         } catch (error) {
-            return res.status(400).json({ message: error.message });
+            throw handleError(error);
         }
     }
 }

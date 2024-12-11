@@ -1,5 +1,6 @@
 
 export enum StateStatus {
     UNCLAIMED = 'unclaimed',
-    CLAIMED = 'claimed'
+    CLAIMED = 'claimed',
+    PENDING = 'pending'
 }

@@ -1,5 +1,3 @@
-// import { JWK } from 'jose'; // Assuming you're using the 'jose' library for JWT operations
-// import { JwtSigner, jwtSign } from "../utils/jwt.util";
 import { JHeader } from '../interfaces';
 import { IdTokenRequestPayload } from '../interfaces/id-token-request-payload.interface';
 import { JwtUtil } from '../../Signer';

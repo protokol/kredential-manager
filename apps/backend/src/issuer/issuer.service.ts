@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JWK, JWT } from '@protokol/kredential-core';
 import { EnterpriseJwtUtil } from './jwt.util';
 import { v4 as uuidv4 } from 'uuid';
+import { handleError } from 'src/error/ebsi-error.util';
 @Injectable()
 export class IssuerService {
     private did: string;
@@ -30,8 +31,7 @@ export class IssuerService {
                 };
                 this.jwtUtil = new EnterpriseJwtUtil(this.privateKeyJwk);
             } catch (error) {
-                console.error('Error parsing JWKs:', error);
-                throw new Error('Error parsing JWKs');
+                throw handleError(error);
             }
         })();
     }
@@ -101,7 +101,7 @@ export class IssuerService {
      * @returns A promise that resolves to the signed credential.
      */
 
-    async issueCredential(payload: object, clientId: string, options?: {
+    async issueCredential(vc: object, clientId: string, options?: {
         expirationDate?: Date,
         validFrom?: Date,
         vcId?: string,
@@ -113,27 +113,35 @@ export class IssuerService {
     }): Promise<string> {
         const nowDate = new Date();
         const nowUnix = Math.floor(Date.now() / 1000);
-        const vcId = `vc:ebsi:untitled#${options?.vcId ?? this.generateRandomJti()}`;
+        const vcId = `vc:ebsi#${options?.vcId ?? this.generateRandomJti()}`;
         const extendedUnsignedCredential = {
-            ...payload,
+            // ...payload,
             jti: vcId,
             sub: clientId,
             iss: this.did,
             nbf: options?.nbf ?? nowUnix,
-            exp: options?.exp ?? nowUnix + 86400, // Default to 24 hours from now
+            exp: options?.exp ?? nowUnix + 86400 * 100, // Default to 100 days from now
             iat: options?.iat ?? nowUnix,
             vc: {
-                ...payload['vc'],
+                ...vc,
                 id: vcId, // Must be the same as the jti
                 issuer: this.did,
                 issuanceDate: nowDate.toISOString(),
                 issued: nowDate.toISOString(),
                 validFrom: options?.validFrom?.toISOString() || nowDate.toISOString(),
-                expirationDate: options?.expirationDate?.toISOString() || new Date(nowDate.getTime() + 86400000).toISOString(), // Default to 24 hours from now
+                expirationDate: options?.expirationDate?.toISOString() || new Date(nowDate.getTime() + 86400000 * 100).toISOString(), // Default to 100 days
             }
         };
         // Sign the credential
         return await this.jwtUtil.sign(extendedUnsignedCredential, {}, 'ES256');
+    }
+
+    /**
+     * Get the JWT utility instance.
+     * @returns The JWT utility instance.
+     */
+    getJwtUtil(): EnterpriseJwtUtil {
+        return this.jwtUtil;
     }
 
 }

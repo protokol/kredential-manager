@@ -20,5 +20,5 @@ export interface BearerToken {
     sub: string;
     iat: number;
     exp: number;
-    vcId?: number; // Reference to verifiable credential
+    vcId?: number;
 }

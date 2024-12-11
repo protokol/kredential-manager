@@ -35,4 +35,10 @@ export interface OpenIdConfiguration {
     request_authentication_methods_supported?: {
         authorization_endpoint: string[];
     };
+    presentation_definitions_supported?: {
+        id: string;
+        format: {
+            jwt_vp: { alg: string[] };
+        };
+    }[];
 }

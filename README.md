@@ -45,10 +45,6 @@ Currently, contains working directories for:
 
 For CI/CD we are currently using GitHub Actions.
 
-### Prerequisites
-The organisation running this system needs to be onboarded to EBSI first. That means it needs to have a DID created and the DID document needs to be registered to EBSI. Details on this can be found here:
-[EBSI-Hub Onboard](https://hub.ebsi.eu/tools/cli/onboard)
-
 ## Quick Start Guide
 
 This guide will help you quickly set up and run the Kredential Manager project, which includes a backend service using NestJS, a PostgreSQL database, and Keycloak for identity and access management.
@@ -60,6 +56,9 @@ Ensure you have the following installed on your machine:
 - **Node.js** and **pnpm**: For running the backend and frontend applications.
 - **Docker** and **Docker Compose**: For running PostgreSQL and Keycloak services.
 - **Git**: For cloning the repository.
+- **EBSI CLI tool**: For onboarding to EBSI (generation DID and keys), found here https://hub.ebsi.eu/tools/cli
+- **Onboarding to EBSI**: The organisation running this system needs to be onboarded to EBSI first. That means it needs to have a DID created and the DID document needs to be registered to EBSI. Details on this can be found here:
+[EBSI-Hub Onboard](https://hub.ebsi.eu/tools/cli/onboard)
 
 ### Steps
 
@@ -72,7 +71,7 @@ Ensure you have the following installed on your machine:
 
 2. **Set Up Environment Variables**
 
-   Create a `.env` file in the root directory and populate it with the necessary environment variables. You can use the `.env.example` file as a template.
+   Create a `.env` file in the root directory and populate it with the necessary environment variables. You can use the `.env.example` file as a template. For EBSI DID and key generation please see chapter Prerequisites
 
    ```bash
    cp .env.example .env
@@ -120,7 +119,7 @@ Ensure you have the following installed on your machine:
 ## License
 This project is licensed under a dual license model. For use with the EBSI Vector Pilot project, it is available under the GNU Affero General Public License v3.0 (AGPL-3.0). For all other uses, a commercial license is required. Please refer to the [AGPL-3.0 license text](https://www.gnu.org/licenses/agpl-3.0.en.html#license-text) for more details on the terms and conditions. For commercial licensing inquiries, please contact us at info@protokol.com.
 
-# Contact Us For Support And Custom Development
+## Contact Us For Support And Custom Development
 
 info@protokol.com
 

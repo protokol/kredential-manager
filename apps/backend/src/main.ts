@@ -31,7 +31,13 @@ async function bootstrap() {
             const constraints = firstError.constraints;
 
             if (!constraints || Object.keys(constraints).length === 0) {
-                throw new Error('Validation failed: No constraints provided.');
+                return new HttpException(
+                    createError(
+                        'INVALID_REQUEST',
+                        'Validation failed: Invalid or missing constraints'
+                    ),
+                    HttpStatus.BAD_REQUEST
+                );
             }
 
             return new HttpException(

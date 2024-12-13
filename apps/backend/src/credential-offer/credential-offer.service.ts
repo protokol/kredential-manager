@@ -314,4 +314,15 @@ export class CredentialOfferService {
         const expiresAtInSeconds = Math.floor(offer.expires_at.getTime() / 1000);
         return expiresAtInSeconds <= nowInSeconds;
     }
+
+    async listOffers(): Promise<CredentialOffer[]> {
+        return await this.credentialOfferRepository.find();
+    }
+
+    async deleteOffer(id: string): Promise<void> {
+        const result = await this.credentialOfferRepository.delete(id);
+        if (result.affected === 0) {
+            throw new NotFoundException('Offer not found');
+        }
+    }
 }

@@ -16,9 +16,6 @@ export class OfferController {
     @Post()
     @ApiOperation({ summary: 'Create a credential offer' })
     async createOffer(@Body() createOfferDto: CreateOfferDto) {
-        const offer = await this.credentialOfferService.createOffer(createOfferDto);
-        return {
-            id: offer.id,
-        };
+        return await this.credentialOfferService.createOfferWithLingAndQR(createOfferDto);
     }
 }

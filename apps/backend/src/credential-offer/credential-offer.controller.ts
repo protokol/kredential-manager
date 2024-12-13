@@ -3,7 +3,6 @@ import { Public } from 'nest-keycloak-connect';
 import { ApiTags, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { ApiKeyGuard } from './../api-key/api-key.guard';
 import { CredentialOfferService } from './credential-offer.service';
-import * as QRCode from 'qrcode';
 import { CreateOfferDto } from './dto/createOfferDto';
 
 @Controller('credential-offer')
@@ -20,24 +19,7 @@ export class CredentialOfferController {
         description: 'API key for credential offer generation'
     })
     async createOffer(@Body() createOfferDto: CreateOfferDto) {
-        const offer = await this.credentialOfferService.createOffer(createOfferDto);
-
-        // Create the offer URI
-        const offerUrl = `${process.env.ISSUER_BASE_URL}/credential-offer/${offer.id}`;
-        const encodedUrl = encodeURIComponent(offerUrl);
-        const offerUri = `openid-credential-offer://?credential_offer_uri=${encodedUrl}`;
-
-        // Generate QR code
-        const qrCode = await QRCode.toDataURL(offerUri);
-
-
-        return {
-            id: offer.id,
-            credential_offer_details: offer.credential_offer_details,
-            pin: offer.pin,
-            offer_uri: offerUri,
-            qr_code: qrCode
-        };
+        return await this.credentialOfferService.createOfferWithLingAndQR(createOfferDto);
     }
 
     @Post(':id/verify-pin')

@@ -85,3 +85,11 @@ export interface CredentialOfferDetails {
         'urn:ietf:params:oauth:grant-type:pre-authorized_code'?: PreAuthorizedCodeGrant;
     };
 }
+
+export interface CredentialOfferWithQRAndLink {
+    id: string;
+    credential_offer_details: CredentialOfferDetailsResponse;
+    pin: string;
+    offer_uri: string;
+    qr_code: string;
+}

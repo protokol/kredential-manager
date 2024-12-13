@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CredentialOffer } from '../entities/credential-offer.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { CredentialOfferDetailsResponse, CredentialOfferStatus, GrantType } from './credential-offer.type';
+import { CredentialOfferDetailsResponse, CredentialOfferStatus, CredentialOfferWithQRAndLink, GrantType } from './credential-offer.type';
 import { IssuerService } from './../issuer/issuer.service';
 import { SchemaTemplateService } from 'src/schemas/schema-template.service';
 import { CreateOfferDto } from './dto/createOfferDto';
@@ -12,6 +12,7 @@ import { OfferConfigurationDto } from './dto/offerConfigurationDto';
 import { PresentationDefinitionService } from 'src/presentation/presentation-definition.service';
 import { CredentialOfferData } from '@entities/credential-offer-data.entity';
 import { VerificationService } from 'src/verification/verification.service';
+import * as QRCode from 'qrcode';
 
 @Injectable()
 export class CredentialOfferService {
@@ -32,10 +33,6 @@ export class CredentialOfferService {
         return Math.floor(100000 + Math.random() * 900000).toString();
     }
 
-    private determineGrantType(credentialTypes: string[]): GrantType {
-        const hasPreAuthorised = credentialTypes.some(type => type.includes('PreAuthorised'));
-        return hasPreAuthorised ? GrantType.PRE_AUTHORIZED_CODE : GrantType.AUTHORIZATION_CODE;
-    }
 
     private async generateOffer(
         schema: any,
@@ -153,6 +150,25 @@ export class CredentialOfferService {
         const offer = await this.generateOffer(schema, credentialData, offerConfiguration, offerStatus);
 
         return offer;
+    }
+
+    async createOfferWithLingAndQR(createOfferDto: CreateOfferDto): Promise<CredentialOfferWithQRAndLink> {
+        const offer = await this.createOffer(createOfferDto);
+        // Create the offer URI
+        const offerUrl = `${process.env.ISSUER_BASE_URL}/credential-offer/${offer.id}`;
+        const encodedUrl = encodeURIComponent(offerUrl);
+        const offerUri = `openid-credential-offer://?credential_offer_uri=${encodedUrl}`;
+
+        // Generate QR code
+        const qrCode = await QRCode.toDataURL(offerUri);
+
+        return {
+            id: offer.id,
+            credential_offer_details: offer.credential_offer_details,
+            pin: offer.pin,
+            offer_uri: offerUri,
+            qr_code: qrCode
+        };
     }
 
     /**

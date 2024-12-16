@@ -155,13 +155,14 @@ export class CredentialOfferService {
     async createOfferWithLingAndQR(createOfferDto: CreateOfferDto): Promise<CredentialOfferWithQRAndLink> {
         const offer = await this.createOffer(createOfferDto);
         // Create the offer URI
+        return this.formatOfferWithLinkAndQR(offer);
+    }
+
+    async formatOfferWithLinkAndQR(offer: CredentialOffer): Promise<CredentialOfferWithQRAndLink> {
         const offerUrl = `${process.env.ISSUER_BASE_URL}/credential-offer/${offer.id}`;
         const encodedUrl = encodeURIComponent(offerUrl);
         const offerUri = `openid-credential-offer://?credential_offer_uri=${encodedUrl}`;
-
-        // Generate QR code
         const qrCode = await QRCode.toDataURL(offerUri);
-
         return {
             id: offer.id,
             credential_offer_details: offer.credential_offer_details,
@@ -170,7 +171,6 @@ export class CredentialOfferService {
             qr_code: qrCode
         };
     }
-
     /**
      * Validates the schema and returns the schema
      * @param schemaTemplateId 
@@ -261,12 +261,16 @@ export class CredentialOfferService {
         return offer.pin === providedPin;
     }
 
-    async getById(id: string): Promise<CredentialOffer> {
-        return await this.credentialOfferRepository.findOne({
+    async getById(id: string): Promise<CredentialOfferWithQRAndLink> {
+        const offer = await this.credentialOfferRepository.findOne({
             where: {
                 id
             }
         });
+        if (!offer) {
+            throw new BadRequestException('Offer not found');
+        }
+        return this.formatOfferWithLinkAndQR(offer);
     }
 
     async getOfferById(id: string): Promise<CredentialOfferDetailsResponse> {

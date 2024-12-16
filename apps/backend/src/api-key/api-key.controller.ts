@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Get, Delete, Param, UseGuards } from '@nestjs/common';
 import { ApiKeyService } from './api-key.service';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
+import { handleError } from 'src/error/ebsi-error.util';
 
 @Controller('api-keys')
 @ApiTags('API Keys')
@@ -32,9 +33,13 @@ export class ApiKeyController {
     }
 
     @Delete(':id')
-    @ApiOperation({ summary: 'Revoke an API key' })
-    @ApiResponse({ status: 200, description: 'API key revoked successfully' })
-    async revokeApiKey(@Param('id') id: string) {
-        return await this.apiKeyService.revokeApiKey(parseInt(id));
+    @ApiOperation({ summary: 'Delete an API key' })
+    async deleteApiKey(@Param('id') id: number) {
+        try {
+            await this.apiKeyService.deleteApiKey(id);
+            return { message: 'API key deleted successfully' };
+        } catch (error) {
+            throw handleError(error);
+        }
     }
 }

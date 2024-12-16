@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards, Req, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, Req, Delete, BadRequestException } from '@nestjs/common';
 import { Public } from 'nest-keycloak-connect';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CredentialOfferService } from './credential-offer.service';
@@ -26,6 +26,15 @@ export class OfferController {
         return await this.credentialOfferService.listOffers();
     }
 
+    @Get(':id')
+    @ApiOperation({ summary: 'Get a credential offer' })
+    async getOffer(@Param('id') id: string) {
+        try {
+            return await this.credentialOfferService.getById(id);
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
+    }
 
     @Delete(':id')
     @ApiOperation({ summary: 'Delete a credential offer' })

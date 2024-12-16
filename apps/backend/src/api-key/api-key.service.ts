@@ -37,4 +37,8 @@ export class ApiKeyService {
         apiKey.isActive = false;
         await this.apiKeyRepository.save(apiKey);
     }
+
+    async deleteApiKey(id: number): Promise<void> {
+        await this.apiKeyRepository.delete(id);
+    }
 }

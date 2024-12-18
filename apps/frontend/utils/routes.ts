@@ -16,6 +16,12 @@ export const routes = {
       home: '/app/students',
       view: (id: string) => `/app/students/${id}`
     },
+    apiKeys: {
+      home: '/app/apiKeys'
+    },
+    schemaTemplates: {
+      home: '/app/schemas'
+    },
     integrations: {
       home: '/app/integrations',
       sources: {

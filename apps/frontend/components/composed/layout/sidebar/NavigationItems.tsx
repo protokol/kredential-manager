@@ -3,8 +3,10 @@
 import {
   AdjustmentsVerticalIcon,
   Cog8ToothIcon,
+  DocumentIcon,
   DocumentTextIcon,
   HomeIcon,
+  KeyIcon,
   UsersIcon
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
@@ -91,6 +93,18 @@ const NavigationItems: FC<NavigationItemsProps> = ({
         name: t('navigation.students'),
         href: routes.app.students.home,
         icon: UsersIcon
+      },
+      {
+        id: 'apiKeys',
+        name: t('navigation.api_keys'),
+        href: routes.app.apiKeys.home,
+        icon: KeyIcon
+      },
+      {
+        id: 'schemaTemplates',
+        name: t('navigation.schemaTemplates'),
+        href: routes.app.schemaTemplates.home,
+        icon: DocumentIcon
       },
       {
         id: 'integrations',

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  AcademicCapIcon,
   AdjustmentsVerticalIcon,
   Cog8ToothIcon,
   DocumentIcon,
@@ -105,6 +106,12 @@ const NavigationItems: FC<NavigationItemsProps> = ({
         name: t('navigation.schemaTemplates'),
         href: routes.app.schemaTemplates.home,
         icon: DocumentIcon
+      },
+      {
+        id: 'offers',
+        name: t('navigation.offers'),
+        href: routes.app.offers.home,
+        icon: AcademicCapIcon
       },
       {
         id: 'integrations',

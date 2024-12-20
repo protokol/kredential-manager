@@ -24,7 +24,8 @@
     "help": "Help",
     "sign_out": "Sign out",
     "api_keys": "Api keys",
-    "schemaTemplates": "Schema Templates"
+    "schemaTemplates": "Schema Templates",
+    "offers": "Offers"
   },
   "sign_in_page": {
     "welcome_back": "Welcome back!",
@@ -189,6 +190,27 @@
     "enter_template": "Enter schema template",
     "prefill": "Prefill with",
     "view": "View Schema Template",
-    "types": "Types"
+    "types": "Types",
+    "create_success": "Schema template created successfully",
+    "error_message": "Error creating schema template"
+  },
+  "offers": {
+    "title": "Offers",
+    "create": "Create Offer",
+    "name": "Name",
+    "types": "Types",
+    "createdAt": "Created At",
+    "actions": "Actions",
+    "quick_actions": "Quick actions",
+    "subject_did": "Subject DID",
+    "credential_types": "Credential Types",
+    "status": "Status",
+    "select_schema": "Select schema",
+    "template": "Template",
+    "enter_offer": "Enter offer",
+    "offer": "Offer",
+    "enter_subject_did": "Enter subject DID",
+    "create_success": "Offer created successfully",
+    "error_message": "Error creating offer"
   }
 }

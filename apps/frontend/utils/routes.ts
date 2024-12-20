@@ -22,6 +22,10 @@ export const routes = {
     schemaTemplates: {
       home: '/app/schemas'
     },
+    offers: {
+      home: '/app/offers',
+      view: (id: string) => `/app/offers/${id}`
+    },
     integrations: {
       home: '/app/integrations',
       sources: {

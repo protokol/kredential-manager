@@ -5,7 +5,7 @@ import { PresentationSubmission, VPPayload } from '@protokol/kredential-core';
 import { EbsiError } from '../error/ebsi-error';
 import { PresentationDefinitionService } from 'src/presentation/presentation-definition.service';
 import { PresentationDefinition } from '@entities/presentation-definition.entity';
-
+import * as zlib from 'zlib';
 @Injectable()
 export class VpService {
     constructor(
@@ -86,11 +86,35 @@ export class VpService {
         }
     }
 
-    private isCredentialRevoked(verifiedVc: any): boolean {
-        return verifiedVc.credentialStatus &&
-            'statusPurpose' in verifiedVc.credentialStatus &&
-            'statusListIndex' in verifiedVc.credentialStatus &&
-            verifiedVc.credentialStatus.statusPurpose === 'revocation' &&
-            verifiedVc.credentialStatus.statusListIndex === '7';
+    private async isCredentialRevoked(verifiedVc: any): Promise<boolean> {
+        if (!verifiedVc.credentialStatus ||
+            !verifiedVc.credentialStatus.statusPurpose ||
+            !verifiedVc.credentialStatus.statusListIndex ||
+            !verifiedVc.credentialStatus.statusListCredential ||
+            verifiedVc.credentialStatus.statusPurpose !== 'revocation') {
+            return false;
+        }
+
+        try {
+            // Fetch the status list
+            const response = await fetch(verifiedVc.credentialStatus.statusListCredential);
+            if (!response.ok) {
+                throw new Error('Failed to fetch status list');
+            }
+
+            // Get the encoded list
+            const statusList = await response.json();
+            const encodedList = statusList.credentialSubject.encodedList;
+
+            // Decode and check the bit
+            const compressed = Buffer.from(encodedList, 'base64');
+            const bitArray = new Uint8Array(zlib.gunzipSync(compressed));
+            const index = parseInt(verifiedVc.credentialStatus.statusListIndex);
+
+            return bitArray[index] === 1;  // true = revoked, false = valid
+        } catch (error) {
+            console.error('Error checking revocation status:', error);
+            throw error;
+        }
     }
 }

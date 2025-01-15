@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SchemaTemplateController } from './schema-template.controller';
 import { SchemaTemplateService } from './schema-template.service';
@@ -13,10 +13,14 @@ import { PresentationDefinitionService } from 'src/presentation/presentation-def
 import { VerifiableCredential } from '@entities/verifiableCredential.entity';
 import { Did } from '@entities/did.entity';
 import { OpenIDProviderService } from 'src/openId/openId.service';
+import { ApiKeyModule } from 'src/api-key/api-key.module';
+import { CredentialStatusModule } from 'src/credential-status/credential-status.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([CredentialSchema, PresentationDefinition, VerifiableCredential, Did])
+        TypeOrmModule.forFeature([CredentialSchema, PresentationDefinition, VerifiableCredential, Did]),
+        ApiKeyModule,
+        forwardRef(() => CredentialStatusModule)
     ],
     providers: [SchemaTemplateService, IssuerService, VerificationService, VpService, VcService, EbsiConfigService, PresentationDefinitionService, OpenIDProviderService],
     controllers: [SchemaTemplateController],

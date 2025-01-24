@@ -20,12 +20,14 @@ import { EbsiConfigService } from 'src/network/ebsi-config.service';
 import { VerificationService } from 'src/verification/verification.service';
 import { VcService } from 'src/vc/vc.service';
 import { VerifiableCredential } from '@entities/verifiableCredential.entity';
+import { CredentialStatusModule } from 'src/credential-status/credential-status.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([CredentialOffer, Did, CredentialSchema, State, PresentationDefinition, CredentialOfferData, VerifiableCredential]),
         ApiKeyModule,
-        SchemaTemplateModule
+        SchemaTemplateModule,
+        CredentialStatusModule
     ],
     controllers: [CredentialOfferController],
     providers: [CredentialOfferService, DidService, IssuerService, SchemaTemplateService, StateService, PresentationDefinitionService, VerificationService, VpService, VcService, EbsiConfigService, VerificationService],

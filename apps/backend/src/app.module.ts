@@ -57,6 +57,9 @@ import { VerificationService } from "./verification/verification.service";
 import { ScopeCredentialMappingService } from "./scope-mapping/scope-mapping.service";
 import { ScopeCredentialMappingController } from "./scope-mapping/scope-mapping.controller";
 import { ScopeMappingModule } from "./scope-mapping/scope-mapping.module";
+import { CredentialStatusModule } from "./credential-status/credential-status.module";
+import { CredentialStatusController } from "./credential-status/credential-status.controller";
+import { CredentialStatusService } from "./credential-status/credential-status.service";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -97,7 +100,8 @@ import { ScopeMappingModule } from "./scope-mapping/scope-mapping.module";
         DidModule,
         SchemaTemplateModule,
         PresentationDefinitionModule,
-        ScopeMappingModule
+        ScopeMappingModule,
+        CredentialStatusModule
     ],
     controllers: [
         AppController,
@@ -110,7 +114,8 @@ import { ScopeMappingModule } from "./scope-mapping/scope-mapping.module";
         SchemaTemplateController,
         PresentationDefinitionController,
         RequestUriController,
-        ScopeCredentialMappingController
+        ScopeCredentialMappingController,
+        CredentialStatusController
     ],
     providers: [
         AppService,
@@ -144,7 +149,8 @@ import { ScopeMappingModule } from "./scope-mapping/scope-mapping.module";
         RequestUriService,
         SchemaTemplateService,
         VerificationService,
-        ScopeCredentialMappingService
+        ScopeCredentialMappingService,
+        CredentialStatusService
     ],
     exports: [],
 })

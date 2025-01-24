@@ -714,27 +714,10 @@ export class AuthService {
     }
 
     /**
- * Handles the credential offering process.
- * @param pinCode The pin-code entered by the user.
- * @param preAuthorisedCode The pre-authorised code used in the Credential Offering.
- * @returns A promise resolving to an object containing the status and any additional information.
- */
-    // async offerPreAuthorisedCredential(pinCode: string, preAuthorisedCode: string) {
-    //     try {
-    //         // Validate the pin-code and pre-authorised code
-    //         const isValid = await this.validatePreAuthorisedCode(pinCode, preAuthorisedCode);
-    //         if (!isValid) {
-    //             throw new Error('Invalid pin-code or pre-authorised code');
-    //         }
-
-    //         // Initiate the credential issuance process
-    //         await this.issuePreAuthorisedCredential(pinCode, preAuthorisedCode);
-
-    //     } catch (error) {
-    //         throw handleError(error);
-    //     }
-    // }
-
+     * Retrieves the requested credentials from the state data.
+     * @param stateData The state data containing the authorization details.
+     * @returns An array of requested credentials.
+     */
     private getRequestedCredentials(stateData: any): string[] {
         const authorizationDetails = stateData?.payload?.authorizationDetails;
 
@@ -768,35 +751,4 @@ export class AuthService {
         return this.state.validatePreAuthorisedAndPinCode(pinCode, preAuthorisedCode);
     }
 
-    /**
-     * @param preAuthorisedCode The pre-authorised code used in the Credential Offering.
-     * @returns A promise resolving to an object containing the issued credential.
-     */
-    // async issuePreAuthorisedCredential(pinCode: string, preAuthorisedCode: string) {
-    //     try {
-
-    //         const state = await this.state.getByPreAuthorisedAndPinCode(pinCode, preAuthorisedCode);
-
-    //         if (!state || !state.clientId || state.preAuthorisedCodeIsUsed) {
-    //             throw new Error('Invalid pre-authorised code');
-    //         }
-    //         // Retrieve the DID of the user from the pre-authorised code
-    //         const did = state.clientId;
-    //         // Define the requested credentials
-    //         const requestedCredentials = state?.payload?.authorizationDetails?.[0]?.types ?? [];
-    //         if (requestedCredentials.length === 0) {
-    //             throw new Error('No requested credentials in state');
-    //         }
-    //         // Create the verifiable credential
-    //         const cred = await this.createVerifiableCredentialRecord(did, requestedCredentials);
-    //         // If not mock, issue the verifiable credential
-    //         // For the conformance test, we issue the verifiable credential else where
-    //         if (!preAuthorisedCode.startsWith(MOCK_EBSI_PRE_AUTHORISED_CODE)) {
-    //             await this.vcService.issueVerifiableCredential(cred.vcId);
-    //         }
-
-    //     } catch (error) {
-    //         throw handleError(error);
-    //     }
-    // }
 }

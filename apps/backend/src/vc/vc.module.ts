@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { VcService } from "./vc.service";
 import { VcController } from "./vc.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -11,11 +11,22 @@ import { VpService } from "src/vp/vp.service";
 import { EbsiConfigService } from "src/network/ebsi-config.service";
 import { PresentationDefinitionService } from "src/presentation/presentation-definition.service";
 import { PresentationDefinition } from "@entities/presentation-definition.entity";
+import { CredentialStatusModule } from "src/credential-status/credential-status.module";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([VerifiableCredential, Did, CredentialSchema, PresentationDefinition])],
+    imports: [
+        TypeOrmModule.forFeature([VerifiableCredential, Did, CredentialSchema, PresentationDefinition]),
+        forwardRef(() => CredentialStatusModule)
+    ],
     exports: [TypeOrmModule],
-    providers: [VcService, IssuerService, SchemaTemplateService, VpService, EbsiConfigService, PresentationDefinitionService],
+    providers: [
+        VcService,
+        IssuerService,
+        SchemaTemplateService,
+        VpService,
+        EbsiConfigService,
+        PresentationDefinitionService
+    ],
     controllers: [VcController],
 })
 export class VcModule { }

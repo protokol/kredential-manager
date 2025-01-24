@@ -13,6 +13,7 @@ import { IssuerService } from "src/issuer/issuer.service";
 import { AuthService } from "src/auth/auth.service";
 import { SchemaTemplateData } from "src/schemas/schema.types";
 import { SchemaTemplateService } from "src/schemas/schema-template.service";
+import { CredentialStatusService } from "src/credential-status/credential-status.service";
 
 @Injectable()
 export class VcService {
@@ -24,6 +25,7 @@ export class VcService {
         private didRepository: Repository<Did>,
         private issuer: IssuerService,
         private schemaTemplateService: SchemaTemplateService,
+        private credentialStatusService: CredentialStatusService,
     ) { }
 
     async findOne(id: number): Promise<VerifiableCredential | null> {
@@ -197,10 +199,10 @@ export class VcService {
         );
     }
 
-    async issueVerifiableCredential(id: number): Promise<{ signedCredential: string, credential: any }> {
-        const vc = await this.findVerifiableCredentialById(id);
+    async issueVerifiableCredential(vcId: number): Promise<{ signedCredential: string, credential: any }> {
+        const vc = await this.findVerifiableCredentialById(vcId);
         const subjectDid = vc.did.identifier;
-        const { isValid, errorMessage } = await this.validateVerifiableCredential(vc, id);
+        const { isValid, errorMessage } = await this.validateVerifiableCredential(vc, vcId);
         if (!isValid) {
             throw new Error(errorMessage);
         }
@@ -211,6 +213,21 @@ export class VcService {
             schemaTemplateId,
             templateData
         );
+
+        // Add status list information to the credential
+        const statusList = await this.credentialStatusService.getOrCreateStatusList(this.issuer.getDid());
+        const statusListIndex = await this.credentialStatusService.addCredential(
+            vcId.toString(),
+            statusList.id
+        );
+
+        credential.credentialStatus = {
+            id: `${process.env.ISSUER_BASE_URL}/credential-status/list/${statusList.id}#${statusListIndex}`,
+            type: "StatusList2021Entry",
+            statusPurpose: "revocation",
+            statusListIndex: statusListIndex.toString(),
+            statusListCredential: `${process.env.ISSUER_BASE_URL}/credential-status/list/${statusList.id}`
+        };
 
         // Update the status of the credential
         await this.updateVerifiableCredential(vc.id, credential, "{}"); // don't save the signed credential
@@ -290,4 +307,40 @@ export class VcService {
         const signedCredential = await this.issuer.issueCredential(credential, subjectDid, {});
         return { credential, signedCredential };
     }
+
+    // async issueVerifiableCredential(vcId: number): Promise<{ signedCredential: JWT, credential: VCJWT }> {
+    //     const vc = await this.findVerifiableCredentialById(vcId);
+    //     const subjectDid = vc.did.identifier;
+    //     const { isValid, errorMessage } = await this.validateVerifiableCredential(vc, vcId);
+    //     if (!isValid) {
+    //         throw new Error(errorMessage);
+    //     }
+    //     const { schemaTemplateId, templateData } = vc.offer.credential_offer_data;
+    //     const { signedCredential, credential } = await this.generateAndSignCredential(
+    //         this.issuer.getDid(),
+    //         subjectDid,
+    //         schemaTemplateId,
+    //         templateData
+    //     );
+
+    //     // Add status list information to the credential
+    //     const statusList = await this.credentialStatusService.getOrCreateStatusList(this.issuer.getDid());
+    //     const statusListIndex = await this.credentialStatusService.addCredential(
+    //         vcId.toString(),
+    //         statusList.id
+    //     );
+
+    //     credential.credentialStatus = {
+    //         id: `${process.env.ISSUER_BASE_URL}/credential-status/list/${statusList.id}#${statusListIndex}`,
+    //         type: "StatusList2021Entry",
+    //         statusPurpose: "revocation",
+    //         statusListIndex: statusListIndex.toString(),
+    //         statusListCredential: `${process.env.ISSUER_BASE_URL}/credential-status/list/${statusList.id}`
+    //     };
+
+    //     // Update the status of the credential
+    //     await this.updateVerifiableCredential(vc.id, credential, "{}"); // don't save the signed credential
+
+    //     return { signedCredential, credential };
+    // }
 }

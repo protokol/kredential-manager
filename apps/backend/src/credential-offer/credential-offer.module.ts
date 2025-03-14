@@ -31,6 +31,6 @@ import { CredentialStatusModule } from 'src/credential-status/credential-status.
     ],
     controllers: [CredentialOfferController],
     providers: [CredentialOfferService, DidService, IssuerService, SchemaTemplateService, StateService, PresentationDefinitionService, VerificationService, VpService, VcService, EbsiConfigService, VerificationService],
-    exports: [TypeOrmModule]
+    exports: [CredentialOfferService, TypeOrmModule]
 })
 export class CredentialOfferModule { }

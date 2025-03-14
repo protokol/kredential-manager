@@ -89,7 +89,8 @@ export interface CredentialOfferDetails {
 export interface CredentialOfferWithQRAndLink {
     id: string;
     credential_offer_details: CredentialOfferDetailsResponse;
-    pin: string;
+    pin?: string;
     offer_uri: string;
     qr_code: string;
+    credential_offer?: any;
 }

@@ -25,8 +25,11 @@ import { State } from "@entities/state.entity";
 import { StudentService } from "src/student/student.service";
 import { CreateStudentDto } from "src/student/dto/create-student"
 import { ScopeCredentialMappingService } from 'src/scope-mapping/scope-mapping.service';
-import { CredentialOfferData } from '@entities/credential-offer-data.entity';
 import { CreateOfferDto } from 'src/credential-offer/dto/createOfferDto';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { CredentialClaim, ClaimStatus, CredentialType } from '@entities/credential-claim.entity';
+import { Repository } from 'typeorm';
+import { InteropService } from 'src/interop/interop.service';
 
 const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 const MOCK_EBSI_PRE_AUTHORISED_DID = 'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kboj7g9PfXJxbbs4KYegyr7ELnFVnpDMzbJJDDNZjavX6jvtDmALMbXAGW67pdTgFea2FrGGSFs8Ejxi96oFLGHcL4P6bjLDPBJEvRRHSrG4LsPne52fczt2MWjHLLJBvhAC';
@@ -88,8 +91,9 @@ export class AuthService {
         private scopeCredentialMappingService: ScopeCredentialMappingService,
         private studentService: StudentService,
         private vpService: VpService,
-        private vcService: VcService
-    ) { }
+        private vcService: VcService,
+        private interopService: InteropService
+    ) { } 
 
     /**
      * Creates or retrieves a DID entity based on the provided DID, then creates a verifiable credential.
@@ -202,10 +206,7 @@ export class AuthService {
                 } catch (error) {
                     throw createError('INVALID_REQUEST', 'Invalid scope');
                 }
-
             }
-
-
 
             let presentationDefinition;
 
@@ -522,7 +523,7 @@ export class AuthService {
 
             // 3. Create the credential response
             const grantType = stateData.offer?.grant_type ?? GrantType.AUTHORIZATION_CODE;
-            return await this.createCredentialResponse(
+            const response = await this.createCredentialResponse(
                 grantType,
                 {
                     cNonce,
@@ -530,6 +531,28 @@ export class AuthService {
                     vcId: credentialRecord.vcId,
                 }
             );
+
+            console.log({ response, stateData });
+            console.log({ requestedCredentials });
+
+            // After successful credential issuance, update the claim status
+            if (stateData.clientId) {
+                const claim = await this.interopService.findOne({
+                    where: { 
+                        offer: {
+                            id: stateData.offer.id
+                        }
+                    }
+                });
+                
+                if (claim) {
+                    claim.status = ClaimStatus.CLAIMED;
+                    claim.claimedAt = new Date();
+                    await this.interopService.updateClaimStatus(claim.id, ClaimStatus.CLAIMED);
+                }
+            }
+
+            return response;
         } catch (error) {
             throw handleError(error);
         }

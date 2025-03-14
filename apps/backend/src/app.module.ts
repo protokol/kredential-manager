@@ -15,7 +15,7 @@ import {
     PolicyEnforcementMode,
     TokenValidation,
 } from "nest-keycloak-connect";
-import { APP_GUARD } from "@nestjs/core";
+import { APP_GUARD, APP_PIPE } from "@nestjs/core";
 import { StudentModule } from "./student/student.module";
 import { StudentService } from "./student/student.service";
 import { ProgramModule } from "./program/program.module";
@@ -60,6 +60,10 @@ import { ScopeMappingModule } from "./scope-mapping/scope-mapping.module";
 import { CredentialStatusModule } from "./credential-status/credential-status.module";
 import { CredentialStatusController } from "./credential-status/credential-status.controller";
 import { CredentialStatusService } from "./credential-status/credential-status.service";
+import { InteropModule } from './interop/interop.module';
+import { ValidationPipe } from '@nestjs/common';
+import { InteropService } from "./interop/interop.service";
+import { CredentialClaim } from "@entities/credential-claim.entity";
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -73,7 +77,7 @@ import { CredentialStatusService } from "./credential-status/credential-status.s
             }),
             inject: [ConfigService],
         }),
-        TypeOrmModule.forFeature([Nonce, State]),
+        TypeOrmModule.forFeature([Nonce, State, CredentialClaim]),
 
         // Keycloak
         KeycloakConnectModule.register({
@@ -101,7 +105,8 @@ import { CredentialStatusService } from "./credential-status/credential-status.s
         SchemaTemplateModule,
         PresentationDefinitionModule,
         ScopeMappingModule,
-        CredentialStatusModule
+        CredentialStatusModule,
+        InteropModule
     ],
     controllers: [
         AppController,
@@ -150,7 +155,12 @@ import { CredentialStatusService } from "./credential-status/credential-status.s
         SchemaTemplateService,
         VerificationService,
         ScopeCredentialMappingService,
-        CredentialStatusService
+        CredentialStatusService,
+        {
+            provide: APP_PIPE,
+            useClass: ValidationPipe,
+        },
+        InteropService
     ],
     exports: [],
 })

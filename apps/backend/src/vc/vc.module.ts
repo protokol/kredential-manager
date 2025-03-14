@@ -18,7 +18,7 @@ import { CredentialStatusModule } from "src/credential-status/credential-status.
         TypeOrmModule.forFeature([VerifiableCredential, Did, CredentialSchema, PresentationDefinition]),
         forwardRef(() => CredentialStatusModule)
     ],
-    exports: [TypeOrmModule],
+    exports: [TypeOrmModule, VcService],
     providers: [
         VcService,
         IssuerService,

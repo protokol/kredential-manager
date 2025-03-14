@@ -47,4 +47,7 @@ export class CredentialOffer {
 
     @Column()
     expires_at: Date;
+
+    @Column({ nullable: true })
+    authorization_code: string;
 }

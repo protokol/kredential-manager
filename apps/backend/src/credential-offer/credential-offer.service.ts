@@ -149,6 +149,12 @@ export class CredentialOfferService {
         // Generate and store the offer
         const offer = await this.generateOffer(schema, credentialData, offerConfiguration, offerStatus);
 
+        // For non-deferred credentials, we should generate and return an authorization code
+        if (!offerConfiguration.isDeferred) {
+            const authCode = uuidv4(); // or however you generate auth codes
+            offer.authorization_code = authCode;
+        }
+
         return offer;
     }
 
@@ -163,12 +169,22 @@ export class CredentialOfferService {
         const encodedUrl = encodeURIComponent(offerUrl);
         const offerUri = `openid-credential-offer://?credential_offer_uri=${encodedUrl}`;
         const qrCode = await QRCode.toDataURL(offerUri);
+
+        // Make sure we include the authorization code in the response
+        const offerData = {
+            credential_offer: {
+                ...offer,
+                authorization_code: offer.authorization_code // Make sure this is included
+            }
+        };
+
         return {
             id: offer.id,
             credential_offer_details: offer.credential_offer_details,
             pin: offer.pin,
             offer_uri: offerUri,
-            qr_code: qrCode
+            qr_code: qrCode,
+            credential_offer: offerData.credential_offer
         };
     }
     /**
@@ -328,5 +344,25 @@ export class CredentialOfferService {
         if (result.affected === 0) {
             throw new NotFoundException('Offer not found');
         }
+    }
+
+    async createCredentialOffer(params: {
+        type: string;
+        holderDid: string;
+        preAuthorized: boolean;
+        deferred: boolean;
+    }) {
+        const offer = await this.createOffer({
+            schemaTemplateId: 1,
+            credentialData: {
+                subjectDid: params.holderDid
+            },
+            offerConfiguration: {
+                grantType: params.preAuthorized ? GrantType.PRE_AUTHORIZED_CODE : GrantType.AUTHORIZATION_CODE
+            }
+        });
+
+        const formattedOffer = await this.formatOfferWithLinkAndQR(offer);
+        return { offer, qrCode: formattedOffer.qr_code };
     }
 }

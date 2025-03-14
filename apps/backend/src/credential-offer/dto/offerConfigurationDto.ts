@@ -1,4 +1,4 @@
-import { IsEnum, IsString } from "class-validator";
+import { IsBoolean, IsEnum, IsString } from "class-validator";
 
 import { GrantType } from "../credential-offer.type";
 
@@ -21,4 +21,9 @@ export class OfferConfigurationDto {
     @IsOptional()
     @IsNumber()
     expiresIn?: number;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsBoolean()
+    isDeferred?: boolean;
 }

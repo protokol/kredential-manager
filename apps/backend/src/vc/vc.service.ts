@@ -26,13 +26,18 @@ export class VcService {
         private issuer: IssuerService,
         private schemaTemplateService: SchemaTemplateService,
         private credentialStatusService: CredentialStatusService,
-    ) { }
+    ) {}
 
     async findOne(id: number): Promise<VerifiableCredential | null> {
         try {
             const vc = await this.vcRepository.findOne({
                 where: { id },
-                relations: ["did", "did.student", "offer", "offer.credential_offer_data"],
+                relations: [
+                    "did",
+                    "did.student",
+                    "offer",
+                    "offer.credential_offer_data",
+                ],
             });
             if (vc === null) {
                 throw new BadRequestException("No record found.");
@@ -57,7 +62,9 @@ export class VcService {
             // }
             return vcs;
         } catch (error) {
-            this.logger.error(`VCsService:findByDid : ${JSON.stringify(error.message)}`);
+            this.logger.error(
+                `VCsService:findByDid : ${JSON.stringify(error.message)}`,
+            );
             throw new BadRequestException(error.message);
         }
     }
@@ -139,10 +146,17 @@ export class VcService {
     }
 
     // Helper functions
-    private async findVerifiableCredentialById(id: number): Promise<VerifiableCredential | null> {
+    private async findVerifiableCredentialById(
+        id: number,
+    ): Promise<VerifiableCredential | null> {
         return await this.vcRepository.findOne({
             where: { id },
-            relations: ["did", "did.student", "offer", "offer.credential_offer_data"],
+            relations: [
+                "did",
+                "did.student",
+                "offer",
+                "offer.credential_offer_data",
+            ],
         });
     }
 
@@ -158,75 +172,101 @@ export class VcService {
     }
 
     // Validate the verifiable credential
-    private async validateVerifiableCredential(vc: VerifiableCredential | null, id: number): Promise<{ isValid: boolean, errorMessage?: string }> {
+    private async validateVerifiableCredential(
+        vc: VerifiableCredential | null,
+        id: number,
+    ): Promise<{ isValid: boolean; errorMessage?: string }> {
         if (!vc) {
-            return { isValid: false, errorMessage: `VC with ID ${id} not found.` };
+            return {
+                isValid: false,
+                errorMessage: `VC with ID ${id} not found.`,
+            };
         }
 
         if (!vc.did || !vc.did.student) {
-            return { isValid: false, errorMessage: `Student not found for VC with ID ${id}.` };
+            return {
+                isValid: false,
+                errorMessage: `Student not found for VC with ID ${id}.`,
+            };
         }
         if (vc.status === VCStatus.ISSUED) {
-            return { isValid: false, errorMessage: `VC with ID ${id} already issued.` };
+            return {
+                isValid: false,
+                errorMessage: `VC with ID ${id} already issued.`,
+            };
         }
         return { isValid: true };
     }
 
     // Issue the verifiable credential
-    async issueCredential(credential: object, clientId: string, options?: {
-        expirationDate?: Date,
-        validFrom?: Date,
-        vcId?: string,
-        sub?: string,
-        iss?: string,
-        nbf?: number,
-        exp?: number,
-        iat?: number
-    }): Promise<string> {
+    async issueCredential(
+        credential: object,
+        clientId: string,
+        options?: {
+            expirationDate?: Date;
+            validFrom?: Date;
+            vcId?: string;
+            sub?: string;
+            iss?: string;
+            nbf?: number;
+            exp?: number;
+            iat?: number;
+        },
+    ): Promise<string> {
         return await this.issuer.issueCredential(credential, clientId, options);
     }
 
     // Update the verifiable credential
-    async updateVerifiableCredential(id: number, credential: object, signedCredential: string): Promise<void> {
-        await this.vcRepository.update(
-            id,
-            {
-                status: VCStatus.ISSUED,
-                credential: JSON.stringify(credential),
-                credential_signed: signedCredential,
-                issued_at: new Date(),
-            }
-        );
+    async updateVerifiableCredential(
+        id: number,
+        credential: object,
+        signedCredential: string,
+    ): Promise<void> {
+        await this.vcRepository.update(id, {
+            status: VCStatus.ISSUED,
+            credential: JSON.stringify(credential),
+            credential_signed: signedCredential,
+            issued_at: new Date(),
+        });
     }
 
-    async issueVerifiableCredential(vcId: number): Promise<{ signedCredential: string, credential: any }> {
+    async issueVerifiableCredential(
+        vcId: number,
+    ): Promise<{ signedCredential: string; credential: any }> {
         const vc = await this.findVerifiableCredentialById(vcId);
         const subjectDid = vc.did.identifier;
-        const { isValid, errorMessage } = await this.validateVerifiableCredential(vc, vcId);
+        const { isValid, errorMessage } =
+            await this.validateVerifiableCredential(vc, vcId);
         if (!isValid) {
             throw new Error(errorMessage);
         }
-        const { schemaTemplateId, templateData } = vc.offer.credential_offer_data;
-        const { signedCredential, credential } = await this.generateAndSignCredential(
-            this.issuer.getDid(),
-            subjectDid,
-            schemaTemplateId,
-            templateData
-        );
+        const { schemaTemplateId, templateData } =
+            vc.offer.credential_offer_data;
+        const { signedCredential, credential } =
+            await this.generateAndSignCredential(
+                this.issuer.getDid(),
+                subjectDid,
+                schemaTemplateId,
+                templateData,
+            );
 
         // Add status list information to the credential
-        const statusList = await this.credentialStatusService.getOrCreateStatusList(this.issuer.getDid());
-        const statusListIndex = await this.credentialStatusService.addCredential(
-            vcId.toString(),
-            statusList.id
-        );
+        const statusList =
+            await this.credentialStatusService.getOrCreateStatusList(
+                this.issuer.getDid(),
+            );
+        const statusListIndex =
+            await this.credentialStatusService.addCredential(
+                vcId.toString(),
+                statusList.id,
+            );
 
         credential.credentialStatus = {
             id: `${process.env.ISSUER_BASE_URL}/credential-status/list/${statusList.id}#${statusListIndex}`,
             type: "StatusList2021Entry",
             statusPurpose: "revocation",
             statusListIndex: statusListIndex.toString(),
-            statusListCredential: `${process.env.ISSUER_BASE_URL}/credential-status/list/${statusList.id}`
+            statusListCredential: `${process.env.ISSUER_BASE_URL}/credential-status/list/${statusList.id}`,
         };
 
         // Update the status of the credential
@@ -235,76 +275,127 @@ export class VcService {
         return { signedCredential, credential };
     }
 
-    async CONFORMANCE_issueVerifiableCredential(id: number, requestedCredentials: string[], clientId: string) {
+    async CONFORMANCE_issueVerifiableCredential(
+        id: number,
+        requestedCredentials: string[],
+        clientId: string,
+    ) {
         const vc = await this.findVerifiableCredentialById(id);
         const existingCredentials = vc.requested_credentials;
 
-        if (!this.arraysAreEqual(existingCredentials as string[], requestedCredentials)) {
-            return { code: 400, response: `Requested credentials do not match the VC with ID ${id}.` };
+        if (
+            !this.arraysAreEqual(
+                existingCredentials as string[],
+                requestedCredentials,
+            )
+        ) {
+            return {
+                code: 400,
+                response: `Requested credentials do not match the VC with ID ${id}.`,
+            };
         }
 
-        let credentialTypes = []
-        // The order of the credential types is important, the conformance test will fail if the order is not correct 
+        let credentialTypes = [];
+        // The order of the credential types is important, the conformance test will fail if the order is not correct
         // CTWalletSameAuthorisedInTime|CTWalletSameAuthorisedDeferred must be the last item in the array
-        if (requestedCredentials.includes('CTWalletSameAuthorisedInTime')) {
+        if (requestedCredentials.includes("CTWalletSameAuthorisedInTime")) {
             credentialTypes = [
                 "VerifiableCredential",
                 "VerifiableAttestation",
-                "CTWalletSameAuthorisedInTime"
-            ]
-        } else if (requestedCredentials.includes('CTWalletSameAuthorisedDeferred')) {
+                "CTWalletSameAuthorisedInTime",
+            ];
+        } else if (
+            requestedCredentials.includes("CTWalletSameAuthorisedDeferred")
+        ) {
             credentialTypes = [
                 "VerifiableCredential",
                 "VerifiableAttestation",
-                "CTWalletSameAuthorisedDeferred"
-            ]
-        } else if (requestedCredentials.includes('CTWalletSamePreAuthorisedInTime')) {
+                "CTWalletSameAuthorisedDeferred",
+            ];
+        } else if (
+            requestedCredentials.includes("CTWalletSamePreAuthorisedInTime")
+        ) {
             credentialTypes = [
                 "VerifiableCredential",
                 "VerifiableAttestation",
-                "CTWalletSamePreAuthorisedInTime"
-            ]
-        } else if (requestedCredentials.includes('CTWalletSamePreAuthorisedDeferred')) {
+                "CTWalletSamePreAuthorisedInTime",
+            ];
+        } else if (
+            requestedCredentials.includes("CTWalletSamePreAuthorisedDeferred")
+        ) {
             credentialTypes = [
                 "VerifiableCredential",
                 "VerifiableAttestation",
-                "CTWalletSamePreAuthorisedDeferred"
-            ]
+                "CTWalletSamePreAuthorisedDeferred",
+            ];
+        } else if (requestedCredentials.includes("ITStudentIDCardInTime")) {
+            credentialTypes = ["VerifiableCredential", "ITStudentIDCardInTime"];
+        } else if (
+            requestedCredentials.includes("ITDeferredStudentCredential")
+        ) {
+            credentialTypes = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "ITDeferredStudentCredential",
+            ];
+        } else if (
+            requestedCredentials.includes("ITPreAuthStudentCredential")
+        ) {
+            credentialTypes = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "ITPreAuthStudentCredential",
+            ];
+        } else if (
+            requestedCredentials.includes("VerificationStudentCredential")
+        ) {
+            credentialTypes = [
+                "VerifiableCredential",
+                "VerifiableAttestation",
+                "VerificationStudentCredential",
+            ];
         }
         if (credentialTypes.length === 0) {
-            throw new Error('Invalid credential types');
+            throw new Error("Invalid credential types");
         }
         const credential = {
             "@context": ["https://www.w3.org/2018/credentials/v1"],
-            "type": credentialTypes,
-            "credentialSubject": {
-                "id": clientId
+            type: credentialTypes,
+            credentialSubject: {
+                id: clientId,
             },
-            "credentialSchema": {
-                "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
-                "type": "FullJsonSchemaValidator2021"
-            }
+            credentialSchema: {
+                id: "https://api-conformance.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
+                type: "FullJsonSchemaValidator2021",
+            },
         };
 
-        const signedCredential = await this.issueCredential(credential, clientId);
+        const signedCredential = await this.issueCredential(
+            credential,
+            clientId,
+        );
         await this.updateVerifiableCredential(id, credential, signedCredential);
 
-        return signedCredential
+        return signedCredential;
     }
 
     async generateAndSignCredential(
         issuerDid: string,
         subjectDid: string,
         schemaTemplateId: number,
-        templateData: SchemaTemplateData
-    ): Promise<{ credential: any, signedCredential: string }> {
+        templateData: SchemaTemplateData,
+    ): Promise<{ credential: any; signedCredential: string }> {
         const credential = await this.schemaTemplateService.generateCredential(
             issuerDid,
             subjectDid,
             schemaTemplateId,
-            templateData
+            templateData,
         );
-        const signedCredential = await this.issuer.issueCredential(credential, subjectDid, {});
+        const signedCredential = await this.issuer.issueCredential(
+            credential,
+            subjectDid,
+            {},
+        );
         return { credential, signedCredential };
     }
 

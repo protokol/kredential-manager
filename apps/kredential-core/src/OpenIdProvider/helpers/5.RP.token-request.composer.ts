@@ -19,7 +19,7 @@ export class TokenRequestComposer {
     private jwtUtil: JwtUtil;
     private preAuthorizedCode?: string;
     private userPin?: string;
-
+    private redirect_uri?: string;
     /**
      * Initializes a new instance of the TokenRequestComposer with essential parameters for an OAuth 2.0 token request.
      * @param privateKeyJWK - The private key in JWK format used for signing the JWT.
@@ -31,6 +31,16 @@ export class TokenRequestComposer {
         this.grantType = grantType;
         this.jwtUtil = jwtUtil;
         this.isPreAuthorized = isPreAuthorized;
+    }
+
+    /**
+     * Sets the redirect URI for the token request.
+     * @param uri - The redirect URI to be included in the request.
+     * @returns This instance for method chaining.
+     */
+    setRedirectUri(uri: string): this {
+        this.redirect_uri = uri;
+        return this;
     }
 
     /**
@@ -128,7 +138,8 @@ export class TokenRequestComposer {
                 code: this.code,
                 client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
                 client_assertion: clientAssertion,
-                code_verifier: this.codeVerifier
+                code_verifier: this.codeVerifier,
+                redirect_uri: this.redirect_uri
             };
         }
 

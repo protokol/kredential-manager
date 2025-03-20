@@ -1,43 +1,46 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToOne, Index, OneToMany } from 'typeorm';
-import { VerifiableCredential } from './verifiableCredential.entity';
-import { CredentialOffer } from './credential-offer.entity';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    ManyToOne,
+    OneToOne,
+    Index,
+    OneToMany,
+} from "typeorm";
+import { VerifiableCredential } from "./verifiableCredential.entity";
+import { CredentialOffer } from "./credential-offer.entity";
 
 export enum ClaimStatus {
-    PENDING = 'PENDING',
-    CLAIMED = 'CLAIMED',
-    FAILED = 'FAILED'
+    PENDING = "PENDING",
+    CLAIMED = "CLAIMED",
+    FAILED = "FAILED",
 }
 
 export enum CredentialType {
-    IN_TIME = 'CTWalletSameAuthorisedInTime',
-    DEFERRED = 'CTWalletSameAuthorisedDeferred',
-    PRE_AUTH_IN_TIME = 'CTWalletSamePreAuthorisedInTime',
-    PRE_AUTH_DEFERRED = 'CTWalletSamePreAuthorisedDeferred',
-    LIBRARY_ACCESS = 'LibraryAccessCredential',
-    INTEROP_TEST = 'InteropTestCredential'
+    IN_TIME = "CTWalletSameAuthorisedInTime",
+    DEFERRED = "CTWalletSameAuthorisedDeferred",
+    PRE_AUTH_IN_TIME = "CTWalletSamePreAuthorisedInTime",
+    PRE_AUTH_DEFERRED = "CTWalletSamePreAuthorisedDeferred",
+    LIBRARY_ACCESS = "LibraryAccessCredential",
+    INTEROP_TEST = "InteropTestCredential",
 }
 
 @Entity()
 export class CredentialClaim {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn("uuid")
     id: string;
 
     @Column()
     holderDid: string;
 
     @Column({
-        type: 'varchar'
+        type: "varchar",
     })
     credentialType: string;
 
-    @Column({
-        type: 'enum',
-        enum: ClaimStatus,
-        default: ClaimStatus.PENDING
-    })
-
-    @Index()
-    status: ClaimStatus;
+    @Column({ nullable: false })
+    status: string;
 
     @Column({ nullable: true })
     qrCode: string;
@@ -53,4 +56,4 @@ export class CredentialClaim {
 
     @Column({ nullable: true })
     claimedAt: Date;
-} 
+}

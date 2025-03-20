@@ -6,5 +6,6 @@ export interface TokenRequestBody {
     client_assertion?: string;
     code_verifier?: string | undefined;
     user_pin?: string;
+    redirect_uri?: string;
     'pre-authorized_code'?: string;
 }

@@ -44,6 +44,10 @@ export function isIDTokenTest(scope: string): boolean {
     return scope?.includes('ver_test:id_token');
 }
 
-export function isConformanceTestScope(scope: string): { isVPTokenTest: boolean, isIDTokenTest: boolean } {
-    return { isVPTokenTest: isVPTokenTest(scope), isIDTokenTest: isIDTokenTest(scope) };
+export function isVPTokenInteroperabilityTest(scope: string): boolean {
+    return scope?.includes('openid:interopTest');
+}
+
+export function isConformanceTestScope(scope: string): { isVPTokenTest: boolean, isIDTokenTest: boolean, isVPTokenInteroperabilityTest: boolean } {
+    return { isVPTokenTest: isVPTokenTest(scope), isIDTokenTest: isIDTokenTest(scope), isVPTokenInteroperabilityTest: isVPTokenInteroperabilityTest(scope) };
 }

@@ -15,40 +15,40 @@ async function bootstrap() {
         .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup("api", app, document);
-    app.useGlobalPipes(new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-        errorHttpStatusCode: HttpStatus.BAD_REQUEST,
-        exceptionFactory: (errors) => {
-            console.log('Validation errors:', errors);
+    app.useGlobalPipes(
+        new ValidationPipe({
+            whitelist: true,
+            transform: true,
+            forbidNonWhitelisted: true,
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+            exceptionFactory: (errors) => {
+                if (!errors || errors.length === 0) {
+                    throw new Error("Validation failed: No errors provided.");
+                }
 
-            if (!errors || errors.length === 0) {
-                throw new Error('Validation failed: No errors provided.');
-            }
+                const firstError = errors[0];
+                const constraints = firstError.constraints;
 
-            const firstError = errors[0];
-            const constraints = firstError.constraints;
+                if (!constraints || Object.keys(constraints).length === 0) {
+                    return new HttpException(
+                        createError(
+                            "INVALID_REQUEST",
+                            "Validation failed: Invalid or missing constraints",
+                        ),
+                        HttpStatus.BAD_REQUEST,
+                    );
+                }
 
-            if (!constraints || Object.keys(constraints).length === 0) {
                 return new HttpException(
                     createError(
-                        'INVALID_REQUEST',
-                        'Validation failed: Invalid or missing constraints'
+                        "INVALID_REQUEST",
+                        Object.values(constraints)[0], // Safely access the first constraint message
                     ),
-                    HttpStatus.BAD_REQUEST
+                    HttpStatus.BAD_REQUEST,
                 );
-            }
-
-            return new HttpException(
-                createError(
-                    'INVALID_REQUEST',
-                    Object.values(constraints)[0] // Safely access the first constraint message
-                ),
-                HttpStatus.BAD_REQUEST
-            );
-        }
-    }));
+            },
+        }),
+    );
     app.useGlobalFilters(new EbsiExceptionFilter());
 
     // Use the container for class-validator

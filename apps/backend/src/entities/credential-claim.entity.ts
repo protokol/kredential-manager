@@ -12,7 +12,9 @@ export enum CredentialType {
     IN_TIME = 'CTWalletSameAuthorisedInTime',
     DEFERRED = 'CTWalletSameAuthorisedDeferred',
     PRE_AUTH_IN_TIME = 'CTWalletSamePreAuthorisedInTime',
-    PRE_AUTH_DEFERRED = 'CTWalletSamePreAuthorisedDeferred'
+    PRE_AUTH_DEFERRED = 'CTWalletSamePreAuthorisedDeferred',
+    LIBRARY_ACCESS = 'LibraryAccessCredential',
+    INTEROP_TEST = 'InteropTestCredential'
 }
 
 @Entity()
@@ -24,10 +26,9 @@ export class CredentialClaim {
     holderDid: string;
 
     @Column({
-        type: 'enum',
-        enum: CredentialType
+        type: 'varchar'
     })
-    credentialType: CredentialType;
+    credentialType: string;
 
     @Column({
         type: 'enum',

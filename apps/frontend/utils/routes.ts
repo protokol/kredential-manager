@@ -1,5 +1,6 @@
 export const routes = {
   home: '/',
+  interoperability: '/interoperability',
   app: {
     home: '/app',
     credentials: {
@@ -25,6 +26,9 @@ export const routes = {
     offers: {
       home: '/app/offers',
       view: (id: string) => `/app/offers/${id}`
+    },
+    interoperability: {
+      home: '/app/interoperability'
     },
     integrations: {
       home: '/app/integrations',

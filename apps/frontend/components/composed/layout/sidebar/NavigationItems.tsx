@@ -114,6 +114,12 @@ const NavigationItems: FC<NavigationItemsProps> = ({
         icon: AcademicCapIcon
       },
       {
+        id: 'interoperability',
+        name: t('navigation.interoperability'),
+        href: routes.app.interoperability.home,
+        icon: DocumentTextIcon
+      },
+      {
         id: 'integrations',
         name: t('navigation.integrations'),
         match: routes.app.integrations.home,

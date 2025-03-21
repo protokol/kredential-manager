@@ -112,11 +112,23 @@ function InteroperabilityPublicPage() {
                       </p>
                       {credential.qrCode && (
                         <div className='mb-4 flex justify-center'>
-                          <div 
-                            dangerouslySetInnerHTML={{ 
-                              __html: `<img src="${credential.qrCode}" alt="Credential QR Code" class="max-w-[200px]" />` 
-                            }} 
-                          />
+                          {credential.qrCode.startsWith('data:image') ? (
+                            // For data URLs, use regular img
+                            <img
+                              src={credential.qrCode}
+                              alt='Credential QR Code'
+                              className='max-w-[200px]'
+                            />
+                          ) : (
+                            // For regular URLs, use next/image
+                            <Image
+                              src={credential.qrCode}
+                              alt='Credential QR Code'
+                              width={200}
+                              height={200}
+                              className='max-w-[200px]'
+                            />
+                          )}
                         </div>
                       )}
                       <div className='space-y-1 text-sm'>

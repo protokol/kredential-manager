@@ -41,7 +41,6 @@ export default async function handler(
 
     return res.status(200).json(mockCredentials);
   } catch (error) {
-    console.error('Error in credentials API:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

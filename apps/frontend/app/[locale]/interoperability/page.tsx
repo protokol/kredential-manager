@@ -112,10 +112,10 @@ function InteroperabilityPublicPage() {
                       </p>
                       {credential.qrCode && (
                         <div className='mb-4 flex justify-center'>
-                          <img
-                            src={credential.qrCode}
-                            alt='Credential QR Code'
-                            className='max-w-[200px]'
+                          <div 
+                            dangerouslySetInnerHTML={{ 
+                              __html: `<img src="${credential.qrCode}" alt="Credential QR Code" class="max-w-[200px]" />` 
+                            }} 
                           />
                         </div>
                       )}

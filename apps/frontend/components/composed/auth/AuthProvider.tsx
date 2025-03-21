@@ -69,7 +69,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
 
     updateUser(accessToken);
 
-    const redirect = params.get('redirect') || routes.app.home;
+    const redirect = params?.get('redirect') || routes.app.home;
 
     push(redirect);
   };

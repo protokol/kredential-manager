@@ -110,8 +110,7 @@ function InteroperabilityPublicPage() {
                         <span className='font-medium'>Flow Type:</span>{' '}
                         {credential.type}
                       </p>
-                      {/* QR code has been removed to avoid build issues */}
-                      {/* {credential.qrCode && (
+                       {credential.qrCode && (
                         <div className='mb-4 flex justify-center'>
                           <img
                             src={credential.qrCode}
@@ -121,7 +120,7 @@ function InteroperabilityPublicPage() {
                             height={200}
                           />
                         </div>
-                      )} */}
+                      )} 
                       <div className='space-y-1 text-sm'>
                         <p>
                           <span className='font-medium'>Offer URL:</span>

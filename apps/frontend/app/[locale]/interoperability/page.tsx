@@ -98,7 +98,7 @@ function InteroperabilityPublicPage() {
                   id='credentialsQrCodes'
                   className='mt-4 grid gap-6 md:grid-cols-2'
                 >
-                  {credentialsResponse.map((credential, index) => (
+                  {credentialsResponse.map((credential: Credential, index: number) => (
                     <div
                       key={index}
                       className='rounded-lg border p-4 shadow-sm'
@@ -110,27 +110,18 @@ function InteroperabilityPublicPage() {
                         <span className='font-medium'>Flow Type:</span>{' '}
                         {credential.type}
                       </p>
-                      {credential.qrCode && (
+                      {/* QR code has been removed to avoid build issues */}
+                      {/* {credential.qrCode && (
                         <div className='mb-4 flex justify-center'>
-                          {credential.qrCode.startsWith('data:image') ? (
-                            // For data URLs, use regular img
-                            <img
-                              src={credential.qrCode}
-                              alt='Credential QR Code'
-                              className='max-w-[200px]'
-                            />
-                          ) : (
-                            // For regular URLs, use next/image
-                            <Image
-                              src={credential.qrCode}
-                              alt='Credential QR Code'
-                              width={200}
-                              height={200}
-                              className='max-w-[200px]'
-                            />
-                          )}
+                          <img
+                            src={credential.qrCode}
+                            alt='Credential QR Code'
+                            className='max-w-[200px]'
+                            width={200}
+                            height={200}
+                          />
                         </div>
-                      )}
+                      )} */}
                       <div className='space-y-1 text-sm'>
                         <p>
                           <span className='font-medium'>Offer URL:</span>

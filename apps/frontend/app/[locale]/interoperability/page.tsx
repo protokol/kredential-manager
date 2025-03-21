@@ -10,7 +10,7 @@ import type { Credential } from '@utils/api/interop/interop.type';
 
 import ContentLayout from '@components/composed/layout/ContentLayout';
 
-export default function InteroperabilityPublicPage() {
+function InteroperabilityPublicPage() {
   const [holderDid, setHolderDid] = useState('');
   const [credentialsResponse, setCredentialsResponse] = useState<
     Credential[] | null
@@ -20,9 +20,11 @@ export default function InteroperabilityPublicPage() {
 
   // Validate DID format
   const validateDid = (did: string): boolean => {
-    // Basic check for did:key format
-    const didKeyPattern = /^did:key:[a-zA-Z0-9]{32,}$/;
-    return didKeyPattern.test(did);
+    if (!did.startsWith('did:key:')) {
+      return false;
+    }
+    const keyPart = did.substring(8); 
+    return keyPart.length >= 32;
   };
 
   const getCredentials = async () => {
@@ -147,3 +149,5 @@ export default function InteroperabilityPublicPage() {
     </ContentLayout>
   );
 }
+
+export default InteroperabilityPublicPage;

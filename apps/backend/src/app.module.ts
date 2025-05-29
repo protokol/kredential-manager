@@ -60,20 +60,21 @@ import { ScopeMappingModule } from "./scope-mapping/scope-mapping.module";
 import { CredentialStatusModule } from "./credential-status/credential-status.module";
 import { CredentialStatusController } from "./credential-status/credential-status.controller";
 import { CredentialStatusService } from "./credential-status/credential-status.service";
-import { InteropModule } from './interop/interop.module';
-import { ValidationPipe } from '@nestjs/common';
+import { InteropModule } from "./interop/interop.module";
+import { ValidationPipe } from "@nestjs/common";
 import { InteropService } from "./interop/interop.service";
 import { CredentialClaim } from "@entities/credential-claim.entity";
 @Module({
     imports: [
         ConfigModule.forRoot({
-            isGlobal: true, cache: true,
+            isGlobal: true,
+            cache: true,
             load: [AppConfig, DatabaseConfig],
         }),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => ({
-                ...configService.get('database'),
+                ...configService.get("database"),
             }),
             inject: [ConfigService],
         }),
@@ -106,7 +107,7 @@ import { CredentialClaim } from "@entities/credential-claim.entity";
         PresentationDefinitionModule,
         ScopeMappingModule,
         CredentialStatusModule,
-        InteropModule
+        InteropModule,
     ],
     controllers: [
         AppController,
@@ -120,7 +121,7 @@ import { CredentialClaim } from "@entities/credential-claim.entity";
         PresentationDefinitionController,
         RequestUriController,
         ScopeCredentialMappingController,
-        CredentialStatusController
+        CredentialStatusController,
     ],
     providers: [
         AppService,
@@ -160,18 +161,20 @@ import { CredentialClaim } from "@entities/credential-claim.entity";
             provide: APP_PIPE,
             useClass: ValidationPipe,
         },
-        InteropService
+        InteropService,
     ],
     exports: [],
 })
-
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer): void {
-        consumer.apply((req, res, next) => {
-            // console.log('req', req);
-            // console.log('req', req.url)
-            next();
-        }).forRoutes('*');
-        consumer.apply(LoggerMiddleware).forRoutes('*');
+        consumer
+            .apply((req, res, next) => {
+                // console.log("req", req);
+                console.log("req", req.originalUrl);
+                // console.log("req", req.url);
+                next();
+            })
+            .forRoutes("*");
+        consumer.apply(LoggerMiddleware).forRoutes("*");
     }
 }

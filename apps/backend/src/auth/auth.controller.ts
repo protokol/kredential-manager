@@ -6,9 +6,6 @@ import {
     Query,
     Res,
     Headers,
-    Inject,
-    HttpException,
-    HttpStatus,
 } from "@nestjs/common";
 import { Response } from "express";
 import { Public } from "nest-keycloak-connect";

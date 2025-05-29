@@ -25,6 +25,7 @@ function isIdTokenRequest(request: any): request is IdTokenResponseRequest {
 interface VpTokenRequest {
     vp_token: string;
     presentation_submission: string;
+    scope?: string;
 }
 
 interface VerifiableCredential {

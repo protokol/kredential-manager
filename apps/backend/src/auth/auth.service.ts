@@ -6,8 +6,6 @@ import {
     IdTokenResponseRequest,
     generateRandomString,
     VPPayload,
-    JWT,
-    VCJWT,
 } from "@protokol/kredential-core";
 import { OpenIDProviderService } from "./../openId/openId.service";
 import { IssuerService } from "./../issuer/issuer.service";
@@ -15,6 +13,7 @@ import {
     extractBearerToken,
     arraysAreEqual,
     isConformanceTestScope,
+    validateClientId,
 } from "./auth.utils";
 import { VcService } from "./../vc/vc.service";
 import { DidService } from "./../student/did.service";
@@ -186,14 +185,24 @@ export class AuthService {
                     "Missing required parameters",
                 );
             }
+
+            // Validate client_id format
+            if (!validateClientId(request.client_id)) {
+                throw createError(
+                    "INVALID_REQUEST",
+                    "Invalid client_id format. Must be a valid HTTPS URL",
+                );
+            }
+
             const issuer_state = request.issuer_state;
             const scope = request.scope;
             let offer: CredentialOffer | null = null;
+
             // Add issuer state validation here
             if (scope == "openid") {
                 if (issuer_state) {
                     const decodedState =
-                        await this.issuer.decodeJWT(issuer_state);
+                    await this.issuer.decodeJWT(issuer_state);
                     const decoded = decodedState.payload as any;
 
                     offer =
@@ -271,36 +280,36 @@ export class AuthService {
                     await this.presentationDefinitionService.getByScope(scope);
             }
 
-            const {
-                header,
-                redirectUrl,
-                authDetails,
-                serverDefinedState,
-                serverDefinedNonce,
-            } = await provider.handleAuthorizationRequest(
-                request,
-                redirectUri,
-                presentationDefinition,
-            );
+            const { header, redirectUrl, authDetails, serverDefinedState, serverDefinedNonce} = await provider.handleAuthorizationRequest(request, redirectUri, presentationDefinition);
 
-            const payload = {
-                authorizationDetails: authDetails,
-            };
+            const walletDefinedState =
+                request.state || generateRandomString(32);
+            const walletDefinedNonce =
+                request.nonce || generateRandomString(32);
+
             await this.state.createAuthState(
                 request.client_id,
-                request.code_challenge,
-                request.code_challenge_method,
+                request.code_challenge || "",
+                request.code_challenge_method || "S256",
                 request.redirect_uri,
-                request.scope,
+                scope,
                 request.response_type,
                 serverDefinedState,
                 serverDefinedNonce,
-                request.state,
-                request.nonce,
-                payload,
+                walletDefinedState,
+                walletDefinedNonce,
+                { offer },
                 offer,
             );
-            return { header, code: 302, url: redirectUrl };
+
+            // If this is a VP token test, ensure the response_type includes vp_token
+            if (isVPTokenTest && !request.response_type.includes("vp_token")) {
+                throw createError(
+                    "INVALID_REQUEST",
+                    "VP token test requires response_type to include vp_token",
+                );
+            }
+            return { code: 302, url: redirectUrl };
         } catch (error) {
             throw handleError(error);
         }
@@ -367,6 +376,8 @@ export class AuthService {
                 request.presentation_submission,
             );
 
+            console.log("-->request", request.scope);
+
             if (!request.state) {
                 throw new Error("Missing state parameter");
             }
@@ -377,6 +388,8 @@ export class AuthService {
                 StateStep.AUTHORIZE,
                 StateStatus.UNCLAIMED,
             );
+
+            console.log("-->stateData", stateData);
 
             const redirectUri = stateData.redirectUri;
             const { isVPTokenTest, isIDTokenTest } = isConformanceTestScope(
@@ -498,6 +511,9 @@ export class AuthService {
                 StateStatus.UNCLAIMED,
                 issuer,
             );
+            console.log({
+                stateData
+            })
 
             // Generate a unique code for the client.
             const code = generateRandomString(25);
@@ -533,7 +549,11 @@ export class AuthService {
         headers: Record<string, string | string[]>,
     ): Promise<{ header?: JHeader; code: number; url?: string }> {
         try {
+            console.log("INSIDE DIRECT POST");
+            console.log("-->request", request);
             if ("vp_token" in request && "presentation_submission" in request) {
+                console.log("VP TOKEN RESPONSE");
+                console.log({request})
                 return await this.handleVpTokenResponse(request);
             }
 
@@ -715,8 +735,8 @@ export class AuthService {
 
             // Get the requested credentials
             let requestedCredentials: string[];
-
             let offerData = stateData.offer;
+
             try {
                 requestedCredentials = this.getRequestedCredentials(stateData);
                 if (requestedCredentials.length === 0) {
@@ -1192,7 +1212,6 @@ export class AuthService {
      */
     private getRequestedCredentials(stateData: any): string[] {
         const authorizationDetails = stateData?.payload?.authorizationDetails;
-
         // Check if authorizationDetails is an array and has at least one element
         if (
             Array.isArray(authorizationDetails) &&
@@ -1210,6 +1229,14 @@ export class AuthService {
 
                 return [];
             }
+        }
+
+        if (stateData?.payload?.offer?.credential_types) {
+            return stateData.payload.offer.credential_types;
+        }
+
+        if (stateData?.payload?.offer?.requested_credentials) {
+            return stateData.payload.requested_credentials;
         }
 
         return [];

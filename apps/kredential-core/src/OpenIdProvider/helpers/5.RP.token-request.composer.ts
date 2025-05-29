@@ -142,7 +142,7 @@ export class TokenRequestComposer {
     if (
       this.grantType === "urn:ietf:params:oauth:grant-type:pre-authorized_code"
     ) {
-      if (!this.preAuthorizedCode || !this.userPin) {
+      if (!this.preAuthorizedCode) {
         throw new Error(
           "Pre-authorized code and user pin must be set for pre-authorized requests."
         );
